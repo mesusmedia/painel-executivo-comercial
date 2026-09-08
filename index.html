@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Executivo de Clientes — Mesus Media</title>
+<title>Painel Executivo de Clientes & Funil — Mesus Media</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -55,7 +55,7 @@ header {
   position: sticky;
   top: 0;
   z-index: 100;
-  padding: 18px 0;
+  padding: 16px 0;
 }
 .header-inner {
   display: flex;
@@ -98,12 +98,10 @@ header {
   font-weight: 600;
   margin-left: 8px;
 }
-.header-meta {
+.header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
-  font-size: 0.82rem;
-  color: var(--text-muted);
+  gap: 14px;
 }
 .live-pill {
   display: inline-flex;
@@ -134,7 +132,7 @@ header {
 .routine-bar {
   background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.08));
   border-bottom: 1px solid var(--border);
-  padding: 10px 0;
+  padding: 9px 0;
   font-size: 0.8rem;
   color: var(--text-muted);
 }
@@ -156,7 +154,7 @@ header {
   background: linear-gradient(180deg, rgba(239, 68, 68, 0.09) 0%, rgba(239, 68, 68, 0.03) 100%);
   border: 1px solid rgba(239, 68, 68, 0.35);
   border-radius: var(--radius-xl);
-  padding: 24px;
+  padding: 22px;
   position: relative;
   overflow: hidden;
 }
@@ -173,7 +171,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   flex-wrap: wrap;
   gap: 12px;
 }
@@ -183,31 +181,30 @@ header {
   gap: 10px;
 }
 .alert-icon {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--danger-glow);
   color: var(--danger);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 .alert-title {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #fff;
 }
 .alert-subtitle {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #fca5a5;
-  margin-top: 2px;
 }
 .alert-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 14px;
-  margin-top: 14px;
+  gap: 12px;
+  margin-top: 12px;
 }
 .alert-card {
   background: rgba(15, 20, 28, 0.9);
@@ -217,7 +214,7 @@ header {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
 }
 .alert-card-top {
   display: flex;
@@ -226,7 +223,7 @@ header {
 }
 .alert-card-name {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   color: #fff;
 }
 .alert-card-id {
@@ -244,7 +241,7 @@ header {
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 .alert-action-text {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
 }
 .btn-reconnect {
@@ -259,12 +256,52 @@ header {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s;
   text-decoration: none;
+  transition: all 0.2s;
 }
 .btn-reconnect:hover {
   background: var(--danger);
   color: #fff;
+}
+
+/* View Mode Tabs */
+.view-tabs-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.nav-tabs {
+  display: flex;
+  gap: 10px;
+}
+.nav-tab {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-tab:hover {
+  color: #fff;
+  border-color: var(--border-light);
+}
+.nav-tab.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
 }
 
 /* KPI Summary Cards */
@@ -272,7 +309,7 @@ header {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
-  margin-top: 24px;
+  margin-top: 20px;
 }
 .kpi-card {
   background: var(--panel);
@@ -281,11 +318,10 @@ header {
   padding: 20px;
   position: relative;
   overflow: hidden;
-  transition: transform 0.2s, border-color 0.2s;
+  transition: transform 0.2s;
 }
 .kpi-card:hover {
   transform: translateY(-2px);
-  border-color: var(--border-light);
 }
 .kpi-card::before {
   content: '';
@@ -297,7 +333,7 @@ header {
   background: var(--kpi-accent, var(--primary));
 }
 .kpi-label {
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
@@ -305,31 +341,28 @@ header {
 }
 .kpi-val {
   font-family: 'Syne', sans-serif;
-  font-size: 2.1rem;
+  font-size: 2rem;
   font-weight: 800;
   color: #fff;
-  margin-top: 8px;
+  margin-top: 6px;
   line-height: 1;
 }
 .kpi-sub {
   font-size: 0.78rem;
   color: var(--text-muted);
   margin-top: 8px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 .kpi-primary { --kpi-accent: #3b82f6; }
 .kpi-success { --kpi-accent: #10b981; }
 .kpi-warning { --kpi-accent: #f59e0b; }
-.kpi-danger  { --kpi-accent: #ef4444; }
+.kpi-purple  { --kpi-accent: #a855f7; }
 
 /* Visual Charts */
 .charts-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 20px;
-  margin-top: 24px;
+  margin-top: 20px;
 }
 @media (max-width: 1024px) {
   .charts-grid { grid-template-columns: 1fr; }
@@ -344,15 +377,15 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 .chart-title {
   font-family: 'Syne', sans-serif;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
 }
 .chart-container {
-  height: 280px;
+  height: 260px;
   position: relative;
 }
 
@@ -362,12 +395,12 @@ header {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 16px 20px;
-  margin-top: 28px;
+  margin-top: 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 14px;
 }
 .search-box {
   position: relative;
@@ -384,7 +417,6 @@ header {
   font-family: inherit;
   font-size: 0.85rem;
   outline: none;
-  transition: border-color 0.2s;
 }
 .search-input:focus {
   border-color: var(--primary);
@@ -406,7 +438,7 @@ header {
   background: var(--panel-2);
   border: 1px solid var(--border);
   color: var(--text-muted);
-  padding: 7px 14px;
+  padding: 6px 12px;
   border-radius: 20px;
   font-size: 0.78rem;
   font-weight: 600;
@@ -426,11 +458,11 @@ header {
   background: rgba(255, 255, 255, 0.15);
   padding: 2px 6px;
   border-radius: 10px;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   margin-left: 4px;
 }
 
-/* Client Table & Cards */
+/* Table */
 .clients-container {
   margin-top: 18px;
 }
@@ -438,7 +470,7 @@ header {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow-x: auto;
 }
 table {
   width: 100%;
@@ -452,14 +484,16 @@ th {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  padding: 14px 18px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border);
   font-weight: 700;
+  white-space: nowrap;
 }
 td {
-  padding: 14px 18px;
+  padding: 12px 16px;
   border-bottom: 1px solid rgba(30, 40, 56, 0.6);
   vertical-align: middle;
+  white-space: nowrap;
 }
 tr:hover td {
   background: rgba(22, 29, 40, 0.6);
@@ -497,7 +531,6 @@ tr:hover td {
   border-radius: 12px;
   font-size: 0.72rem;
   font-weight: 600;
-  white-space: nowrap;
 }
 .status-alta { background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); }
 .status-mod { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); }
@@ -510,15 +543,21 @@ tr:hover td {
   font-weight: 600;
   font-size: 0.88rem;
 }
-.num-today {
-  color: var(--success);
+.num-rate {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
   font-weight: 700;
+  margin-left: 6px;
 }
-.num-zero {
-  color: var(--text-dim);
-}
+.rate-good { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.rate-mid  { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+.rate-low  { background: rgba(239, 68, 68, 0.15); color: #f87171; }
 
-/* Modal Instruções QR Code */
+.num-today { color: var(--success); font-weight: 700; }
+.num-zero { color: var(--text-dim); }
+
+/* Modal */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -534,7 +573,7 @@ tr:hover td {
   background: var(--panel);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-xl);
-  padding: 32px;
+  padding: 30px;
   max-width: 580px;
   width: 100%;
 }
@@ -550,12 +589,8 @@ tr:hover td {
   font-size: 0.88rem;
   color: var(--text-muted);
 }
-.modal-steps li {
-  margin-bottom: 10px;
-}
-.modal-steps strong {
-  color: #fff;
-}
+.modal-steps li { margin-bottom: 10px; }
+.modal-steps strong { color: #fff; }
 .modal-close {
   background: var(--panel-2);
   border: 1px solid var(--border);
@@ -582,30 +617,30 @@ tr:hover td {
         </div>
       </div>
     </div>
-    <div class="header-meta">
-      <div class="live-pill"><span class="live-dot"></span> Dados Sincronizados em Tempo Real</div>
-      <div id="clock">08/09/2026</div>
+    <div class="header-right">
+      <div class="live-pill"><span class="live-dot"></span> Sincronizado com CRMs</div>
+      <div style="font-size:0.85rem;color:var(--text-muted);">08/09/2026</div>
     </div>
   </div>
 </header>
 
 <div class="routine-bar">
   <div class="container routine-inner">
-    <div>⏰ <strong>Rotina de Notificação Ativa:</strong> Relatório Diário automático agendado para todo dia às <span class="routine-tag">09:00</span> via Maestri / OS.</div>
-    <div>🔔 <strong>Lembrete Operacional:</strong> Alerta de reconexão WhatsApp programado para <span class="routine-tag">08:30</span>.</div>
+    <div>⏰ <strong>Rotina Automática:</strong> Varredura e relatório diário agendados para todo dia às <span class="routine-tag">09:00</span> via Maestri / Vercel.</div>
+    <div>🔔 <strong>Alerta Operacional:</strong> Lembrete de reconexão WhatsApp às <span class="routine-tag">08:30</span>.</div>
   </div>
 </div>
 
 <main class="container">
 
   <!-- Bloco de Alerta Crítico: WhatsApp Desconectado -->
-  <section class="alert-section" id="alert-box">
+  <section class="alert-section">
     <div class="alert-header">
       <div class="alert-title-box">
         <div class="alert-icon">⚠️</div>
         <div>
-          <div class="alert-title">4 Clientes com WhatsApp Desconectado — Risco Imediato de Perda de Leads</div>
-          <div class="alert-subtitle">O traqueamento no CRM / Chatwoot parou porque as instâncias Evolution API perderam autenticação.</div>
+          <div class="alert-title">4 Clientes com WhatsApp Desconectado — Traqueamento Inativo</div>
+          <div class="alert-subtitle">Os leads chegam aos celulares mas não disparam webhooks para o CRM / Chatwoot.</div>
         </div>
       </div>
       <button class="btn-reconnect" onclick="openHelpModal()">📖 Ver Instruções de Reconexão</button>
@@ -620,7 +655,7 @@ tr:hover td {
           </div>
           <span class="alert-badge">DESCONECTADO</span>
         </div>
-        <div class="alert-action-text">Último lead captado em 03/08. Traqueamento estagnado há mais de 30 dias.</div>
+        <div class="alert-action-text">Último lead captado em 03/08. Traqueamento pausado há mais de 30 dias.</div>
         <a href="https://api-l3m-marketing.netowork.com.br" target="_blank" class="btn-reconnect">🔗 Abrir Evolution API</a>
       </div>
 
@@ -644,7 +679,7 @@ tr:hover td {
           </div>
           <span class="alert-badge">DESCONECTADO</span>
         </div>
-        <div class="alert-action-text">Último lead em 19/08 (teve 30 em ago). Campanhas ativas sem retorno de webhook.</div>
+        <div class="alert-action-text">Último lead em 19/08 (teve 30 em ago). Sem retorno de webhooks para o funil.</div>
         <a href="https://api-l3m-marketing.netowork.com.br" target="_blank" class="btn-reconnect">🔗 Abrir Evolution API</a>
       </div>
 
@@ -656,33 +691,68 @@ tr:hover td {
           </div>
           <span class="alert-badge">DESCONECTADO</span>
         </div>
-        <div class="alert-action-text">Último lead em 27/08 (teve 64 em ago). Canal desconectado no final do mês.</div>
+        <div class="alert-action-text">Último lead em 27/08 (teve 64 em ago). Canal desconectou no fim do mês.</div>
         <a href="https://api-l3m-marketing.netowork.com.br" target="_blank" class="btn-reconnect">🔗 Abrir Evolution API</a>
       </div>
     </div>
   </section>
 
-  <!-- KPI Cards -->
-  <section class="kpi-grid">
+  <!-- Navegação de Visão: Leads Diários vs Funil Completo -->
+  <div class="view-tabs-wrap">
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tabBtnLeads" onclick="switchView('leads')">📊 Visão Leads & Velocidade</button>
+      <button class="nav-tab" id="tabBtnFunnel" onclick="switchView('funnel')">🎯 Cruzamento de Agendamentos & Funil</button>
+    </div>
+    <div style="font-size:0.8rem;color:var(--text-muted);">
+      Mostrando: <strong id="viewSubtitle" style="color:#fff">Volume de Captação e Status Diário</strong>
+    </div>
+  </div>
+
+  <!-- KPIs de Leads (Visão 1) -->
+  <section class="kpi-grid" id="kpiLeadsRow">
     <div class="kpi-card kpi-primary">
       <div class="kpi-label">Total Leads na Base</div>
-      <div class="kpi-val" id="kpi-total">26.280</div>
-      <div class="kpi-sub">31 contas integradas</div>
+      <div class="kpi-val">26.280</div>
+      <div class="kpi-sub">31 contas mapeadas</div>
     </div>
     <div class="kpi-card kpi-success">
       <div class="kpi-label">Leads Setembro (01 a 08/09)</div>
-      <div class="kpi-val" id="kpi-setembro">1.171</div>
-      <div class="kpi-sub" style="color:var(--success)">▲ Ritmo forte na 1ª semana</div>
+      <div class="kpi-val">1.171</div>
+      <div class="kpi-sub" style="color:var(--success)">▲ Aceleração de 18% vs Agosto</div>
     </div>
     <div class="kpi-card kpi-warning">
       <div class="kpi-label">Novos Leads Hoje (08/09)</div>
-      <div class="kpi-val" id="kpi-hoje" style="color:#34d399">109</div>
-      <div class="kpi-sub">Média de 146 leads/dia no mês</div>
+      <div class="kpi-val" style="color:#34d399">109</div>
+      <div class="kpi-sub">Média 146 leads/dia no mês</div>
     </div>
-    <div class="kpi-card kpi-danger">
-      <div class="kpi-label">Desconectados / Sem Entrada</div>
-      <div class="kpi-val" style="color:#f87171">4 / 9</div>
-      <div class="kpi-sub">4 WhatsApp off • 5 sem campanha</div>
+    <div class="kpi-card kpi-purple">
+      <div class="kpi-label">Contas Ativas no Mês</div>
+      <div class="kpi-val" style="color:#c084fc">21 / 31</div>
+      <div class="kpi-sub">68% da carteira captando</div>
+    </div>
+  </section>
+
+  <!-- KPIs de Funil (Visão 2 - Inicialmente escondido) -->
+  <section class="kpi-grid" id="kpiFunnelRow" style="display:none;">
+    <div class="kpi-card kpi-primary">
+      <div class="kpi-label">Total Agendados Mapeados</div>
+      <div class="kpi-val">8.423</div>
+      <div class="kpi-sub">Taxa média de agendamento: 32.1%</div>
+    </div>
+    <div class="kpi-card kpi-warning">
+      <div class="kpi-label">Comparecimentos Confirmados</div>
+      <div class="kpi-val" style="color:#fbbf24">930</div>
+      <div class="kpi-sub">Gargalo principal: Show-up Rate 11.0%</div>
+    </div>
+    <div class="kpi-card kpi-success">
+      <div class="kpi-label">Vendas Fechadas (Ganhos)</div>
+      <div class="kpi-val" style="color:#34d399">439</div>
+      <div class="kpi-sub">Taxa pós-comparecimento: 47.2%</div>
+    </div>
+    <div class="kpi-card kpi-purple">
+      <div class="kpi-label">Melhor Taxa de Fechamento</div>
+      <div class="kpi-val" style="color:#c084fc">88.0%</div>
+      <div class="kpi-sub">Clínica Glow (22 vendas / 25 comp.)</div>
     </div>
   </section>
 
@@ -690,21 +760,21 @@ tr:hover td {
   <section class="charts-grid">
     <div class="chart-box">
       <div class="chart-header">
-        <div class="chart-title">🏆 Top 10 Clientes por Volume em Setembro (01-08/09)</div>
-        <span style="font-size:0.75rem;color:var(--text-muted)">Leads no mês atual</span>
+        <div class="chart-title" id="mainChartTitle">🏆 Top 10 Clientes por Captação em Setembro</div>
+        <span style="font-size:0.75rem;color:var(--text-muted)">Volume recente</span>
       </div>
       <div class="chart-container">
-        <canvas id="barChart"></canvas>
+        <canvas id="mainChart"></canvas>
       </div>
     </div>
 
     <div class="chart-box">
       <div class="chart-header">
-        <div class="chart-title">🥧 Distribuição por Segmento</div>
+        <div class="chart-title" id="secondChartTitle">🥧 Distribuição por Segmento</div>
         <span style="font-size:0.75rem;color:var(--text-muted)">Base ativa</span>
       </div>
       <div class="chart-container">
-        <canvas id="segmentChart"></canvas>
+        <canvas id="secondChart"></canvas>
       </div>
     </div>
   </section>
@@ -713,7 +783,7 @@ tr:hover td {
   <section class="controls-bar">
     <div class="search-box">
       <span class="search-icon">🔍</span>
-      <input type="text" class="search-input" id="searchInp" placeholder="Buscar por cliente, ID ou segmento..." oninput="filterClients()">
+      <input type="text" class="search-input" id="searchInp" placeholder="Buscar por cliente, ID ou segmento..." oninput="filterData()">
     </div>
     <div class="filter-tabs">
       <button class="filter-btn active" data-f="all" onclick="setFilter('all', this)">Todos <span class="filter-badge" id="b-all">31</span></button>
@@ -724,23 +794,14 @@ tr:hover td {
     </div>
   </section>
 
-  <!-- Tabela de Clientes -->
+  <!-- Tabela Dinâmica -->
   <section class="clients-container">
     <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Cliente</th>
-            <th>Segmento</th>
-            <th>Status Operacional</th>
-            <th style="text-align:right">Leads Hoje</th>
-            <th style="text-align:right">Setembro/26</th>
-            <th style="text-align:right">Agosto/26</th>
-            <th style="text-align:right">Total Base</th>
-            <th>Último Lead</th>
-          </tr>
+      <table id="mainTable">
+        <thead id="tableHead">
+          <!-- Populated by JS according to view -->
         </thead>
-        <tbody id="clientsTbody">
+        <tbody id="tableBody">
           <!-- Populated by JS -->
         </tbody>
       </table>
@@ -753,14 +814,14 @@ tr:hover td {
 <div class="modal-overlay" id="helpModal">
   <div class="modal-box">
     <div class="modal-title">📲 Como Reconectar o WhatsApp (Evolution API)</div>
-    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px;">Quando a sessão do WhatsApp desconecta no celular da clínica, a API para de receber webhooks e o traqueamento de anúncios e leads é interrompido.</p>
+    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px;">Quando a sessão desconecta no aparelho celular da clínica, os webhooks param e os leads deixam de ser atribuídos no CRM.</p>
     
     <ol class="modal-steps">
-      <li>Acesse o painel da Evolution API: <strong>api-l3m-marketing.netowork.com.br</strong> ou pelo CRM do cliente.</li>
-      <li>Localize a instância da clínica correspondente (ex: <em>C86, C157, C148, C136</em>).</li>
+      <li>Acesse a Evolution API: <strong>api-l3m-marketing.netowork.com.br</strong></li>
+      <li>Localize a instância da clínica: <em>C86, C157, C148 ou C136</em>.</li>
       <li>Clique em <strong>Gerar QR Code</strong>.</li>
-      <li>Peça para a recepcionista/atendente da clínica abrir o WhatsApp no aparelho celular: <em>Aparelhos Conectados → Conectar Aparelho</em> e escanear a tela.</li>
-      <li>Assim que aparecer o status <strong>"Connected / Open"</strong>, envie uma mensagem de teste para confirmar o disparo do webhook no Chatwoot / CRM.</li>
+      <li>Peça para a secretária escanear via WhatsApp Celular: <em>Aparelhos Conectados → Conectar Aparelho</em>.</li>
+      <li>Assim que o status mudar para <strong>"Open"</strong>, envie uma mensagem teste para validar o disparo.</li>
     </ol>
 
     <button class="modal-close" onclick="closeHelpModal()">Entendido</button>
@@ -768,82 +829,152 @@ tr:hover td {
 </div>
 
 <script>
-const CLIENTS_DATA = [
-  { id:"C162-DrBrunoAraujo", name:"Dr. Bruno Araújo", seg:"Saúde", total:1073, set:189, ago:193, hoje:21, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C158-VictorianoFaces", name:"Victoriano Faces", seg:"Estética", total:2468, set:173, ago:615, hoje:15, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C172-DrCaioFigueira", name:"Dr. Caio Figueira", seg:"Saúde", total:472, set:156, ago:316, hoje:11, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C169-DrKeeynerCorrea", name:"Dr. Keeyner Correa", seg:"Saúde", total:472, set:80, ago:224, hoje:8, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C123-OrgulhoSaoVicente", name:"Orgulho São Vicente", seg:"Odonto", total:2717, set:77, ago:356, hoje:7, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C174-EsteticFaceItapetininga", name:"Estetic Face Itapetininga", seg:"Estética", total:225, set:74, ago:151, hoje:8, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C123-DrRafaelRocha", name:"Dr. Rafael Rocha", seg:"Saúde", total:4609, set:65, ago:401, hoje:6, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C123-OrgulhodeSorrirPeruibe", name:"Orgulho de Sorrir Peruíbe", seg:"Odonto", total:1691, set:61, ago:352, hoje:1, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C150-Lumia", name:"Lumia", seg:"Estética", total:769, set:50, ago:97, hoje:5, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C171-DraStefaniRezende", name:"Dra. Stefani Rezende", seg:"Saúde", total:103, set:43, ago:60, hoje:3, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C163-AcessoSaudeCIC", name:"Acesso Saúde CIC", seg:"Saúde", total:653, set:42, ago:167, hoje:5, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C149-ClinicaGGlow", name:"Clínica Glow", seg:"Estética", total:1209, set:34, ago:113, hoje:3, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C52-DrLucasPitao", name:"Dr. Lucas Pitão", seg:"Saúde", total:1401, set:23, ago:94, hoje:8, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C135-DraMichelleSantos", name:"Dra. Michelle Santos", seg:"Saúde", total:1212, set:19, ago:48, hoje:2, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C170-DraMariaEduarda", name:"Dra. Maria Eduarda", seg:"Saúde", total:104, set:19, ago:75, hoje:1, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C173-OdontoPrime", name:"Odonto Prime", seg:"Odonto", total:88, set:19, ago:69, hoje:0, ult:"06/09/2026", status:"mod", statusText:"🟡 Moderado" },
-  { id:"C63-DrRaphaelMoreira", name:"Dr. Raphael Moreira", seg:"Saúde", total:977, set:15, ago:71, hoje:4, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C123-OrgulhodeSorrirSantos", name:"Orgulho de Sorrir Santos", seg:"Odonto", total:1798, set:13, ago:0, hoje:0, ult:"05/09/2026", status:"mod", statusText:"🟡 Moderado" },
-  { id:"C124-DraAnnaHOF", name:"Dra. Anna HOF", seg:"Saúde", total:1285, set:11, ago:82, hoje:1, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
-  { id:"C155-ClinicaElodonto", name:"Clínica Elodonto", seg:"Odonto", total:117, set:5, ago:30, hoje:0, ult:"07/09/2026", status:"mod", statusText:"🟡 Moderado" },
-  { id:"C166-Lucasmallmann", name:"Lucas Mallmann", seg:"Saúde", total:85, set:3, ago:15, hoje:0, ult:"05/09/2026", status:"mod", statusText:"🟡 Moderado" },
-  { id:"C136-IntegrareOdontologia", name:"Integrar Odontologia", seg:"Odonto", total:1272, set:0, ago:64, hoje:0, ult:"27/08/2026", status:"descon", statusText:"🔴 WhatsApp Off" },
-  { id:"C157-DraCristianeTiburtino", name:"Dra. Cristiane Tiburtino", seg:"Saúde", total:85, set:0, ago:30, hoje:0, ult:"19/08/2026", status:"descon", statusText:"🔴 WhatsApp Off" },
-  { id:"EsteticaLosAngelesLeads", name:"Estética Los Angeles", seg:"Estética", total:125, set:0, ago:30, hoje:0, ult:"19/08/2026", status:"descon", statusText:"🔴 WhatsApp Off" },
-  { id:"C86-DrWilliamHenrique", name:"Dr. William Henrique", seg:"Saúde", total:126, set:0, ago:10, hoje:0, ult:"03/08/2026", status:"descon", statusText:"🔴 WhatsApp Off" },
-  { id:"C168-DraMichelleAlves", name:"Dra. Michelle Alves", seg:"Saúde", total:212, set:0, ago:57, hoje:0, ult:"21/08/2026", status:"pausado", statusText:"⚪ Sem Leads" },
-  { id:"C164-DraLea", name:"Dra. Léa", seg:"Saúde", total:336, set:0, ago:48, hoje:0, ult:"12/08/2026", status:"pausado", statusText:"⚪ Sem Leads" },
-  { id:"C140-EspacoBottega", name:"Espaço Bottega", seg:"Estética", total:592, set:0, ago:44, hoje:0, ult:"20/08/2026", status:"pausado", statusText:"⚪ Sem Leads" },
-  { id:"C167-AvanteOdontologiaBH", name:"Avante Odontologia BH", seg:"Odonto", total:2, set:0, ago:0, hoje:0, ult:"17/02/2025", status:"pausado", statusText:"⚪ Inativo" },
-  { id:"C167-AvanteOdontologiaSL", name:"Avante Odontologia SL", seg:"Odonto", total:2, set:0, ago:0, hoje:0, ult:"17/02/2025", status:"pausado", statusText:"⚪ Inativo" },
-  { id:"C141-VictorRios", name:"Victor Rios", seg:"Saúde", total:0, set:0, ago:0, hoje:0, ult:"—", status:"erro", statusText:"🔒 Permissão 401" }
+const DATA = [
+  { id:"C162-DrBrunoAraujo", name:"Dr. Bruno Araújo", seg:"Saúde", total:1077, set:189, ago:193, hoje:21, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:15, tx_agend:1.4, comp:6, tx_comp:40.0, vendas:0, tx_venda:0.0 },
+  { id:"C158-VictorianoFaces", name:"Victoriano Faces", seg:"Estética", total:2468, set:173, ago:615, hoje:15, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:69, tx_agend:2.8, comp:3, tx_comp:4.3, vendas:2, tx_venda:66.7 },
+  { id:"C172-DrCaioFigueira", name:"Dr. Caio Figueira", seg:"Saúde", total:474, set:156, ago:316, hoje:11, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:8, tx_agend:1.7, comp:1, tx_comp:12.5, vendas:1, tx_venda:100.0 },
+  { id:"C169-DrKeeynerCorrea", name:"Dr. Keeyner Correa", seg:"Saúde", total:473, set:80, ago:224, hoje:8, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:39, tx_agend:8.2, comp:5, tx_comp:12.8, vendas:1, tx_venda:20.0 },
+  { id:"C123-OrgulhoSaoVicente", name:"Orgulho São Vicente", seg:"Odonto", total:2718, set:77, ago:356, hoje:7, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:708, tx_agend:26.0, comp:58, tx_comp:8.2, vendas:38, tx_venda:65.5 },
+  { id:"C174-EsteticFaceItapetininga", name:"Estetic Face Itapetininga", seg:"Estética", total:225, set:74, ago:151, hoje:8, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:2, tx_agend:0.9, comp:0, tx_comp:0.0, vendas:0, tx_venda:0.0 },
+  { id:"C123-DrRafaelRocha", name:"Dr. Rafael Rocha", seg:"Saúde", total:4610, set:65, ago:401, hoje:6, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:1382, tx_agend:30.0, comp:166, tx_comp:12.0, vendas:126, tx_venda:75.9 },
+  { id:"C123-OrgulhodeSorrirPeruibe", name:"Orgulho de Sorrir Peruíbe", seg:"Odonto", total:1692, set:61, ago:352, hoje:1, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:998, tx_agend:59.0, comp:121, tx_comp:12.1, vendas:31, tx_venda:25.6 },
+  { id:"C150-Lumia", name:"Lumia", seg:"Estética", total:769, set:50, ago:97, hoje:5, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:220, tx_agend:28.6, comp:58, tx_comp:26.4, vendas:31, tx_venda:53.4 },
+  { id:"C171-DraStefaniRezende", name:"Dra. Stefani Rezende", seg:"Saúde", total:107, set:43, ago:60, hoje:3, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:14, tx_agend:13.1, comp:0, tx_comp:0.0, vendas:0, tx_venda:0.0 },
+  { id:"C163-AcessoSaudeCIC", name:"Acesso Saúde CIC", seg:"Saúde", total:654, set:42, ago:167, hoje:5, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:18, tx_agend:2.8, comp:1, tx_comp:5.6, vendas:0, tx_venda:0.0 },
+  { id:"C149-ClinicaGGlow", name:"Clínica Glow", seg:"Estética", total:1213, set:34, ago:113, hoje:3, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:181, tx_agend:14.9, comp:25, tx_comp:13.8, vendas:22, tx_venda:88.0 },
+  { id:"C52-DrLucasPitao", name:"Dr. Lucas Pitão", seg:"Saúde", total:1401, set:23, ago:94, hoje:8, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:922, tx_agend:65.8, comp:128, tx_comp:13.9, vendas:51, tx_venda:39.8 },
+  { id:"C135-DraMichelleSantos", name:"Dra. Michelle Santos", seg:"Saúde", total:1212, set:19, ago:48, hoje:2, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:471, tx_agend:38.9, comp:12, tx_comp:2.5, vendas:4, tx_venda:33.3 },
+  { id:"C170-DraMariaEduarda", name:"Dra. Maria Eduarda", seg:"Saúde", total:105, set:19, ago:75, hoje:1, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:4, tx_agend:3.8, comp:0, tx_comp:0.0, vendas:0, tx_venda:0.0 },
+  { id:"C173-OdontoPrime", name:"Odonto Prime", seg:"Odonto", total:88, set:19, ago:69, hoje:0, ult:"06/09/2026", status:"mod", statusText:"🟡 Moderado", agendados:16, tx_agend:18.2, comp:0, tx_comp:0.0, vendas:0, tx_venda:0.0 },
+  { id:"C63-DrRaphaelMoreira", name:"Dr. Raphael Moreira", seg:"Saúde", total:977, set:15, ago:71, hoje:4, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:508, tx_agend:52.0, comp:1, tx_comp:0.2, vendas:0, tx_venda:0.0 },
+  { id:"C123-OrgulhodeSorrirSantos", name:"Orgulho de Sorrir Santos", seg:"Odonto", total:1798, set:13, ago:0, hoje:0, ult:"05/09/2026", status:"mod", statusText:"🟡 Moderado", agendados:579, tx_agend:32.2, comp:74, tx_comp:12.8, vendas:24, tx_venda:32.4 },
+  { id:"C124-DraAnnaHOF", name:"Dra. Anna HOF", seg:"Saúde", total:1285, set:11, ago:82, hoje:1, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração", agendados:607, tx_agend:47.2, comp:98, tx_comp:16.1, vendas:26, tx_venda:26.5 },
+  { id:"C155-ClinicaElodonto", name:"Clínica Elodonto", seg:"Odonto", total:117, set:5, ago:30, hoje:0, ult:"07/09/2026", status:"mod", statusText:"🟡 Moderado", agendados:81, tx_agend:69.2, comp:12, tx_comp:14.8, vendas:8, tx_venda:66.7 },
+  { id:"C166-Lucasmallmann", name:"Lucas Mallmann", seg:"Saúde", total:85, set:3, ago:15, hoje:0, ult:"05/09/2026", status:"mod", statusText:"🟡 Moderado", agendados:24, tx_agend:28.2, comp:4, tx_comp:16.7, vendas:3, tx_venda:75.0 },
+  { id:"C136-IntegrareOdontologia", name:"Integrar Odontologia", seg:"Odonto", total:1272, set:0, ago:64, hoje:0, ult:"27/08/2026", status:"descon", statusText:"🔴 WhatsApp Off", agendados:789, tx_agend:62.0, comp:18, tx_comp:2.3, vendas:10, tx_venda:55.6 },
+  { id:"C157-DraCristianeTiburtino", name:"Dra. Cristiane Tiburtino", seg:"Saúde", total:85, set:0, ago:30, hoje:0, ult:"19/08/2026", status:"descon", statusText:"🔴 WhatsApp Off", agendados:1, tx_agend:1.2, comp:0, tx_comp:0.0, vendas:0, tx_venda:0.0 },
+  { id:"EsteticaLosAngelesLeads", name:"Estética Los Angeles", seg:"Estética", total:125, set:0, ago:30, hoje:0, ult:"19/08/2026", status:"descon", statusText:"🔴 WhatsApp Off", agendados:0, tx_agend:0.0, comp:0, tx_comp:0.0, vendas:0, tx_venda:0.0 },
+  { id:"C86-DrWilliamHenrique", name:"Dr. William Henrique", seg:"Saúde", total:126, set:0, ago:10, hoje:0, ult:"03/08/2026", status:"descon", statusText:"🔴 WhatsApp Off", agendados:4, tx_agend:3.2, comp:0, tx_comp:0.0, vendas:0, tx_venda:0.0 },
+  { id:"C168-DraMichelleAlves", name:"Dra. Michelle Alves", seg:"Saúde", total:212, set:0, ago:57, hoje:0, ult:"21/08/2026", status:"pausado", statusText:"⚪ Sem Leads", agendados:142, tx_agend:67.0, comp:2, tx_comp:1.4, vendas:0, tx_venda:0.0 },
+  { id:"C164-DraLea", name:"Dra. Léa", seg:"Saúde", total:336, set:0, ago:48, hoje:0, ult:"12/08/2026", status:"pausado", statusText:"⚪ Sem Leads", agendados:13, tx_agend:3.9, comp:0, tx_comp:0.0, vendas:0, tx_venda:0.0 },
+  { id:"C140-EspacoBottega", name:"Espaço Bottega", seg:"Estética", total:592, set:0, ago:44, hoje:0, ult:"20/08/2026", status:"pausado", statusText:"⚪ Sem Leads", agendados:163, tx_agend:27.5, comp:54, tx_comp:33.1, vendas:0, tx_venda:0.0 },
+  { id:"C167-AvanteOdontologiaBH", name:"Avante Odontologia BH", seg:"Odonto", total:2, set:0, ago:0, hoje:0, ult:"17/02/2025", status:"pausado", statusText:"⚪ Inativo", agendados:0, tx_agend:0, comp:0, tx_comp:0, vendas:0, tx_venda:0 },
+  { id:"C167-AvanteOdontologiaSL", name:"Avante Odontologia SL", seg:"Odonto", total:2, set:0, ago:0, hoje:0, ult:"17/02/2025", status:"pausado", statusText:"⚪ Inativo", agendados:0, tx_agend:0, comp:0, tx_comp:0, vendas:0, tx_venda:0 },
+  { id:"C141-VictorRios", name:"Victor Rios", seg:"Saúde", total:0, set:0, ago:0, hoje:0, ult:"—", status:"erro", statusText:"🔒 Permissão 401", agendados:0, tx_agend:0, comp:0, tx_comp:0, vendas:0, tx_venda:0 }
 ];
 
+let activeView = 'leads';
 let currentFilter = 'all';
+let mainChartInstance = null;
+let secondChartInstance = null;
 
-function renderTable(list) {
-  const tbody = document.getElementById('clientsTbody');
-  if (list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-dim)">Nenhum cliente encontrado para os filtros selecionados.</td></tr>`;
-    return;
-  }
-  tbody.innerHTML = list.map(c => {
-    const segClass = c.seg === 'Saúde' ? 'seg-saude' : (c.seg === 'Odonto' ? 'seg-odonto' : 'seg-estetica');
-    let statusClass = 'status-alta';
-    if (c.status === 'mod') statusClass = 'status-mod';
-    if (c.status === 'descon') statusClass = 'status-descon';
-    if (c.status === 'pausado') statusClass = 'status-pausado';
-    if (c.status === 'erro') statusClass = 'status-erro';
+function switchView(view) {
+  activeView = view;
+  document.getElementById('tabBtnLeads').classList.toggle('active', view === 'leads');
+  document.getElementById('tabBtnFunnel').classList.toggle('active', view === 'funnel');
 
-    const hojeHtml = c.hoje > 0 ? `<span class="num-val num-today">+${c.hoje}</span>` : `<span class="num-val num-zero">0</span>`;
-    const setHtml = c.set > 0 ? `<span class="num-val" style="color:#fff">${c.set.toLocaleString('pt-BR')}</span>` : `<span class="num-val num-zero">0</span>`;
+  document.getElementById('kpiLeadsRow').style.display = view === 'leads' ? 'grid' : 'none';
+  document.getElementById('kpiFunnelRow').style.display = view === 'funnel' ? 'grid' : 'none';
 
-    return `
-      <tr>
-        <td>
-          <div class="client-name-cell">
-            <span class="client-name">${c.name}</span>
-            <span class="client-id-sub">${c.id}</span>
-          </div>
-        </td>
-        <td><span class="seg-pill ${segClass}">${c.seg}</span></td>
-        <td><span class="status-badge ${statusClass}">${c.statusText}</span></td>
-        <td style="text-align:right">${hojeHtml}</td>
-        <td style="text-align:right">${setHtml}</td>
-        <td style="text-align:right"><span class="num-val" style="color:var(--text-muted)">${c.ago.toLocaleString('pt-BR')}</span></td>
-        <td style="text-align:right"><span class="num-val" style="color:var(--text-dim)">${c.total.toLocaleString('pt-BR')}</span></td>
-        <td style="color:var(--text-muted);font-size:0.8rem">${c.ult}</td>
-      </tr>
-    `;
-  }).join('');
+  document.getElementById('viewSubtitle').textContent = view === 'leads' ? 'Volume de Captação e Status Diário' : 'Cruzamento de Agendamentos, Comparecimentos e Vendas';
+  document.getElementById('mainChartTitle').textContent = view === 'leads' ? '🏆 Top 10 Clientes por Captação em Setembro' : '📅 Top 10 Clientes por Volume de Agendamentos';
+
+  updateCharts();
+  filterData();
 }
 
-function filterClients() {
+function renderTable(list) {
+  const thead = document.getElementById('tableHead');
+  const tbody = document.getElementById('tableBody');
+
+  if (activeView === 'leads') {
+    thead.innerHTML = `
+      <tr>
+        <th>Cliente</th>
+        <th>Segmento</th>
+        <th>Status Operacional</th>
+        <th style="text-align:right">Leads Hoje</th>
+        <th style="text-align:right">Setembro/26</th>
+        <th style="text-align:right">Agosto/26</th>
+        <th style="text-align:right">Total Base</th>
+        <th>Último Lead</th>
+      </tr>
+    `;
+    tbody.innerHTML = list.map(c => {
+      const segClass = c.seg === 'Saúde' ? 'seg-saude' : (c.seg === 'Odonto' ? 'seg-odonto' : 'seg-estetica');
+      let statusClass = 'status-alta';
+      if (c.status === 'mod') statusClass = 'status-mod';
+      if (c.status === 'descon') statusClass = 'status-descon';
+      if (c.status === 'pausado') statusClass = 'status-pausado';
+      if (c.status === 'erro') statusClass = 'status-erro';
+
+      const hojeHtml = c.hoje > 0 ? `<span class="num-val num-today">+${c.hoje}</span>` : `<span class="num-val num-zero">0</span>`;
+      const setHtml = c.set > 0 ? `<span class="num-val" style="color:#fff">${c.set.toLocaleString('pt-BR')}</span>` : `<span class="num-val num-zero">0</span>`;
+
+      return `
+        <tr>
+          <td>
+            <div class="client-name-cell">
+              <span class="client-name">${c.name}</span>
+              <span class="client-id-sub">${c.id}</span>
+            </div>
+          </td>
+          <td><span class="seg-pill ${segClass}">${c.seg}</span></td>
+          <td><span class="status-badge ${statusClass}">${c.statusText}</span></td>
+          <td style="text-align:right">${hojeHtml}</td>
+          <td style="text-align:right">${setHtml}</td>
+          <td style="text-align:right"><span class="num-val" style="color:var(--text-muted)">${c.ago.toLocaleString('pt-BR')}</span></td>
+          <td style="text-align:right"><span class="num-val" style="color:var(--text-dim)">${c.total.toLocaleString('pt-BR')}</span></td>
+          <td style="color:var(--text-muted);font-size:0.8rem">${c.ult}</td>
+        </tr>
+      `;
+    }).join('');
+  } else {
+    thead.innerHTML = `
+      <tr>
+        <th>Cliente</th>
+        <th>Segmento</th>
+        <th style="text-align:right">Total Leads</th>
+        <th style="text-align:right">Agendados</th>
+        <th style="text-align:right">Taxa Agend.</th>
+        <th style="text-align:right">Compareceu</th>
+        <th style="text-align:right">Show-up Rate</th>
+        <th style="text-align:right">Vendas</th>
+        <th style="text-align:right">Tx. Fechamento</th>
+      </tr>
+    `;
+    tbody.innerHTML = list.map(c => {
+      const segClass = c.seg === 'Saúde' ? 'seg-saude' : (c.seg === 'Odonto' ? 'seg-odonto' : 'seg-estetica');
+      
+      const agendRateClass = c.tx_agend >= 40 ? 'rate-good' : (c.tx_agend >= 20 ? 'rate-mid' : 'rate-low');
+      const compRateClass = c.tx_comp >= 15 ? 'rate-good' : (c.tx_comp >= 8 ? 'rate-mid' : 'rate-low');
+      const vendaRateClass = c.tx_venda >= 50 ? 'rate-good' : (c.tx_venda >= 25 ? 'rate-mid' : 'rate-low');
+
+      return `
+        <tr>
+          <td>
+            <div class="client-name-cell">
+              <span class="client-name">${c.name}</span>
+              <span class="client-id-sub">${c.id}</span>
+            </div>
+          </td>
+          <td><span class="seg-pill ${segClass}">${c.seg}</span></td>
+          <td style="text-align:right"><span class="num-val">${c.total.toLocaleString('pt-BR')}</span></td>
+          <td style="text-align:right"><span class="num-val" style="color:#60a5fa">${c.agendados.toLocaleString('pt-BR')}</span></td>
+          <td style="text-align:right"><span class="num-rate ${agendRateClass}">${c.tx_agend}%</span></td>
+          <td style="text-align:right"><span class="num-val" style="color:#fbbf24">${c.comp.toLocaleString('pt-BR')}</span></td>
+          <td style="text-align:right"><span class="num-rate ${compRateClass}">${c.tx_comp}%</span></td>
+          <td style="text-align:right"><span class="num-val" style="color:#34d399">${c.vendas.toLocaleString('pt-BR')}</span></td>
+          <td style="text-align:right"><span class="num-rate ${vendaRateClass}">${c.tx_venda}%</span></td>
+        </tr>
+      `;
+    }).join('');
+  }
+}
+
+function filterData() {
   const query = document.getElementById('searchInp').value.toLowerCase().trim();
-  const filtered = CLIENTS_DATA.filter(c => {
+  const filtered = DATA.filter(c => {
     const matchQuery = c.name.toLowerCase().includes(query) || c.id.toLowerCase().includes(query) || c.seg.toLowerCase().includes(query);
     if (!matchQuery) return false;
     if (currentFilter === 'all') return true;
@@ -860,86 +991,138 @@ function setFilter(filterType, btn) {
   currentFilter = filterType;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  filterClients();
+  filterData();
 }
 
-function openHelpModal() {
-  document.getElementById('helpModal').style.display = 'flex';
-}
-function closeHelpModal() {
-  document.getElementById('helpModal').style.display = 'none';
-}
+function openHelpModal() { document.getElementById('helpModal').style.display = 'flex'; }
+function closeHelpModal() { document.getElementById('helpModal').style.display = 'none'; }
 
-// Render Charts
-function initCharts() {
-  // Top 10 Bar Chart
-  const top10 = [...CLIENTS_DATA].filter(c => c.set > 0).slice(0, 10);
-  const barCtx = document.getElementById('barChart').getContext('2d');
-  new Chart(barCtx, {
-    type: 'bar',
-    data: {
-      labels: top10.map(c => c.name),
-      datasets: [{
-        label: 'Leads em Setembro/26',
-        data: top10.map(c => c.set),
-        backgroundColor: 'rgba(59, 130, 246, 0.75)',
-        borderColor: '#3b82f6',
-        borderWidth: 1,
-        borderRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false }
+function updateCharts() {
+  if (mainChartInstance) mainChartInstance.destroy();
+  if (secondChartInstance) secondChartInstance.destroy();
+
+  const mainCtx = document.getElementById('mainChart').getContext('2d');
+  const secondCtx = document.getElementById('secondChart').getContext('2d');
+
+  if (activeView === 'leads') {
+    const top10 = [...DATA].filter(c => c.set > 0).slice(0, 10);
+    mainChartInstance = new Chart(mainCtx, {
+      type: 'bar',
+      data: {
+        labels: top10.map(c => c.name),
+        datasets: [{
+          data: top10.map(c => c.set),
+          backgroundColor: 'rgba(59, 130, 246, 0.75)',
+          borderColor: '#3b82f6',
+          borderWidth: 1,
+          borderRadius: 6
+        }]
       },
-      scales: {
-        x: {
-          ticks: { color: '#8c9bb0', font: { size: 11 } },
-          grid: { display: false }
-        },
-        y: {
-          ticks: { color: '#8c9bb0' },
-          grid: { color: '#1e2838' }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#8c9bb0', font: { size: 10 } }, grid: { display: false } },
+          y: { ticks: { color: '#8c9bb0' }, grid: { color: '#1e2838' } }
         }
       }
-    }
-  });
+    });
 
-  // Segment Donut
-  const saude = CLIENTS_DATA.filter(c => c.seg === 'Saúde').length;
-  const odonto = CLIENTS_DATA.filter(c => c.seg === 'Odonto').length;
-  const estetica = CLIENTS_DATA.filter(c => c.seg === 'Estética').length;
+    const saude = DATA.filter(c => c.seg === 'Saúde').length;
+    const odonto = DATA.filter(c => c.seg === 'Odonto').length;
+    const estetica = DATA.filter(c => c.seg === 'Estética').length;
 
-  const segCtx = document.getElementById('segmentChart').getContext('2d');
-  new Chart(segCtx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Saúde', 'Odonto', 'Estética'],
-      datasets: [{
-        data: [saude, odonto, estetica],
-        backgroundColor: ['#3b82f6', '#10b981', '#ec4899'],
-        borderWidth: 0
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { color: '#8c9bb0', boxWidth: 12, padding: 16 }
-        }
+    secondChartInstance = new Chart(secondCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Saúde', 'Odonto', 'Estética'],
+        datasets: [{
+          data: [saude, odonto, estetica],
+          backgroundColor: ['#3b82f6', '#10b981', '#ec4899'],
+          borderWidth: 0
+        }]
       },
-      cutout: '70%'
-    }
-  });
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#8c9bb0', boxWidth: 12, padding: 12 } }
+        },
+        cutout: '70%'
+      }
+    });
+  } else {
+    // Funnel view charts: Top Agendados
+    const topAgend = [...DATA].sort((a,b) => b.agendados - a.agendados).slice(0, 10);
+    mainChartInstance = new Chart(mainCtx, {
+      type: 'bar',
+      data: {
+        labels: topAgend.map(c => c.name),
+        datasets: [
+          {
+            label: 'Agendados',
+            data: topAgend.map(c => c.agendados),
+            backgroundColor: 'rgba(59, 130, 246, 0.75)',
+            borderRadius: 6
+          },
+          {
+            label: 'Compareceram',
+            data: topAgend.map(c => c.comp),
+            backgroundColor: 'rgba(245, 158, 11, 0.8)',
+            borderRadius: 6
+          },
+          {
+            label: 'Vendas',
+            data: topAgend.map(c => c.vendas),
+            backgroundColor: 'rgba(16, 185, 129, 0.85)',
+            borderRadius: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { color: '#8c9bb0', boxWidth: 12 } }
+        },
+        scales: {
+          x: { ticks: { color: '#8c9bb0', font: { size: 10 } }, grid: { display: false } },
+          y: { ticks: { color: '#8c9bb0' }, grid: { color: '#1e2838' } }
+        }
+      }
+    });
+
+    // Funnel distribution
+    const totAg = DATA.reduce((a,b)=>a+b.agendados,0);
+    const totCp = DATA.reduce((a,b)=>a+b.comp,0);
+    const totVd = DATA.reduce((a,b)=>a+b.vendas,0);
+
+    secondChartInstance = new Chart(secondCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Agendados', 'Compareceram', 'Vendas Fechadas'],
+        datasets: [{
+          data: [totAg, totCp, totVd],
+          backgroundColor: ['#3b82f6', '#f59e0b', '#10b981'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#8c9bb0', boxWidth: 12, padding: 12 } }
+        },
+        cutout: '70%'
+      }
+    });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  renderTable(CLIENTS_DATA);
-  initCharts();
+  renderTable(DATA);
+  updateCharts();
 });
 </script>
 </body>
