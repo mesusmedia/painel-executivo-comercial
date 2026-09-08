@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Executivo de Clientes — Mesus Media</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #090c10;
+  --panel: #0f141c;
+  --panel-2: #161d28;
+  --panel-card: #121822;
+  --border: #1e2838;
+  --border-light: #28364c;
+  --text: #f0f3fa;
+  --text-muted: #8c9bb0;
+  --text-dim: #54647c;
+  --primary: #3b82f6;
+  --primary-glow: rgba(59, 130, 246, 0.15);
+  --success: #10b981;
+  --success-glow: rgba(16, 185, 129, 0.15);
+  --warning: #f59e0b;
+  --warning-glow: rgba(245, 158, 11, 0.15);
+  --danger: #ef4444;
+  --danger-glow: rgba(239, 68, 68, 0.18);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  padding-bottom: 60px;
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Header */
+header {
+  border-bottom: 1px solid var(--border);
+  background: rgba(15, 20, 28, 0.85);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 18px 0;
+}
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #2563eb, #3b82f6, #60a5fa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-family: 'Syne', sans-serif;
+  color: #fff;
+  font-size: 1.2rem;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.35);
+}
+.brand-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.brand-badge {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--border);
+  color: var(--text-muted);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+.live-dot {
+  width: 7px;
+  height: 7px;
+  background: var(--success);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--success);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* Routine Info Banner */
+.routine-bar {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.08));
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.routine-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.routine-tag {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Alert Section: WhatsApp Desconectado */
+.alert-section {
+  margin-top: 24px;
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.09) 0%, rgba(239, 68, 68, 0.03) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.alert-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--danger);
+}
+.alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.alert-title-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.alert-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--danger-glow);
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+.alert-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+}
+.alert-subtitle {
+  font-size: 0.8rem;
+  color: #fca5a5;
+  margin-top: 2px;
+}
+.alert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+.alert-card {
+  background: rgba(15, 20, 28, 0.9);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+}
+.alert-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.alert-card-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fff;
+}
+.alert-card-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+.alert-badge {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.alert-action-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.btn-reconnect {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.btn-reconnect:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
+/* KPI Summary Cards */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+.kpi-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-light);
+}
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--kpi-accent, var(--primary));
+}
+.kpi-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.kpi-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: #fff;
+  margin-top: 8px;
+  line-height: 1;
+}
+.kpi-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.kpi-primary { --kpi-accent: #3b82f6; }
+.kpi-success { --kpi-accent: #10b981; }
+.kpi-warning { --kpi-accent: #f59e0b; }
+.kpi-danger  { --kpi-accent: #ef4444; }
+
+/* Visual Charts */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-top: 24px;
+}
+@media (max-width: 1024px) {
+  .charts-grid { grid-template-columns: 1fr; }
+}
+.chart-box {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.chart-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.chart-container {
+  height: 280px;
+  position: relative;
+}
+
+/* Filter Controls */
+.controls-bar {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-top: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.search-box {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+}
+.search-input {
+  width: 100%;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px 10px 38px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-input:focus {
+  border-color: var(--primary);
+}
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-dim);
+  pointer-events: none;
+}
+.filter-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-btn:hover {
+  border-color: var(--border-light);
+  color: #fff;
+}
+.filter-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.filter-badge {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  margin-left: 4px;
+}
+
+/* Client Table & Cards */
+.clients-container {
+  margin-top: 18px;
+}
+.table-wrap {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.84rem;
+}
+th {
+  background: var(--panel-2);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+}
+td {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(30, 40, 56, 0.6);
+  vertical-align: middle;
+}
+tr:hover td {
+  background: rgba(22, 29, 40, 0.6);
+}
+.client-name-cell {
+  display: flex;
+  flex-direction: column;
+}
+.client-name {
+  font-weight: 700;
+  color: #fff;
+  font-size: 0.9rem;
+}
+.client-id-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+.seg-pill {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  display: inline-block;
+}
+.seg-saude { background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
+.seg-odonto { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+.seg-estetica { background: rgba(236, 72, 153, 0.12); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.2); }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.status-alta { background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); }
+.status-mod { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); }
+.status-descon { background: rgba(239, 68, 68, 0.14); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.status-pausado { background: rgba(140, 155, 176, 0.12); color: #8c9bb0; border: 1px solid rgba(140, 155, 176, 0.2); }
+.status-erro { background: rgba(168, 85, 247, 0.14); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+
+.num-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+.num-today {
+  color: var(--success);
+  font-weight: 700;
+}
+.num-zero {
+  color: var(--text-dim);
+}
+
+/* Modal Instruções QR Code */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+}
+.modal-box {
+  background: var(--panel);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  max-width: 580px;
+  width: 100%;
+}
+.modal-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+  color: #fff;
+}
+.modal-steps {
+  margin: 16px 0;
+  padding-left: 20px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+.modal-steps li {
+  margin-bottom: 10px;
+}
+.modal-steps strong {
+  color: #fff;
+}
+.modal-close {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  float: right;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <div class="brand-group">
+      <div class="brand-logo">M</div>
+      <div>
+        <div style="display:flex;align-items:center;">
+          <span class="brand-title">Mesus Media</span>
+          <span class="brand-badge">Comercial OS</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="live-pill"><span class="live-dot"></span> Dados Sincronizados em Tempo Real</div>
+      <div id="clock">08/09/2026</div>
+    </div>
+  </div>
+</header>
+
+<div class="routine-bar">
+  <div class="container routine-inner">
+    <div>⏰ <strong>Rotina de Notificação Ativa:</strong> Relatório Diário automático agendado para todo dia às <span class="routine-tag">09:00</span> via Maestri / OS.</div>
+    <div>🔔 <strong>Lembrete Operacional:</strong> Alerta de reconexão WhatsApp programado para <span class="routine-tag">08:30</span>.</div>
+  </div>
+</div>
+
+<main class="container">
+
+  <!-- Bloco de Alerta Crítico: WhatsApp Desconectado -->
+  <section class="alert-section" id="alert-box">
+    <div class="alert-header">
+      <div class="alert-title-box">
+        <div class="alert-icon">⚠️</div>
+        <div>
+          <div class="alert-title">4 Clientes com WhatsApp Desconectado — Risco Imediato de Perda de Leads</div>
+          <div class="alert-subtitle">O traqueamento no CRM / Chatwoot parou porque as instâncias Evolution API perderam autenticação.</div>
+        </div>
+      </div>
+      <button class="btn-reconnect" onclick="openHelpModal()">📖 Ver Instruções de Reconexão</button>
+    </div>
+
+    <div class="alert-grid">
+      <div class="alert-card">
+        <div class="alert-card-top">
+          <div>
+            <div class="alert-card-name">Dr. William Henrique</div>
+            <div class="alert-card-id">ID: C86 • Saúde</div>
+          </div>
+          <span class="alert-badge">DESCONECTADO</span>
+        </div>
+        <div class="alert-action-text">Último lead captado em 03/08. Traqueamento estagnado há mais de 30 dias.</div>
+        <a href="https://api-l3m-marketing.netowork.com.br" target="_blank" class="btn-reconnect">🔗 Abrir Evolution API</a>
+      </div>
+
+      <div class="alert-card">
+        <div class="alert-card-top">
+          <div>
+            <div class="alert-card-name">Dra. Cristiane Tiburtino</div>
+            <div class="alert-card-id">ID: C157 • Saúde</div>
+          </div>
+          <span class="alert-badge">DESCONECTADO</span>
+        </div>
+        <div class="alert-action-text">Último lead em 19/08 (teve 30 em ago). Leads entram sem registro no CRM.</div>
+        <a href="https://api-l3m-marketing.netowork.com.br" target="_blank" class="btn-reconnect">🔗 Abrir Evolution API</a>
+      </div>
+
+      <div class="alert-card">
+        <div class="alert-card-top">
+          <div>
+            <div class="alert-card-name">Estética Los Angeles</div>
+            <div class="alert-card-id">ID: C148 • Estética</div>
+          </div>
+          <span class="alert-badge">DESCONECTADO</span>
+        </div>
+        <div class="alert-action-text">Último lead em 19/08 (teve 30 em ago). Campanhas ativas sem retorno de webhook.</div>
+        <a href="https://api-l3m-marketing.netowork.com.br" target="_blank" class="btn-reconnect">🔗 Abrir Evolution API</a>
+      </div>
+
+      <div class="alert-card">
+        <div class="alert-card-top">
+          <div>
+            <div class="alert-card-name">Integrare Odontologia</div>
+            <div class="alert-card-id">ID: C136 • Odonto</div>
+          </div>
+          <span class="alert-badge">DESCONECTADO</span>
+        </div>
+        <div class="alert-action-text">Último lead em 27/08 (teve 64 em ago). Canal desconectado no final do mês.</div>
+        <a href="https://api-l3m-marketing.netowork.com.br" target="_blank" class="btn-reconnect">🔗 Abrir Evolution API</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- KPI Cards -->
+  <section class="kpi-grid">
+    <div class="kpi-card kpi-primary">
+      <div class="kpi-label">Total Leads na Base</div>
+      <div class="kpi-val" id="kpi-total">26.280</div>
+      <div class="kpi-sub">31 contas integradas</div>
+    </div>
+    <div class="kpi-card kpi-success">
+      <div class="kpi-label">Leads Setembro (01 a 08/09)</div>
+      <div class="kpi-val" id="kpi-setembro">1.171</div>
+      <div class="kpi-sub" style="color:var(--success)">▲ Ritmo forte na 1ª semana</div>
+    </div>
+    <div class="kpi-card kpi-warning">
+      <div class="kpi-label">Novos Leads Hoje (08/09)</div>
+      <div class="kpi-val" id="kpi-hoje" style="color:#34d399">109</div>
+      <div class="kpi-sub">Média de 146 leads/dia no mês</div>
+    </div>
+    <div class="kpi-card kpi-danger">
+      <div class="kpi-label">Desconectados / Sem Entrada</div>
+      <div class="kpi-val" style="color:#f87171">4 / 9</div>
+      <div class="kpi-sub">4 WhatsApp off • 5 sem campanha</div>
+    </div>
+  </section>
+
+  <!-- Gráficos Visuais -->
+  <section class="charts-grid">
+    <div class="chart-box">
+      <div class="chart-header">
+        <div class="chart-title">🏆 Top 10 Clientes por Volume em Setembro (01-08/09)</div>
+        <span style="font-size:0.75rem;color:var(--text-muted)">Leads no mês atual</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-box">
+      <div class="chart-header">
+        <div class="chart-title">🥧 Distribuição por Segmento</div>
+        <span style="font-size:0.75rem;color:var(--text-muted)">Base ativa</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="segmentChart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Controles e Filtros -->
+  <section class="controls-bar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" id="searchInp" placeholder="Buscar por cliente, ID ou segmento..." oninput="filterClients()">
+    </div>
+    <div class="filter-tabs">
+      <button class="filter-btn active" data-f="all" onclick="setFilter('all', this)">Todos <span class="filter-badge" id="b-all">31</span></button>
+      <button class="filter-btn" data-f="alta" onclick="setFilter('alta', this)">Alta Tração <span class="filter-badge" id="b-alta">17</span></button>
+      <button class="filter-btn" data-f="mod" onclick="setFilter('mod', this)">Moderado <span class="filter-badge" id="b-mod">4</span></button>
+      <button class="filter-btn" data-f="descon" onclick="setFilter('descon', this)" style="border-color:rgba(239,68,68,0.4);color:#fca5a5">WhatsApp Off <span class="filter-badge" id="b-descon">4</span></button>
+      <button class="filter-btn" data-f="pausado" onclick="setFilter('pausado', this)">Sem Leads <span class="filter-badge" id="b-pausado">5</span></button>
+    </div>
+  </section>
+
+  <!-- Tabela de Clientes -->
+  <section class="clients-container">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Segmento</th>
+            <th>Status Operacional</th>
+            <th style="text-align:right">Leads Hoje</th>
+            <th style="text-align:right">Setembro/26</th>
+            <th style="text-align:right">Agosto/26</th>
+            <th style="text-align:right">Total Base</th>
+            <th>Último Lead</th>
+          </tr>
+        </thead>
+        <tbody id="clientsTbody">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- Modal de Instruções -->
+<div class="modal-overlay" id="helpModal">
+  <div class="modal-box">
+    <div class="modal-title">📲 Como Reconectar o WhatsApp (Evolution API)</div>
+    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px;">Quando a sessão do WhatsApp desconecta no celular da clínica, a API para de receber webhooks e o traqueamento de anúncios e leads é interrompido.</p>
+    
+    <ol class="modal-steps">
+      <li>Acesse o painel da Evolution API: <strong>api-l3m-marketing.netowork.com.br</strong> ou pelo CRM do cliente.</li>
+      <li>Localize a instância da clínica correspondente (ex: <em>C86, C157, C148, C136</em>).</li>
+      <li>Clique em <strong>Gerar QR Code</strong>.</li>
+      <li>Peça para a recepcionista/atendente da clínica abrir o WhatsApp no aparelho celular: <em>Aparelhos Conectados → Conectar Aparelho</em> e escanear a tela.</li>
+      <li>Assim que aparecer o status <strong>"Connected / Open"</strong>, envie uma mensagem de teste para confirmar o disparo do webhook no Chatwoot / CRM.</li>
+    </ol>
+
+    <button class="modal-close" onclick="closeHelpModal()">Entendido</button>
+  </div>
+</div>
+
+<script>
+const CLIENTS_DATA = [
+  { id:"C162-DrBrunoAraujo", name:"Dr. Bruno Araújo", seg:"Saúde", total:1073, set:189, ago:193, hoje:21, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C158-VictorianoFaces", name:"Victoriano Faces", seg:"Estética", total:2468, set:173, ago:615, hoje:15, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C172-DrCaioFigueira", name:"Dr. Caio Figueira", seg:"Saúde", total:472, set:156, ago:316, hoje:11, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C169-DrKeeynerCorrea", name:"Dr. Keeyner Correa", seg:"Saúde", total:472, set:80, ago:224, hoje:8, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C123-OrgulhoSaoVicente", name:"Orgulho São Vicente", seg:"Odonto", total:2717, set:77, ago:356, hoje:7, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C174-EsteticFaceItapetininga", name:"Estetic Face Itapetininga", seg:"Estética", total:225, set:74, ago:151, hoje:8, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C123-DrRafaelRocha", name:"Dr. Rafael Rocha", seg:"Saúde", total:4609, set:65, ago:401, hoje:6, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C123-OrgulhodeSorrirPeruibe", name:"Orgulho de Sorrir Peruíbe", seg:"Odonto", total:1691, set:61, ago:352, hoje:1, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C150-Lumia", name:"Lumia", seg:"Estética", total:769, set:50, ago:97, hoje:5, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C171-DraStefaniRezende", name:"Dra. Stefani Rezende", seg:"Saúde", total:103, set:43, ago:60, hoje:3, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C163-AcessoSaudeCIC", name:"Acesso Saúde CIC", seg:"Saúde", total:653, set:42, ago:167, hoje:5, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C149-ClinicaGGlow", name:"Clínica Glow", seg:"Estética", total:1209, set:34, ago:113, hoje:3, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C52-DrLucasPitao", name:"Dr. Lucas Pitão", seg:"Saúde", total:1401, set:23, ago:94, hoje:8, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C135-DraMichelleSantos", name:"Dra. Michelle Santos", seg:"Saúde", total:1212, set:19, ago:48, hoje:2, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C170-DraMariaEduarda", name:"Dra. Maria Eduarda", seg:"Saúde", total:104, set:19, ago:75, hoje:1, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C173-OdontoPrime", name:"Odonto Prime", seg:"Odonto", total:88, set:19, ago:69, hoje:0, ult:"06/09/2026", status:"mod", statusText:"🟡 Moderado" },
+  { id:"C63-DrRaphaelMoreira", name:"Dr. Raphael Moreira", seg:"Saúde", total:977, set:15, ago:71, hoje:4, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C123-OrgulhodeSorrirSantos", name:"Orgulho de Sorrir Santos", seg:"Odonto", total:1798, set:13, ago:0, hoje:0, ult:"05/09/2026", status:"mod", statusText:"🟡 Moderado" },
+  { id:"C124-DraAnnaHOF", name:"Dra. Anna HOF", seg:"Saúde", total:1285, set:11, ago:82, hoje:1, ult:"08/09/2026", status:"alta", statusText:"🟢 Alta Tração" },
+  { id:"C155-ClinicaElodonto", name:"Clínica Elodonto", seg:"Odonto", total:117, set:5, ago:30, hoje:0, ult:"07/09/2026", status:"mod", statusText:"🟡 Moderado" },
+  { id:"C166-Lucasmallmann", name:"Lucas Mallmann", seg:"Saúde", total:85, set:3, ago:15, hoje:0, ult:"05/09/2026", status:"mod", statusText:"🟡 Moderado" },
+  { id:"C136-IntegrareOdontologia", name:"Integrar Odontologia", seg:"Odonto", total:1272, set:0, ago:64, hoje:0, ult:"27/08/2026", status:"descon", statusText:"🔴 WhatsApp Off" },
+  { id:"C157-DraCristianeTiburtino", name:"Dra. Cristiane Tiburtino", seg:"Saúde", total:85, set:0, ago:30, hoje:0, ult:"19/08/2026", status:"descon", statusText:"🔴 WhatsApp Off" },
+  { id:"EsteticaLosAngelesLeads", name:"Estética Los Angeles", seg:"Estética", total:125, set:0, ago:30, hoje:0, ult:"19/08/2026", status:"descon", statusText:"🔴 WhatsApp Off" },
+  { id:"C86-DrWilliamHenrique", name:"Dr. William Henrique", seg:"Saúde", total:126, set:0, ago:10, hoje:0, ult:"03/08/2026", status:"descon", statusText:"🔴 WhatsApp Off" },
+  { id:"C168-DraMichelleAlves", name:"Dra. Michelle Alves", seg:"Saúde", total:212, set:0, ago:57, hoje:0, ult:"21/08/2026", status:"pausado", statusText:"⚪ Sem Leads" },
+  { id:"C164-DraLea", name:"Dra. Léa", seg:"Saúde", total:336, set:0, ago:48, hoje:0, ult:"12/08/2026", status:"pausado", statusText:"⚪ Sem Leads" },
+  { id:"C140-EspacoBottega", name:"Espaço Bottega", seg:"Estética", total:592, set:0, ago:44, hoje:0, ult:"20/08/2026", status:"pausado", statusText:"⚪ Sem Leads" },
+  { id:"C167-AvanteOdontologiaBH", name:"Avante Odontologia BH", seg:"Odonto", total:2, set:0, ago:0, hoje:0, ult:"17/02/2025", status:"pausado", statusText:"⚪ Inativo" },
+  { id:"C167-AvanteOdontologiaSL", name:"Avante Odontologia SL", seg:"Odonto", total:2, set:0, ago:0, hoje:0, ult:"17/02/2025", status:"pausado", statusText:"⚪ Inativo" },
+  { id:"C141-VictorRios", name:"Victor Rios", seg:"Saúde", total:0, set:0, ago:0, hoje:0, ult:"—", status:"erro", statusText:"🔒 Permissão 401" }
+];
+
+let currentFilter = 'all';
+
+function renderTable(list) {
+  const tbody = document.getElementById('clientsTbody');
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-dim)">Nenhum cliente encontrado para os filtros selecionados.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(c => {
+    const segClass = c.seg === 'Saúde' ? 'seg-saude' : (c.seg === 'Odonto' ? 'seg-odonto' : 'seg-estetica');
+    let statusClass = 'status-alta';
+    if (c.status === 'mod') statusClass = 'status-mod';
+    if (c.status === 'descon') statusClass = 'status-descon';
+    if (c.status === 'pausado') statusClass = 'status-pausado';
+    if (c.status === 'erro') statusClass = 'status-erro';
+
+    const hojeHtml = c.hoje > 0 ? `<span class="num-val num-today">+${c.hoje}</span>` : `<span class="num-val num-zero">0</span>`;
+    const setHtml = c.set > 0 ? `<span class="num-val" style="color:#fff">${c.set.toLocaleString('pt-BR')}</span>` : `<span class="num-val num-zero">0</span>`;
+
+    return `
+      <tr>
+        <td>
+          <div class="client-name-cell">
+            <span class="client-name">${c.name}</span>
+            <span class="client-id-sub">${c.id}</span>
+          </div>
+        </td>
+        <td><span class="seg-pill ${segClass}">${c.seg}</span></td>
+        <td><span class="status-badge ${statusClass}">${c.statusText}</span></td>
+        <td style="text-align:right">${hojeHtml}</td>
+        <td style="text-align:right">${setHtml}</td>
+        <td style="text-align:right"><span class="num-val" style="color:var(--text-muted)">${c.ago.toLocaleString('pt-BR')}</span></td>
+        <td style="text-align:right"><span class="num-val" style="color:var(--text-dim)">${c.total.toLocaleString('pt-BR')}</span></td>
+        <td style="color:var(--text-muted);font-size:0.8rem">${c.ult}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function filterClients() {
+  const query = document.getElementById('searchInp').value.toLowerCase().trim();
+  const filtered = CLIENTS_DATA.filter(c => {
+    const matchQuery = c.name.toLowerCase().includes(query) || c.id.toLowerCase().includes(query) || c.seg.toLowerCase().includes(query);
+    if (!matchQuery) return false;
+    if (currentFilter === 'all') return true;
+    if (currentFilter === 'alta') return c.status === 'alta';
+    if (currentFilter === 'mod') return c.status === 'mod';
+    if (currentFilter === 'descon') return c.status === 'descon';
+    if (currentFilter === 'pausado') return c.status === 'pausado' || c.status === 'erro';
+    return true;
+  });
+  renderTable(filtered);
+}
+
+function setFilter(filterType, btn) {
+  currentFilter = filterType;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterClients();
+}
+
+function openHelpModal() {
+  document.getElementById('helpModal').style.display = 'flex';
+}
+function closeHelpModal() {
+  document.getElementById('helpModal').style.display = 'none';
+}
+
+// Render Charts
+function initCharts() {
+  // Top 10 Bar Chart
+  const top10 = [...CLIENTS_DATA].filter(c => c.set > 0).slice(0, 10);
+  const barCtx = document.getElementById('barChart').getContext('2d');
+  new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: top10.map(c => c.name),
+      datasets: [{
+        label: 'Leads em Setembro/26',
+        data: top10.map(c => c.set),
+        backgroundColor: 'rgba(59, 130, 246, 0.75)',
+        borderColor: '#3b82f6',
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#8c9bb0', font: { size: 11 } },
+          grid: { display: false }
+        },
+        y: {
+          ticks: { color: '#8c9bb0' },
+          grid: { color: '#1e2838' }
+        }
+      }
+    }
+  });
+
+  // Segment Donut
+  const saude = CLIENTS_DATA.filter(c => c.seg === 'Saúde').length;
+  const odonto = CLIENTS_DATA.filter(c => c.seg === 'Odonto').length;
+  const estetica = CLIENTS_DATA.filter(c => c.seg === 'Estética').length;
+
+  const segCtx = document.getElementById('segmentChart').getContext('2d');
+  new Chart(segCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Saúde', 'Odonto', 'Estética'],
+      datasets: [{
+        data: [saude, odonto, estetica],
+        backgroundColor: ['#3b82f6', '#10b981', '#ec4899'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#8c9bb0', boxWidth: 12, padding: 16 }
+        }
+      },
+      cutout: '70%'
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderTable(CLIENTS_DATA);
+  initCharts();
+});
+</script>
+</body>
+</html>
