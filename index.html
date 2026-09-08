@@ -1,44 +1,228 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel Executivo de Clientes & Funil — Mesus Media</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<!-- Fonts: Plus Jakarta Sans, Source Serif 4, JetBrains Mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&family=Source+Serif+4:ital,opsz,wght@0,8..60,600;0,8..60,700;1,8..60,600&display=swap">
+
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<style>
+
+<!-- Tailwind CSS v4 Browser Runtime -->
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+<script>
+// Prevent flash of wrong theme
+(function() {
+  const saved = localStorage.getItem('mesus_theme');
+  if (saved === 'light') {
+    document.documentElement.classList.remove('dark');
+  } else {
+    document.documentElement.classList.add('dark');
+  }
+})();
+</script>
+
+<style type="text/tailwindcss">
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
 :root {
-  --bg: #090c10;
-  --panel: #0f141c;
-  --panel-2: #161d28;
-  --panel-card: #121822;
-  --border: #1e2838;
-  --border-light: #28364c;
-  --text: #f0f3fa;
-  --text-muted: #8c9bb0;
-  --text-dim: #54647c;
-  --primary: #3b82f6;
-  --primary-glow: rgba(59, 130, 246, 0.15);
-  --success: #10b981;
-  --success-glow: rgba(16, 185, 129, 0.15);
-  --warning: #f59e0b;
-  --warning-glow: rgba(245, 158, 11, 0.15);
-  --danger: #ef4444;
-  --danger-glow: rgba(239, 68, 68, 0.18);
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
+  --background: oklch(0.9824 0.0013 286.3757);
+  --foreground: oklch(0.3211 0 0);
+  --card: oklch(1.0000 0 0);
+  --card-foreground: oklch(0.3211 0 0);
+  --popover: oklch(1.0000 0 0);
+  --popover-foreground: oklch(0.3211 0 0);
+  --primary: oklch(0.6487 0.1538 150.3071);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.6746 0.1414 261.3380);
+  --secondary-foreground: oklch(1.0000 0 0);
+  --muted: oklch(0.8828 0.0285 98.1033);
+  --muted-foreground: oklch(0.5382 0 0);
+  --accent: oklch(0.8269 0.1080 211.9627);
+  --accent-foreground: oklch(0.3211 0 0);
+  --destructive: oklch(0.6368 0.2078 25.3313);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.8699 0 0);
+  --input: oklch(0.8699 0 0);
+  --ring: oklch(0.6487 0.1538 150.3071);
+  --chart-1: oklch(0.6487 0.1538 150.3071);
+  --chart-2: oklch(0.6746 0.1414 261.3380);
+  --chart-3: oklch(0.8269 0.1080 211.9627);
+  --chart-4: oklch(0.5880 0.0993 245.7394);
+  --chart-5: oklch(0.5905 0.1608 148.2409);
+  --sidebar: oklch(0.9824 0.0013 286.3757);
+  --sidebar-foreground: oklch(0.3211 0 0);
+  --sidebar-primary: oklch(0.6487 0.1538 150.3071);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(0.8269 0.1080 211.9627);
+  --sidebar-accent-foreground: oklch(0.3211 0 0);
+  --sidebar-border: oklch(0.8699 0 0);
+  --sidebar-ring: oklch(0.6487 0.1538 150.3071);
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-serif: 'Source Serif 4', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 0.5rem;
+  --shadow-x: 0;
+  --shadow-y: 1px;
+  --shadow-blur: 3px;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0.1;
+  --shadow-color: oklch(0 0 0);
+  --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
+  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
+  --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+.dark {
+  --background: oklch(0.2303 0.0125 264.2926);
+  --foreground: oklch(0.9219 0 0);
+  --card: oklch(0.3210 0.0078 223.6661);
+  --card-foreground: oklch(0.9219 0 0);
+  --popover: oklch(0.3210 0.0078 223.6661);
+  --popover-foreground: oklch(0.9219 0 0);
+  --primary: oklch(0.6487 0.1538 150.3071);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.5880 0.0993 245.7394);
+  --secondary-foreground: oklch(0.9219 0 0);
+  --muted: oklch(0.3867 0 0);
+  --muted-foreground: oklch(0.7155 0 0);
+  --accent: oklch(0.6746 0.1414 261.3380);
+  --accent-foreground: oklch(0.9219 0 0);
+  --destructive: oklch(0.6368 0.2078 25.3313);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.3867 0 0);
+  --input: oklch(0.3867 0 0);
+  --ring: oklch(0.6487 0.1538 150.3071);
+  --chart-1: oklch(0.6487 0.1538 150.3071);
+  --chart-2: oklch(0.5880 0.0993 245.7394);
+  --chart-3: oklch(0.6746 0.1414 261.3380);
+  --chart-4: oklch(0.8269 0.1080 211.9627);
+  --chart-5: oklch(0.5905 0.1608 148.2409);
+  --sidebar: oklch(0.2303 0.0125 264.2926);
+  --sidebar-foreground: oklch(0.9219 0 0);
+  --sidebar-primary: oklch(0.6487 0.1538 150.3071);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(0.6746 0.1414 261.3380);
+  --sidebar-accent-foreground: oklch(0.9219 0 0);
+  --sidebar-border: oklch(0.3867 0 0);
+  --sidebar-ring: oklch(0.6487 0.1538 150.3071);
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-serif: 'Source Serif 4', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 0.5rem;
+  --shadow-x: 0;
+  --shadow-y: 1px;
+  --shadow-blur: 3px;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0.1;
+  --shadow-color: oklch(0 0 0);
+  --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
+  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
+  --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+    outline-color: color-mix(in oklch, var(--ring) 50%, transparent);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+}
+</style>
+
+<style>
+/* CSS Reset and Structural Styling */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
-  background-color: var(--bg);
-  color: var(--text);
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
   min-height: 100vh;
   padding-bottom: 60px;
   line-height: 1.5;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .container {
@@ -50,17 +234,20 @@ body {
 /* Header */
 header {
   border-bottom: 1px solid var(--border);
-  background: rgba(15, 20, 28, 0.85);
-  backdrop-filter: blur(12px);
+  background: color-mix(in oklch, var(--card) 85%, transparent);
+  backdrop-filter: blur(14px);
   position: sticky;
   top: 0;
   z-index: 100;
-  padding: 16px 0;
+  padding: 14px 0;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 .header-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 .brand-group {
   display: flex;
@@ -70,57 +257,58 @@ header {
 .brand-logo {
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, #2563eb, #3b82f6, #60a5fa);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-family: 'Syne', sans-serif;
-  color: #fff;
+  font-family: var(--font-sans);
+  color: var(--primary-foreground);
   font-size: 1.2rem;
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.35);
+  box-shadow: var(--shadow-sm);
 }
 .brand-title {
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.25rem;
   font-weight: 800;
   letter-spacing: -0.02em;
+  color: var(--foreground);
 }
 .brand-badge {
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  background: var(--border);
-  color: var(--text-muted);
+  background: var(--muted);
+  color: var(--muted-foreground);
   padding: 3px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
   margin-left: 8px;
 }
 .header-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 .live-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(16, 185, 129, 0.12);
-  color: var(--success);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: color-mix(in oklch, var(--primary) 12%, transparent);
+  color: var(--primary);
+  border: 1px solid color-mix(in oklch, var(--primary) 30%, transparent);
   padding: 4px 10px;
-  border-radius: 20px;
+  border-radius: 9999px;
   font-weight: 600;
   font-size: 0.75rem;
 }
 .live-dot {
   width: 7px;
   height: 7px;
-  background: var(--success);
+  background: var(--primary);
   border-radius: 50%;
-  box-shadow: 0 0 8px var(--success);
+  box-shadow: 0 0 8px var(--primary);
   animation: pulse 2s infinite;
 }
 @keyframes pulse {
@@ -128,13 +316,34 @@ header {
   50% { opacity: 0.4; transform: scale(0.85); }
 }
 
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: var(--shadow-2xs);
+  transition: all 0.2s ease;
+}
+.theme-toggle-btn:hover {
+  border-color: var(--ring);
+  background: var(--muted);
+}
+
 /* Routine Info Banner */
 .routine-bar {
-  background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.08));
+  background: color-mix(in oklch, var(--card) 65%, var(--background));
   border-bottom: 1px solid var(--border);
   padding: 9px 0;
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
 }
 .routine-inner {
   display: flex;
@@ -145,18 +354,19 @@ header {
 }
 .routine-tag {
   color: var(--primary);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Alert Section: WhatsApp Desconectado */
 .alert-section {
   margin-top: 24px;
-  background: linear-gradient(180deg, rgba(239, 68, 68, 0.09) 0%, rgba(239, 68, 68, 0.03) 100%);
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: color-mix(in oklch, var(--destructive) 7%, var(--card));
+  border: 1px solid color-mix(in oklch, var(--destructive) 35%, transparent);
   border-radius: var(--radius-xl);
   padding: 22px;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 .alert-section::before {
   content: '';
@@ -165,7 +375,7 @@ header {
   left: 0;
   width: 4px;
   height: 100%;
-  background: var(--danger);
+  background: var(--destructive);
 }
 .alert-header {
   display: flex;
@@ -181,24 +391,24 @@ header {
   gap: 10px;
 }
 .alert-icon {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: var(--danger-glow);
-  color: var(--danger);
+  background: color-mix(in oklch, var(--destructive) 18%, transparent);
+  color: var(--destructive);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 1.1rem;
 }
 .alert-title {
   font-size: 1rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--foreground);
 }
 .alert-subtitle {
   font-size: 0.78rem;
-  color: #fca5a5;
+  color: var(--muted-foreground);
 }
 .alert-grid {
   display: grid;
@@ -207,14 +417,15 @@ header {
   margin-top: 12px;
 }
 .alert-card {
-  background: rgba(15, 20, 28, 0.9);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: var(--card);
+  border: 1px solid color-mix(in oklch, var(--destructive) 25%, var(--border));
   border-radius: var(--radius-md);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 8px;
+  box-shadow: var(--shadow-2xs);
 }
 .alert-card-top {
   display: flex;
@@ -224,30 +435,30 @@ header {
 .alert-card-name {
   font-weight: 700;
   font-size: 0.92rem;
-  color: #fff;
+  color: var(--foreground);
 }
 .alert-card-id {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.7rem;
-  color: var(--text-dim);
+  color: var(--muted-foreground);
 }
 .alert-badge {
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
+  background: color-mix(in oklch, var(--destructive) 15%, transparent);
+  color: var(--destructive);
   font-size: 0.68rem;
   font-weight: 700;
   padding: 3px 8px;
-  border-radius: 6px;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in oklch, var(--destructive) 35%, transparent);
 }
 .alert-action-text {
   font-size: 0.76rem;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
 }
 .btn-reconnect {
-  background: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: color-mix(in oklch, var(--destructive) 12%, transparent);
+  color: var(--destructive);
+  border: 1px solid color-mix(in oklch, var(--destructive) 30%, transparent);
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
@@ -260,8 +471,8 @@ header {
   transition: all 0.2s;
 }
 .btn-reconnect:hover {
-  background: var(--danger);
-  color: #fff;
+  background: var(--destructive);
+  color: var(--destructive-foreground);
 }
 
 /* View Mode Tabs */
@@ -271,19 +482,20 @@ header {
   align-items: center;
   margin-top: 24px;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 12px;
+  padding-bottom: 14px;
   flex-wrap: wrap;
   gap: 12px;
 }
 .nav-tabs {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .nav-tab {
-  background: var(--panel);
+  background: var(--card);
   border: 1px solid var(--border);
-  color: var(--text-muted);
-  padding: 10px 20px;
+  color: var(--muted-foreground);
+  padding: 10px 18px;
   border-radius: var(--radius-md);
   font-size: 0.88rem;
   font-weight: 700;
@@ -292,16 +504,17 @@ header {
   display: flex;
   align-items: center;
   gap: 8px;
+  box-shadow: var(--shadow-2xs);
 }
 .nav-tab:hover {
-  color: #fff;
-  border-color: var(--border-light);
+  color: var(--foreground);
+  border-color: var(--ring);
 }
 .nav-tab.active {
   background: var(--primary);
-  color: #fff;
+  color: var(--primary-foreground);
   border-color: var(--primary);
-  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 
 /* KPI Summary Cards */
@@ -312,16 +525,18 @@ header {
   margin-top: 20px;
 }
 .kpi-card {
-  background: var(--panel);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 20px;
   position: relative;
   overflow: hidden;
-  transition: transform 0.2s;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 .kpi-card:hover {
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 .kpi-card::before {
   content: '';
@@ -336,26 +551,27 @@ header {
   font-size: 0.74rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
   font-weight: 600;
 }
 .kpi-val {
-  font-family: 'Syne', sans-serif;
-  font-size: 2rem;
+  font-family: var(--font-sans);
+  font-size: 2.1rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--foreground);
   margin-top: 6px;
   line-height: 1;
 }
 .kpi-sub {
   font-size: 0.78rem;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
   margin-top: 8px;
 }
-.kpi-primary { --kpi-accent: #3b82f6; }
-.kpi-success { --kpi-accent: #10b981; }
-.kpi-warning { --kpi-accent: #f59e0b; }
-.kpi-purple  { --kpi-accent: #a855f7; }
+.kpi-primary   { --kpi-accent: var(--primary); }
+.kpi-secondary { --kpi-accent: var(--secondary); }
+.kpi-accent    { --kpi-accent: var(--accent); }
+.kpi-chart4    { --kpi-accent: var(--chart-4); }
+.kpi-warning   { --kpi-accent: #f59e0b; }
 
 /* Visual Charts */
 .charts-grid {
@@ -368,10 +584,11 @@ header {
   .charts-grid { grid-template-columns: 1fr; }
 }
 .chart-box {
-  background: var(--panel);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 20px;
+  box-shadow: var(--shadow-sm);
 }
 .chart-header {
   display: flex;
@@ -380,22 +597,29 @@ header {
   margin-bottom: 14px;
 }
 .chart-title {
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   font-weight: 700;
+  color: var(--foreground);
 }
 .chart-container {
   height: 260px;
   position: relative;
 }
 
-/* Filter Controls */
-.controls-bar {
-  background: var(--panel);
+/* Filter Controls Station */
+.controls-station {
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 16px 20px;
+  padding: 18px 20px;
   margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.controls-top-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -405,29 +629,117 @@ header {
 .search-box {
   position: relative;
   flex: 1;
-  min-width: 260px;
+  min-width: 280px;
 }
 .search-input {
   width: 100%;
-  background: var(--panel-2);
+  background: var(--background);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 10px 14px 10px 38px;
-  color: #fff;
+  color: var(--foreground);
   font-family: inherit;
   font-size: 0.85rem;
   outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 .search-input:focus {
-  border-color: var(--primary);
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--ring) 25%, transparent);
 }
 .search-icon {
   position: absolute;
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--text-dim);
+  color: var(--muted-foreground);
   pointer-events: none;
+}
+
+/* Filtro por Período */
+.period-filter-section {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+}
+.period-filter-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--foreground);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.period-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.period-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.period-btn:hover {
+  border-color: var(--ring);
+  color: var(--foreground);
+}
+.period-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: var(--shadow-2xs);
+}
+.period-badge {
+  background: color-mix(in oklch, var(--foreground) 10%, transparent);
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+}
+.period-btn.active .period-badge {
+  background: color-mix(in oklch, var(--primary-foreground) 25%, transparent);
+  color: var(--primary-foreground);
+}
+.period-chk-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: var(--muted-foreground);
+  margin-left: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+.period-chk-wrap input {
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+/* Status Filter Row */
+.controls-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
 }
 .filter-tabs {
   display: flex;
@@ -435,42 +747,80 @@ header {
   flex-wrap: wrap;
 }
 .filter-btn {
-  background: var(--panel-2);
+  background: var(--background);
   border: 1px solid var(--border);
-  color: var(--text-muted);
+  color: var(--muted-foreground);
   padding: 6px 12px;
-  border-radius: 20px;
+  border-radius: 9999px;
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
 }
 .filter-btn:hover {
-  border-color: var(--border-light);
-  color: #fff;
+  border-color: var(--ring);
+  color: var(--foreground);
 }
 .filter-btn.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
+  background: var(--secondary);
+  border-color: var(--secondary);
+  color: var(--secondary-foreground);
 }
 .filter-badge {
-  background: rgba(255, 255, 255, 0.15);
+  background: color-mix(in oklch, var(--foreground) 12%, transparent);
   padding: 2px 6px;
   border-radius: 10px;
   font-size: 0.68rem;
   margin-left: 4px;
 }
+.filter-btn.active .filter-badge {
+  background: color-mix(in oklch, var(--secondary-foreground) 25%, transparent);
+  color: var(--secondary-foreground);
+}
 
-/* Table */
+/* Active Sort Information Chip */
+.sort-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+}
+.sort-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: color-mix(in oklch, var(--primary) 12%, transparent);
+  color: var(--primary);
+  border: 1px solid color-mix(in oklch, var(--primary) 30%, transparent);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+.btn-clear-sort {
+  background: none;
+  border: none;
+  color: var(--destructive);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 0 2px;
+}
+.btn-clear-sort:hover {
+  text-decoration: underline;
+}
+
+/* Table Component with Interactive Sorting */
 .clients-container {
   margin-top: 18px;
 }
 .table-wrap {
-  background: var(--panel);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow-x: auto;
+  box-shadow: var(--shadow-sm);
 }
 table {
   width: 100%;
@@ -479,71 +829,185 @@ table {
   font-size: 0.84rem;
 }
 th {
-  background: var(--panel-2);
-  color: var(--text-muted);
+  background: color-mix(in oklch, var(--card) 90%, var(--foreground) 10%);
+  color: var(--muted-foreground);
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  padding: 14px 16px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--border);
   font-weight: 700;
   white-space: nowrap;
+  user-select: none;
 }
+th.sortable-th {
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+th.sortable-th:hover {
+  background: color-mix(in oklch, var(--card) 80%, var(--foreground) 20%);
+  color: var(--foreground);
+}
+th.sortable-th.active-sorted {
+  background: color-mix(in oklch, var(--primary) 12%, var(--card));
+  color: var(--primary);
+  border-bottom: 2px solid var(--primary);
+}
+.th-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.th-content.justify-end {
+  justify-content: flex-end;
+}
+.sort-badge {
+  font-size: 0.68rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.sort-badge-idle {
+  opacity: 0.35;
+}
+.sortable-th:hover .sort-badge-idle {
+  opacity: 0.85;
+}
+.sort-badge-active {
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.sort-badge-active.asc {
+  background: color-mix(in oklch, var(--primary) 20%, transparent);
+  color: var(--primary);
+}
+.sort-badge-active.desc {
+  background: color-mix(in oklch, var(--secondary) 20%, transparent);
+  color: var(--secondary);
+}
+
 td {
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(30, 40, 56, 0.6);
+  border-bottom: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
   vertical-align: middle;
   white-space: nowrap;
+  color: var(--foreground);
+  transition: background 0.1s;
 }
 tr:hover td {
-  background: rgba(22, 29, 40, 0.6);
+  background: color-mix(in oklch, var(--card) 85%, var(--foreground) 15%);
 }
+
+/* Active column highlight when focused or sorted */
+td.col-sorted-active {
+  background: color-mix(in oklch, var(--primary) 4%, transparent);
+}
+td.col-period-active {
+  background: color-mix(in oklch, var(--secondary) 5%, transparent);
+}
+th.col-period-header {
+  border-top: 2px solid var(--secondary);
+}
+
 .client-name-cell {
   display: flex;
   flex-direction: column;
 }
 .client-name {
   font-weight: 700;
-  color: #fff;
+  color: var(--foreground);
   font-size: 0.9rem;
 }
 .client-id-sub {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.68rem;
-  color: var(--text-dim);
+  color: var(--muted-foreground);
 }
 .seg-pill {
   font-size: 0.7rem;
   padding: 3px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
   display: inline-block;
 }
-.seg-saude { background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
-.seg-odonto { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
-.seg-estetica { background: rgba(236, 72, 153, 0.12); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.2); }
+.seg-saude {
+  background: color-mix(in oklch, var(--secondary) 15%, transparent);
+  color: var(--secondary);
+  border: 1px solid color-mix(in oklch, var(--secondary) 30%, transparent);
+}
+.seg-odonto {
+  background: color-mix(in oklch, var(--primary) 15%, transparent);
+  color: var(--primary);
+  border: 1px solid color-mix(in oklch, var(--primary) 30%, transparent);
+}
+.seg-estetica {
+  background: color-mix(in oklch, var(--accent) 15%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in oklch, var(--accent) 30%, transparent);
+}
 
 .status-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   padding: 4px 10px;
-  border-radius: 12px;
+  border-radius: 9999px;
   font-size: 0.72rem;
   font-weight: 600;
 }
-.status-alta { background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); }
-.status-mod { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); }
-.status-descon { background: rgba(239, 68, 68, 0.14); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
-.status-saudavel { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-.status-atencao { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-.status-gargalo { background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
-.alert-tag-num { background: rgba(239, 68, 68, 0.2); color: #ef4444; font-weight: 700; padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.4); font-size: 0.75rem; }
-.status-pausado { background: rgba(140, 155, 176, 0.12); color: #8c9bb0; border: 1px solid rgba(140, 155, 176, 0.2); }
-.status-erro { background: rgba(168, 85, 247, 0.14); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+.status-alta {
+  background: color-mix(in oklch, var(--primary) 15%, transparent);
+  color: var(--primary);
+  border: 1px solid color-mix(in oklch, var(--primary) 30%, transparent);
+}
+.status-mod {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+.status-descon {
+  background: color-mix(in oklch, var(--destructive) 15%, transparent);
+  color: var(--destructive);
+  border: 1px solid color-mix(in oklch, var(--destructive) 30%, transparent);
+}
+.status-saudavel {
+  background: color-mix(in oklch, var(--primary) 15%, transparent);
+  color: var(--primary);
+  border: 1px solid color-mix(in oklch, var(--primary) 30%, transparent);
+}
+.status-atencao {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.status-gargalo {
+  background: color-mix(in oklch, var(--destructive) 18%, transparent);
+  color: var(--destructive);
+  border: 1px solid color-mix(in oklch, var(--destructive) 35%, transparent);
+}
+.alert-tag-num {
+  background: color-mix(in oklch, var(--destructive) 18%, transparent);
+  color: var(--destructive);
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in oklch, var(--destructive) 40%, transparent);
+  font-size: 0.75rem;
+}
+.status-pausado {
+  background: color-mix(in oklch, var(--muted) 40%, transparent);
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+}
+.status-erro {
+  background: color-mix(in oklch, var(--secondary) 15%, transparent);
+  color: var(--secondary);
+  border: 1px solid color-mix(in oklch, var(--secondary) 30%, transparent);
+}
 
 .num-val {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-weight: 600;
   font-size: 0.88rem;
 }
@@ -553,20 +1017,36 @@ tr:hover td {
   border-radius: 4px;
   font-weight: 700;
   margin-left: 6px;
+  font-family: var(--font-mono);
 }
-.rate-good { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-.rate-mid  { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-.rate-low  { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+.rate-good {
+  background: color-mix(in oklch, var(--primary) 18%, transparent);
+  color: var(--primary);
+}
+.rate-mid {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+}
+.rate-low {
+  background: color-mix(in oklch, var(--destructive) 18%, transparent);
+  color: var(--destructive);
+}
 
-.num-today { color: var(--success); font-weight: 700; }
-.num-zero { color: var(--text-dim); }
+.num-today {
+  color: var(--primary);
+  font-weight: 700;
+}
+.num-zero {
+  color: var(--muted-foreground);
+  opacity: 0.6;
+}
 
 /* Modal */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
   display: none;
   align-items: center;
   justify-content: center;
@@ -574,37 +1054,48 @@ tr:hover td {
   padding: 20px;
 }
 .modal-box {
-  background: var(--panel);
-  border: 1px solid var(--border-light);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   padding: 30px;
   max-width: 580px;
   width: 100%;
+  box-shadow: var(--shadow-xl);
+  color: var(--foreground);
 }
 .modal-title {
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.3rem;
+  font-weight: 800;
   margin-bottom: 12px;
-  color: #fff;
+  color: var(--foreground);
 }
 .modal-steps {
   margin: 16px 0;
   padding-left: 20px;
   font-size: 0.88rem;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
 }
-.modal-steps li { margin-bottom: 10px; }
-.modal-steps strong { color: #fff; }
+.modal-steps li {
+  margin-bottom: 10px;
+}
+.modal-steps strong {
+  color: var(--foreground);
+}
 .modal-close {
-  background: var(--panel-2);
+  background: var(--muted);
   border: 1px solid var(--border);
-  color: #fff;
+  color: var(--foreground);
   padding: 10px 18px;
   border-radius: var(--radius-md);
   font-weight: 600;
   cursor: pointer;
   margin-top: 10px;
   float: right;
+  transition: all 0.2s;
+}
+.modal-close:hover {
+  border-color: var(--ring);
 }
 </style>
 </head>
@@ -622,6 +1113,10 @@ tr:hover td {
       </div>
     </div>
     <div class="header-right">
+      <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeToggleBtn">
+        <span id="themeToggleIcon">☀️</span>
+        <span id="themeToggleText">Modo Claro</span>
+      </button>
       <div class="live-pill"><span class="live-dot"></span> Sincronizado com CRMs</div>
       <div style="font-size:0.85rem;color:var(--text-muted);">08/09/2026 às 19:15</div>
     </div>
@@ -708,8 +1203,8 @@ tr:hover td {
       <button class="nav-tab" id="tabBtnLeads" onclick="switchView('leads')">📊 Captação de Leads (Diário)</button>
       <button class="nav-tab" id="tabBtnFunnel" onclick="switchView('funnel')">🎯 Cruzamento de Funil & Agendamentos</button>
     </div>
-    <div style="font-size:0.8rem;color:var(--text-muted);">
-      Mostrando: <strong id="viewSubtitle" style="color:#fff">Atendimento no Chatwoot, Respostas e Alertas</strong>
+    <div style="font-size:0.8rem;color:var(--muted-foreground);">
+      Mostrando: <strong id="viewSubtitle" style="color:var(--foreground)">Atendimento no Chatwoot, Respostas e Alertas</strong>
     </div>
   </div>
 
@@ -720,19 +1215,19 @@ tr:hover td {
       <div class="kpi-val" id="kpi-cw-leads">469</div>
       <div class="kpi-sub">32 caixas de entrada auditadas</div>
     </div>
-    <div class="kpi-card kpi-success">
+    <div class="kpi-card kpi-secondary">
       <div class="kpi-label">Leads Respondidos pela Equipe</div>
-      <div class="kpi-val" id="kpi-cw-resp" style="color:#34d399">445</div>
-      <div class="kpi-sub" style="color:var(--success)">▲ 94.9% taxa de primeiro contato</div>
+      <div class="kpi-val" id="kpi-cw-resp" style="color:var(--primary)">445</div>
+      <div class="kpi-sub" style="color:var(--primary)">▲ 94.9% taxa de primeiro contato</div>
     </div>
     <div class="kpi-card kpi-warning">
       <div class="kpi-label">Sem Resposta / No Vácuo</div>
       <div class="kpi-val" id="kpi-cw-unresp" style="color:#fbbf24">24</div>
-      <div class="kpi-sub" style="color:#f87171">🚨 7 com alerta crítico > 24h</div>
+      <div class="kpi-sub" style="color:var(--destructive)">🚨 7 com alerta crítico > 24h</div>
     </div>
-    <div class="kpi-card kpi-purple">
+    <div class="kpi-card kpi-accent">
       <div class="kpi-label">Tempo Médio de 1ª Resposta</div>
-      <div class="kpi-val" id="kpi-cw-time" style="color:#c084fc">7.6h</div>
+      <div class="kpi-val" id="kpi-cw-time" style="color:var(--accent)">7.6h</div>
       <div class="kpi-sub">Varia de 0.1h (Peruíbe) a 42.7h (Keeyner)</div>
     </div>
   </section>
@@ -742,26 +1237,26 @@ tr:hover td {
     <div class="kpi-card kpi-primary">
       <div class="kpi-label">Total Leads na Base</div>
       <div class="kpi-val">26.280</div>
-      <div class="kpi-sub">31 contas mapeadas</div>
+      <div class="kpi-sub">32 contas mapeadas</div>
     </div>
-    <div class="kpi-card kpi-success">
+    <div class="kpi-card kpi-secondary">
       <div class="kpi-label">Leads Setembro (01 a 08/09)</div>
       <div class="kpi-val">1.171</div>
-      <div class="kpi-sub" style="color:var(--success)">▲ Aceleração de 18% vs Agosto</div>
+      <div class="kpi-sub" style="color:var(--primary)">▲ Aceleração de 18% vs Agosto</div>
     </div>
     <div class="kpi-card kpi-warning">
       <div class="kpi-label">Novos Leads Hoje (08/09)</div>
-      <div class="kpi-val" style="color:#34d399">109</div>
+      <div class="kpi-val" style="color:var(--primary)">109</div>
       <div class="kpi-sub">Média 146 leads/dia no mês</div>
     </div>
-    <div class="kpi-card kpi-purple">
+    <div class="kpi-card kpi-accent">
       <div class="kpi-label">Contas Ativas no Mês</div>
-      <div class="kpi-val" style="color:#c084fc">21 / 31</div>
-      <div class="kpi-sub">68% da carteira captando</div>
+      <div class="kpi-val" style="color:var(--accent)">28 / 32</div>
+      <div class="kpi-sub">87.5% da carteira captando</div>
     </div>
   </section>
 
-  <!-- KPIs de Funil (Visão 2 - Inicialmente escondido) -->
+  <!-- KPIs de Funil (Visão 3) -->
   <section class="kpi-grid" id="kpiFunnelRow" style="display:none;">
     <div class="kpi-card kpi-primary">
       <div class="kpi-label">Total Agendados Mapeados</div>
@@ -773,14 +1268,14 @@ tr:hover td {
       <div class="kpi-val" style="color:#fbbf24">930</div>
       <div class="kpi-sub">Gargalo principal: Show-up Rate 11.0%</div>
     </div>
-    <div class="kpi-card kpi-success">
+    <div class="kpi-card kpi-secondary">
       <div class="kpi-label">Vendas Fechadas (Ganhos)</div>
-      <div class="kpi-val" style="color:#34d399">439</div>
+      <div class="kpi-val" style="color:var(--primary)">439</div>
       <div class="kpi-sub">Taxa pós-comparecimento: 47.2%</div>
     </div>
-    <div class="kpi-card kpi-purple">
+    <div class="kpi-card kpi-accent">
       <div class="kpi-label">Melhor Taxa de Fechamento</div>
-      <div class="kpi-val" style="color:#c084fc">88.0%</div>
+      <div class="kpi-val" style="color:var(--accent)">88.0%</div>
       <div class="kpi-sub">Clínica Glow (22 vendas / 25 comp.)</div>
     </div>
   </section>
@@ -789,8 +1284,8 @@ tr:hover td {
   <section class="charts-grid">
     <div class="chart-box">
       <div class="chart-header">
-        <div class="chart-title" id="mainChartTitle">🏆 Top 10 Clientes por Captação em Setembro</div>
-        <span style="font-size:0.75rem;color:var(--text-muted)">Volume recente</span>
+        <div class="chart-title" id="mainChartTitle">💬 Top 10 Clientes por Volume de Atendimento (Chatwoot)</div>
+        <span style="font-size:0.75rem;color:var(--muted-foreground)">Volume comparativo</span>
       </div>
       <div class="chart-container">
         <canvas id="mainChart"></canvas>
@@ -799,8 +1294,8 @@ tr:hover td {
 
     <div class="chart-box">
       <div class="chart-header">
-        <div class="chart-title" id="secondChartTitle">🥧 Distribuição por Segmento</div>
-        <span style="font-size:0.75rem;color:var(--text-muted)">Base ativa</span>
+        <div class="chart-title" id="secondChartTitle">🩺 Saúde Operacional das Clínicas</div>
+        <span style="font-size:0.75rem;color:var(--muted-foreground)">Base ativa</span>
       </div>
       <div class="chart-container">
         <canvas id="secondChart"></canvas>
@@ -808,27 +1303,68 @@ tr:hover td {
     </div>
   </section>
 
-  <!-- Controles e Filtros -->
-  <section class="controls-bar">
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input type="text" class="search-input" id="searchInp" placeholder="Buscar por cliente, ID ou segmento..." oninput="filterData()">
+  <!-- Estação de Controles: Busca, Filtro por Período e Ordenação -->
+  <section class="controls-station">
+    
+    <!-- Linha 1: Busca e Filtro de Período -->
+    <div class="controls-top-row">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInp" placeholder="Buscar por cliente, ID ou segmento..." oninput="filterData()">
+      </div>
+
+      <!-- Filtro por Período (Novo!) -->
+      <div class="period-filter-section">
+        <span class="period-filter-label">📅 Período:</span>
+        <div class="period-pills">
+          <button class="period-btn active" data-period="all" onclick="setPeriod('all', this)" title="Exibir todo o histórico consolidado">
+            <span>Todo o Histórico</span>
+            <span class="period-badge" id="p-badge-all">32</span>
+          </button>
+          <button class="period-btn" data-period="hoje" onclick="setPeriod('hoje', this)" title="Focar nos leads gerados hoje (08/09)">
+            <span>🟢 Hoje (08/09)</span>
+            <span class="period-badge" id="p-badge-hoje">21</span>
+          </button>
+          <button class="period-btn" data-period="set" onclick="setPeriod('set', this)" title="Focar nos leads do mês corrente (Setembro/26)">
+            <span>📊 Setembro/26</span>
+            <span class="period-badge" id="p-badge-set">28</span>
+          </button>
+          <button class="period-btn" data-period="ago" onclick="setPeriod('ago', this)" title="Focar nos leads do mês anterior (Agosto/26)">
+            <span>🗓️ Agosto/26</span>
+            <span class="period-badge" id="p-badge-ago">31</span>
+          </button>
+        </div>
+        <label class="period-chk-wrap" title="Ocultar clientes que não geraram leads no período selecionado">
+          <input type="checkbox" id="chkPeriodOnly" onchange="filterData()">
+          <span>Apenas ativos no período</span>
+        </label>
+      </div>
     </div>
-    <div class="filter-tabs">
-      <button class="filter-btn active" data-f="all" onclick="setFilter('all', this)">Todos <span class="filter-badge" id="b-all">31</span></button>
-      <button class="filter-btn" data-f="alta" onclick="setFilter('alta', this)">Alta Tração <span class="filter-badge" id="b-alta">17</span></button>
-      <button class="filter-btn" data-f="mod" onclick="setFilter('mod', this)">Moderado <span class="filter-badge" id="b-mod">4</span></button>
-      <button class="filter-btn" data-f="descon" onclick="setFilter('descon', this)" style="border-color:rgba(239,68,68,0.4);color:#fca5a5">WhatsApp Off <span class="filter-badge" id="b-descon">4</span></button>
-      <button class="filter-btn" data-f="pausado" onclick="setFilter('pausado', this)">Sem Leads <span class="filter-badge" id="b-pausado">5</span></button>
+
+    <!-- Linha 2: Status Operacional e Estado de Ordenação -->
+    <div class="controls-bottom-row">
+      <div class="filter-tabs">
+        <button class="filter-btn active" data-f="all" onclick="setFilter('all', this)">Todos <span class="filter-badge" id="b-all">32</span></button>
+        <button class="filter-btn" data-f="alta" onclick="setFilter('alta', this)">Alta Tração <span class="filter-badge" id="b-alta">17</span></button>
+        <button class="filter-btn" data-f="mod" onclick="setFilter('mod', this)">Moderado <span class="filter-badge" id="b-mod">4</span></button>
+        <button class="filter-btn" data-f="descon" onclick="setFilter('descon', this)" style="border-color:color-mix(in oklch, var(--destructive) 40%, transparent);color:var(--destructive)">WhatsApp Off <span class="filter-badge" id="b-descon">4</span></button>
+        <button class="filter-btn" data-f="pausado" onclick="setFilter('pausado', this)">Sem Leads <span class="filter-badge" id="b-pausado">7</span></button>
+      </div>
+
+      <div class="sort-status-bar">
+        <span id="resultsCount">Exibindo 32 de 32 clínicas</span>
+        <div id="sortChipContainer"></div>
+      </div>
     </div>
+
   </section>
 
-  <!-- Tabela Dinâmica -->
+  <!-- Tabela Dinâmica com Ordenação Interativa em Todas as Colunas -->
   <section class="clients-container">
     <div class="table-wrap">
       <table id="mainTable">
         <thead id="tableHead">
-          <!-- Populated by JS according to view -->
+          <!-- Gerado dinamicamente via JS com suporte a clique para ordenar Menor -> Maior / Maior -> Menor -->
         </thead>
         <tbody id="tableBody">
           <!-- Populated by JS -->
@@ -843,7 +1379,7 @@ tr:hover td {
 <div class="modal-overlay" id="helpModal">
   <div class="modal-box">
     <div class="modal-title">📲 Como Reconectar o WhatsApp (Evolution API)</div>
-    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px;">Quando a sessão desconecta no aparelho celular da clínica, os webhooks param e os leads deixam de ser atribuídos no CRM.</p>
+    <p style="font-size:0.85rem;color:var(--muted-foreground);margin-bottom:12px;">Quando a sessão desconecta no aparelho celular da clínica, os webhooks param e os leads deixam de ser atribuídos no CRM.</p>
     
     <ol class="modal-steps">
       <li>Acesse a Evolution API: <strong>api-l3m-marketing.netowork.com.br</strong></li>
@@ -1695,8 +2231,30 @@ const DATA = [
 
 let activeView = 'chatwoot';
 let currentFilter = 'all';
+let currentPeriod = 'all';
+// Sorting state: col key and direction ('asc' = menor pro maior, 'desc' = maior pro menor)
+let currentSort = { col: null, dir: 'asc' };
+
 let mainChartInstance = null;
 let secondChartInstance = null;
+
+// Theme Toggle
+function toggleTheme() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('mesus_theme', isDark ? 'dark' : 'light');
+  updateThemeButton();
+  updateCharts();
+}
+
+function updateThemeButton() {
+  const isDark = document.documentElement.classList.contains('dark');
+  const icon = document.getElementById('themeToggleIcon');
+  const text = document.getElementById('themeToggleText');
+  if (icon && text) {
+    icon.textContent = isDark ? '☀️' : '🌙';
+    text.textContent = isDark ? 'Modo Claro' : 'Modo Escuro';
+  }
+}
 
 function switchView(view) {
   activeView = view;
@@ -1714,7 +2272,7 @@ function switchView(view) {
     document.getElementById('secondChartTitle').textContent = '🩺 Saúde Operacional das Clínicas';
   } else if (view === 'leads') {
     document.getElementById('viewSubtitle').textContent = 'Volume de Captação e Entrada Diária';
-    document.getElementById('mainChartTitle').textContent = '🏆 Top 10 Clientes por Captação em Setembro';
+    updateLeadsChartTitle();
     document.getElementById('secondChartTitle').textContent = '🥧 Distribuição por Segmento';
   } else {
     document.getElementById('viewSubtitle').textContent = 'Cruzamento de Agendamentos, Comparecimentos e Vendas';
@@ -1722,8 +2280,218 @@ function switchView(view) {
     document.getElementById('secondChartTitle').textContent = '🎯 Proporção do Funil Global';
   }
 
+  // Reset column sort when switching view tabs so columns align cleanly
+  currentSort = { col: null, dir: 'asc' };
   updateCharts();
   filterData();
+}
+
+function updateLeadsChartTitle() {
+  const titleElem = document.getElementById('mainChartTitle');
+  if (!titleElem || activeView !== 'leads') return;
+  if (currentPeriod === 'hoje') {
+    titleElem.textContent = '🟢 Top 10 Clientes por Captação Hoje (08/09)';
+  } else if (currentPeriod === 'set') {
+    titleElem.textContent = '🏆 Top 10 Clientes por Captação em Setembro/26';
+  } else if (currentPeriod === 'ago') {
+    titleElem.textContent = '🗓️ Top 10 Clientes por Captação em Agosto/26';
+  } else {
+    titleElem.textContent = '🏆 Top 10 Clientes por Volume Total Acumulado';
+  }
+}
+
+// Period Filter Handler
+function setPeriod(period, btn) {
+  currentPeriod = period;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  
+  if (activeView === 'leads') {
+    updateLeadsChartTitle();
+  }
+  updateCharts();
+  filterData();
+}
+
+// Status Filter Handler
+function setFilter(filterType, btn) {
+  currentFilter = filterType;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  filterData();
+}
+
+// Column Header Sorting Handler: 1st click = menor pro maior ('asc'), 2nd click = maior pro menor ('desc'), 3rd click = reset
+function handleSort(colKey) {
+  if (currentSort.col === colKey) {
+    if (currentSort.dir === 'asc') {
+      currentSort.dir = 'desc'; // 2º clique: Maior pro Menor
+    } else {
+      currentSort.col = null;
+      currentSort.dir = 'asc'; // 3º clique: Reset
+    }
+  } else {
+    currentSort.col = colKey;
+    currentSort.dir = 'asc'; // 1º clique: MENOR PRO MAIOR (como solicitado)
+  }
+  filterData();
+}
+
+function clearSort() {
+  currentSort = { col: null, dir: 'asc' };
+  filterData();
+}
+
+function getSortBadgeHtml(colKey) {
+  if (currentSort.col !== colKey) {
+    return `<span class="sort-badge sort-badge-idle" title="Clique para ordenar: Menor → Maior">⇅</span>`;
+  }
+  if (currentSort.dir === 'asc') {
+    return `<span class="sort-badge sort-badge-active asc" title="Ordenado: Menor pro Maior">▲ Menor→Maior</span>`;
+  }
+  return `<span class="sort-badge sort-badge-active desc" title="Ordenado: Maior pro Menor">▼ Maior→Menor</span>`;
+}
+
+function compareValues(a, b, colKey, dir) {
+  let valA = a[colKey];
+  let valB = b[colKey];
+
+  // Date column 'ult' (format DD/MM/YYYY)
+  if (colKey === 'ult') {
+    const parseDate = (d) => {
+      if (!d || d === '—') return 0;
+      const parts = d.split('/');
+      if (parts.length === 3) return new Date(parts[2], parts[1]-1, parts[0]).getTime();
+      return 0;
+    };
+    valA = parseDate(valA);
+    valB = parseDate(valB);
+    return dir === 'asc' ? valA - valB : valB - valA;
+  }
+
+  // Operational status ranks
+  if (colKey === 'status') {
+    const rank = { 'alta': 4, 'mod': 3, 'descon': 2, 'pausado': 1, 'erro': 0 };
+    valA = rank[valA] ?? 0;
+    valB = rank[valB] ?? 0;
+    return dir === 'asc' ? valA - valB : valB - valA;
+  }
+  if (colKey === 'cw_status') {
+    const rank = { 'Saudável': 4, 'Atenção': 3, 'Gargalo': 2, 'Desconectado': 1, 'Sem Entrada': 0 };
+    valA = rank[valA] ?? 0;
+    valB = rank[valB] ?? 0;
+    return dir === 'asc' ? valA - valB : valB - valA;
+  }
+
+  // String comparison
+  if (typeof valA === 'string' && typeof valB === 'string') {
+    const cmp = valA.localeCompare(valB, 'pt-BR', { sensitivity: 'base' });
+    return dir === 'asc' ? cmp : -cmp;
+  }
+
+  // Numbers comparison (Menor pro Maior na ordem 'asc')
+  const numA = Number(valA ?? 0);
+  const numB = Number(valB ?? 0);
+  return dir === 'asc' ? numA - numB : numB - numA;
+}
+
+function filterData() {
+  const query = document.getElementById('searchInp').value.toLowerCase().trim();
+  const chkPeriodOnly = document.getElementById('chkPeriodOnly');
+  const onlyWithPeriodLeads = chkPeriodOnly ? chkPeriodOnly.checked : false;
+
+  let filtered = DATA.filter(c => {
+    // 1. Search filter
+    const matchQuery = !query || 
+      c.name.toLowerCase().includes(query) || 
+      c.id.toLowerCase().includes(query) || 
+      c.seg.toLowerCase().includes(query);
+    if (!matchQuery) return false;
+
+    // 2. Status filter
+    if (currentFilter !== 'all') {
+      if (activeView === 'chatwoot') {
+        if (currentFilter === 'saudavel' && c.cw_status !== 'Saudável') return false;
+        if (currentFilter === 'atencao' && !(c.cw_status === 'Atenção' || c.cw_status === 'Gargalo')) return false;
+        if (currentFilter === 'descon' && c.cw_status !== 'Desconectado') return false;
+        if (currentFilter === 'pausado' && c.cw_status !== 'Sem Entrada') return false;
+      } else {
+        if (currentFilter === 'alta' && c.status !== 'alta') return false;
+        if (currentFilter === 'mod' && c.status !== 'mod') return false;
+        if (currentFilter === 'descon' && c.status !== 'descon') return false;
+        if (currentFilter === 'pausado' && !(c.status === 'pausado' || c.status === 'erro')) return false;
+      }
+    }
+
+    // 3. Period filter
+    if (onlyWithPeriodLeads) {
+      if (currentPeriod === 'hoje' && (c.hoje || 0) <= 0) return false;
+      if (currentPeriod === 'set' && (c.set || 0) <= 0) return false;
+      if (currentPeriod === 'ago' && (c.ago || 0) <= 0) return false;
+    }
+
+    return true;
+  });
+
+  // 4. Sorting logic
+  if (currentSort.col) {
+    filtered.sort((a, b) => compareValues(a, b, currentSort.col, currentSort.dir));
+  } else if (currentPeriod !== 'all' && activeView === 'leads') {
+    // Auto-order by chosen period if not explicitly sorted
+    if (currentPeriod === 'hoje') filtered.sort((a, b) => (b.hoje || 0) - (a.hoje || 0));
+    else if (currentPeriod === 'set') filtered.sort((a, b) => (b.set || 0) - (a.set || 0));
+    else if (currentPeriod === 'ago') filtered.sort((a, b) => (b.ago || 0) - (a.ago || 0));
+  }
+
+  // Update counter & sort chip
+  const counter = document.getElementById('resultsCount');
+  if (counter) {
+    counter.textContent = `Exibindo ${filtered.length} de ${DATA.length} clínicas`;
+  }
+
+  const chipContainer = document.getElementById('sortChipContainer');
+  if (chipContainer) {
+    if (currentSort.col) {
+      const dirText = currentSort.dir === 'asc' ? 'Menor → Maior' : 'Maior → Menor';
+      chipContainer.innerHTML = `
+        <span class="sort-chip">
+          <span>Ordenação: <strong>${getColumnLabel(currentSort.col)}</strong> (${dirText})</span>
+          <button onclick="clearSort()" class="btn-clear-sort" title="Remover ordenação">✕</button>
+        </span>
+      `;
+    } else {
+      chipContainer.innerHTML = '';
+    }
+  }
+
+  renderTable(filtered);
+}
+
+function getColumnLabel(key) {
+  const labels = {
+    name: 'Cliente',
+    seg: 'Segmento',
+    cw_status: 'Saúde Operacional',
+    cw_leads: 'Leads Chatwoot',
+    cw_resp: 'Respondidos',
+    cw_pct_resp: 'Taxa Resposta',
+    cw_unresp: 'Sem Resposta',
+    cw_alerts: 'Alertas >24h',
+    cw_avg_resp_h: 'Tempo 1ª Resp.',
+    status: 'Status Entrada',
+    hoje: 'Leads Hoje',
+    set: 'Setembro/26',
+    ago: 'Agosto/26',
+    total: 'Total Base',
+    ult: 'Último Lead',
+    agendados: 'Agendados',
+    tx_agend: 'Taxa Agend.',
+    comp: 'Compareceu',
+    tx_comp: 'Show-up Rate',
+    vendas: 'Vendas',
+    tx_venda: 'Tx. Fechamento'
+  };
+  return labels[key] || key;
 }
 
 function renderTable(list) {
@@ -1733,15 +2501,33 @@ function renderTable(list) {
   if (activeView === 'chatwoot') {
     thead.innerHTML = `
       <tr>
-        <th>Cliente</th>
-        <th>Segmento</th>
-        <th>Saúde Operacional</th>
-        <th style="text-align:right">Leads Chatwoot</th>
-        <th style="text-align:right">Respondidos</th>
-        <th style="text-align:right">Taxa Resposta</th>
-        <th style="text-align:right">Sem Resposta</th>
-        <th style="text-align:right">Alertas > 24h</th>
-        <th style="text-align:right">Tempo 1ª Resp.</th>
+        <th class="sortable-th ${currentSort.col === 'name' ? 'active-sorted' : ''}" onclick="handleSort('name')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content"><span>Cliente</span> ${getSortBadgeHtml('name')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'seg' ? 'active-sorted' : ''}" onclick="handleSort('seg')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content"><span>Segmento</span> ${getSortBadgeHtml('seg')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'cw_status' ? 'active-sorted' : ''}" onclick="handleSort('cw_status')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content"><span>Saúde Operacional</span> ${getSortBadgeHtml('cw_status')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'cw_leads' ? 'active-sorted' : ''}" onclick="handleSort('cw_leads')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Leads Chatwoot</span> ${getSortBadgeHtml('cw_leads')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'cw_resp' ? 'active-sorted' : ''}" onclick="handleSort('cw_resp')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Respondidos</span> ${getSortBadgeHtml('cw_resp')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'cw_pct_resp' ? 'active-sorted' : ''}" onclick="handleSort('cw_pct_resp')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Taxa Resposta</span> ${getSortBadgeHtml('cw_pct_resp')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'cw_unresp' ? 'active-sorted' : ''}" onclick="handleSort('cw_unresp')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Sem Resposta</span> ${getSortBadgeHtml('cw_unresp')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'cw_alerts' ? 'active-sorted' : ''}" onclick="handleSort('cw_alerts')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Alertas > 24h</span> ${getSortBadgeHtml('cw_alerts')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'cw_avg_resp_h' ? 'active-sorted' : ''}" onclick="handleSort('cw_avg_resp_h')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Tempo 1ª Resp.</span> ${getSortBadgeHtml('cw_avg_resp_h')}</div>
+        </th>
       </tr>
     `;
     tbody.innerHTML = list.map(c => {
@@ -1764,29 +2550,29 @@ function renderTable(list) {
         : `<span class="num-val num-zero">0</span>`;
 
       const respHtml = c.cw_resp > 0 
-        ? `<span class="num-val" style="color:#34d399;font-weight:700">${c.cw_resp}</span>` 
+        ? `<span class="num-val" style="color:var(--primary);font-weight:700">${c.cw_resp}</span>` 
         : `<span class="num-val num-zero">0</span>`;
 
       const timeHtml = c.cw_avg_resp_h > 0 
-        ? `<span class="num-val" style="color:${c.cw_avg_resp_h > 24 ? '#ef4444' : '#8c9bb0'}">${c.cw_avg_resp_h}h</span>`
+        ? `<span class="num-val" style="color:${c.cw_avg_resp_h > 24 ? 'var(--destructive)' : 'var(--muted-foreground)'}">${c.cw_avg_resp_h}h</span>`
         : `<span class="num-val num-zero">—</span>`;
 
       return `
         <tr>
-          <td>
+          <td class="${currentSort.col === 'name' ? 'col-sorted-active' : ''}">
             <div class="client-name-cell">
               <span class="client-name">${c.name}</span>
               <span class="client-id-sub">${c.id}</span>
             </div>
           </td>
-          <td><span class="seg-pill ${segClass}">${c.seg}</span></td>
-          <td><span class="status-badge ${saudeClass}">${saudeText}</span></td>
-          <td style="text-align:right"><span class="num-val" style="color:#fff;font-weight:700">${c.cw_leads}</span></td>
-          <td style="text-align:right">${respHtml}</td>
-          <td style="text-align:right"><span class="num-rate ${respRateClass}">${c.cw_pct_resp}%</span></td>
-          <td style="text-align:right">${unrespHtml}</td>
-          <td style="text-align:right">${alertHtml}</td>
-          <td style="text-align:right">${timeHtml}</td>
+          <td class="${currentSort.col === 'seg' ? 'col-sorted-active' : ''}"><span class="seg-pill ${segClass}">${c.seg}</span></td>
+          <td class="${currentSort.col === 'cw_status' ? 'col-sorted-active' : ''}"><span class="status-badge ${saudeClass}">${saudeText}</span></td>
+          <td style="text-align:right" class="${currentSort.col === 'cw_leads' ? 'col-sorted-active' : ''}"><span class="num-val" style="color:var(--foreground);font-weight:700">${c.cw_leads}</span></td>
+          <td style="text-align:right" class="${currentSort.col === 'cw_resp' ? 'col-sorted-active' : ''}">${respHtml}</td>
+          <td style="text-align:right" class="${currentSort.col === 'cw_pct_resp' ? 'col-sorted-active' : ''}"><span class="num-rate ${respRateClass}">${c.cw_pct_resp}%</span></td>
+          <td style="text-align:right" class="${currentSort.col === 'cw_unresp' ? 'col-sorted-active' : ''}">${unrespHtml}</td>
+          <td style="text-align:right" class="${currentSort.col === 'cw_alerts' ? 'col-sorted-active' : ''}">${alertHtml}</td>
+          <td style="text-align:right" class="${currentSort.col === 'cw_avg_resp_h' ? 'col-sorted-active' : ''}">${timeHtml}</td>
         </tr>
       `;
     }).join('');
@@ -1794,14 +2580,30 @@ function renderTable(list) {
   } else if (activeView === 'leads') {
     thead.innerHTML = `
       <tr>
-        <th>Cliente</th>
-        <th>Segmento</th>
-        <th>Status Entrada</th>
-        <th style="text-align:right">Leads Hoje</th>
-        <th style="text-align:right">Setembro/26</th>
-        <th style="text-align:right">Agosto/26</th>
-        <th style="text-align:right">Total Base</th>
-        <th>Último Lead</th>
+        <th class="sortable-th ${currentSort.col === 'name' ? 'active-sorted' : ''}" onclick="handleSort('name')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content"><span>Cliente</span> ${getSortBadgeHtml('name')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'seg' ? 'active-sorted' : ''}" onclick="handleSort('seg')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content"><span>Segmento</span> ${getSortBadgeHtml('seg')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'status' ? 'active-sorted' : ''}" onclick="handleSort('status')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content"><span>Status Entrada</span> ${getSortBadgeHtml('status')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'hoje' ? 'active-sorted' : ''} ${currentPeriod === 'hoje' ? 'col-period-header' : ''}" onclick="handleSort('hoje')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Leads Hoje</span> ${getSortBadgeHtml('hoje')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'set' ? 'active-sorted' : ''} ${currentPeriod === 'set' ? 'col-period-header' : ''}" onclick="handleSort('set')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Setembro/26</span> ${getSortBadgeHtml('set')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'ago' ? 'active-sorted' : ''} ${currentPeriod === 'ago' ? 'col-period-header' : ''}" onclick="handleSort('ago')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Agosto/26</span> ${getSortBadgeHtml('ago')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'total' ? 'active-sorted' : ''}" onclick="handleSort('total')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Total Base</span> ${getSortBadgeHtml('total')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'ult' ? 'active-sorted' : ''}" onclick="handleSort('ult')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content"><span>Último Lead</span> ${getSortBadgeHtml('ult')}</div>
+        </th>
       </tr>
     `;
     tbody.innerHTML = list.map(c => {
@@ -1813,23 +2615,27 @@ function renderTable(list) {
       if (c.status === 'erro') statusClass = 'status-erro';
 
       const hojeHtml = c.hoje > 0 ? `<span class="num-val num-today">+${c.hoje}</span>` : `<span class="num-val num-zero">0</span>`;
-      const setHtml = c.set > 0 ? `<span class="num-val" style="color:#fff">${c.set.toLocaleString('pt-BR')}</span>` : `<span class="num-val num-zero">0</span>`;
+      const setHtml = c.set > 0 ? `<span class="num-val" style="color:var(--foreground);font-weight:700">${c.set.toLocaleString('pt-BR')}</span>` : `<span class="num-val num-zero">0</span>`;
+
+      const hojeCellClass = `${currentSort.col === 'hoje' ? 'col-sorted-active' : ''} ${currentPeriod === 'hoje' ? 'col-period-active' : ''}`;
+      const setCellClass  = `${currentSort.col === 'set' ? 'col-sorted-active' : ''} ${currentPeriod === 'set' ? 'col-period-active' : ''}`;
+      const agoCellClass  = `${currentSort.col === 'ago' ? 'col-sorted-active' : ''} ${currentPeriod === 'ago' ? 'col-period-active' : ''}`;
 
       return `
         <tr>
-          <td>
+          <td class="${currentSort.col === 'name' ? 'col-sorted-active' : ''}">
             <div class="client-name-cell">
               <span class="client-name">${c.name}</span>
               <span class="client-id-sub">${c.id}</span>
             </div>
           </td>
-          <td><span class="seg-pill ${segClass}">${c.seg}</span></td>
-          <td><span class="status-badge ${statusClass}">${c.statusText}</span></td>
-          <td style="text-align:right">${hojeHtml}</td>
-          <td style="text-align:right">${setHtml}</td>
-          <td style="text-align:right"><span class="num-val" style="color:var(--text-muted)">${c.ago.toLocaleString('pt-BR')}</span></td>
-          <td style="text-align:right"><span class="num-val" style="color:var(--text-dim)">${c.total.toLocaleString('pt-BR')}</span></td>
-          <td style="color:var(--text-muted);font-size:0.8rem">${c.ult}</td>
+          <td class="${currentSort.col === 'seg' ? 'col-sorted-active' : ''}"><span class="seg-pill ${segClass}">${c.seg}</span></td>
+          <td class="${currentSort.col === 'status' ? 'col-sorted-active' : ''}"><span class="status-badge ${statusClass}">${c.statusText}</span></td>
+          <td style="text-align:right" class="${hojeCellClass}">${hojeHtml}</td>
+          <td style="text-align:right" class="${setCellClass}">${setHtml}</td>
+          <td style="text-align:right" class="${agoCellClass}"><span class="num-val" style="color:var(--muted-foreground)">${c.ago.toLocaleString('pt-BR')}</span></td>
+          <td style="text-align:right" class="${currentSort.col === 'total' ? 'col-sorted-active' : ''}"><span class="num-val" style="color:var(--muted-foreground)">${c.total.toLocaleString('pt-BR')}</span></td>
+          <td style="color:var(--muted-foreground);font-size:0.8rem" class="${currentSort.col === 'ult' ? 'col-sorted-active' : ''}">${c.ult}</td>
         </tr>
       `;
     }).join('');
@@ -1837,15 +2643,33 @@ function renderTable(list) {
   } else {
     thead.innerHTML = `
       <tr>
-        <th>Cliente</th>
-        <th>Segmento</th>
-        <th style="text-align:right">Total Leads</th>
-        <th style="text-align:right">Agendados</th>
-        <th style="text-align:right">Taxa Agend.</th>
-        <th style="text-align:right">Compareceu</th>
-        <th style="text-align:right">Show-up Rate</th>
-        <th style="text-align:right">Vendas</th>
-        <th style="text-align:right">Tx. Fechamento</th>
+        <th class="sortable-th ${currentSort.col === 'name' ? 'active-sorted' : ''}" onclick="handleSort('name')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content"><span>Cliente</span> ${getSortBadgeHtml('name')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'seg' ? 'active-sorted' : ''}" onclick="handleSort('seg')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content"><span>Segmento</span> ${getSortBadgeHtml('seg')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'total' ? 'active-sorted' : ''}" onclick="handleSort('total')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Total Leads</span> ${getSortBadgeHtml('total')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'agendados' ? 'active-sorted' : ''}" onclick="handleSort('agendados')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Agendados</span> ${getSortBadgeHtml('agendados')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'tx_agend' ? 'active-sorted' : ''}" onclick="handleSort('tx_agend')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Taxa Agend.</span> ${getSortBadgeHtml('tx_agend')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'comp' ? 'active-sorted' : ''}" onclick="handleSort('comp')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Compareceu</span> ${getSortBadgeHtml('comp')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'tx_comp' ? 'active-sorted' : ''}" onclick="handleSort('tx_comp')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Show-up Rate</span> ${getSortBadgeHtml('tx_comp')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'vendas' ? 'active-sorted' : ''}" onclick="handleSort('vendas')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Vendas</span> ${getSortBadgeHtml('vendas')}</div>
+        </th>
+        <th class="sortable-th ${currentSort.col === 'tx_venda' ? 'active-sorted' : ''}" onclick="handleSort('tx_venda')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>Tx. Fechamento</span> ${getSortBadgeHtml('tx_venda')}</div>
+        </th>
       </tr>
     `;
     tbody.innerHTML = list.map(c => {
@@ -1857,66 +2681,52 @@ function renderTable(list) {
 
       return `
         <tr>
-          <td>
+          <td class="${currentSort.col === 'name' ? 'col-sorted-active' : ''}">
             <div class="client-name-cell">
               <span class="client-name">${c.name}</span>
               <span class="client-id-sub">${c.id}</span>
             </div>
           </td>
-          <td><span class="seg-pill ${segClass}">${c.seg}</span></td>
-          <td style="text-align:right"><span class="num-val">${c.total.toLocaleString('pt-BR')}</span></td>
-          <td style="text-align:right"><span class="num-val" style="color:#60a5fa">${c.agendados.toLocaleString('pt-BR')}</span></td>
-          <td style="text-align:right"><span class="num-rate ${agendRateClass}">${c.tx_agend}%</span></td>
-          <td style="text-align:right"><span class="num-val" style="color:#fbbf24">${c.comp.toLocaleString('pt-BR')}</span></td>
-          <td style="text-align:right"><span class="num-rate ${compRateClass}">${c.tx_comp}%</span></td>
-          <td style="text-align:right"><span class="num-val" style="color:#34d399">${c.vendas.toLocaleString('pt-BR')}</span></td>
-          <td style="text-align:right"><span class="num-rate ${vendaRateClass}">${c.tx_venda}%</span></td>
+          <td class="${currentSort.col === 'seg' ? 'col-sorted-active' : ''}"><span class="seg-pill ${segClass}">${c.seg}</span></td>
+          <td style="text-align:right" class="${currentSort.col === 'total' ? 'col-sorted-active' : ''}"><span class="num-val">${c.total.toLocaleString('pt-BR')}</span></td>
+          <td style="text-align:right" class="${currentSort.col === 'agendados' ? 'col-sorted-active' : ''}"><span class="num-val" style="color:var(--secondary)">${c.agendados.toLocaleString('pt-BR')}</span></td>
+          <td style="text-align:right" class="${currentSort.col === 'tx_agend' ? 'col-sorted-active' : ''}"><span class="num-rate ${agendRateClass}">${c.tx_agend}%</span></td>
+          <td style="text-align:right" class="${currentSort.col === 'comp' ? 'col-sorted-active' : ''}"><span class="num-val" style="color:#fbbf24">${c.comp.toLocaleString('pt-BR')}</span></td>
+          <td style="text-align:right" class="${currentSort.col === 'tx_comp' ? 'col-sorted-active' : ''}"><span class="num-rate ${compRateClass}">${c.tx_comp}%</span></td>
+          <td style="text-align:right" class="${currentSort.col === 'vendas' ? 'col-sorted-active' : ''}"><span class="num-val" style="color:var(--primary)">${c.vendas.toLocaleString('pt-BR')}</span></td>
+          <td style="text-align:right" class="${currentSort.col === 'tx_venda' ? 'col-sorted-active' : ''}"><span class="num-rate ${vendaRateClass}">${c.tx_venda}%</span></td>
         </tr>
       `;
     }).join('');
   }
 }
 
-function filterData() {
-  const query = document.getElementById('searchInp').value.toLowerCase().trim();
-  const filtered = DATA.filter(c => {
-    const matchQuery = c.name.toLowerCase().includes(query) || c.id.toLowerCase().includes(query) || c.seg.toLowerCase().includes(query);
-    if (!matchQuery) return false;
-    if (currentFilter === 'all') return true;
-    if (activeView === 'chatwoot') {
-      if (currentFilter === 'saudavel') return c.cw_status === 'Saudável';
-      if (currentFilter === 'atencao') return c.cw_status === 'Atenção' || c.cw_status === 'Gargalo';
-      if (currentFilter === 'descon') return c.cw_status === 'Desconectado';
-      if (currentFilter === 'pausado') return c.cw_status === 'Sem Entrada';
-    } else {
-      if (currentFilter === 'alta') return c.status === 'alta';
-      if (currentFilter === 'mod') return c.status === 'mod';
-      if (currentFilter === 'descon') return c.status === 'descon';
-      if (currentFilter === 'pausado') return c.status === 'pausado' || c.status === 'erro';
-    }
-    return true;
-  });
-  renderTable(filtered);
-}
-
-function setFilter(filterType, btn) {
-  currentFilter = filterType;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  filterData();
-}
-
 function openHelpModal() { document.getElementById('helpModal').style.display = 'flex'; }
 function closeHelpModal() { document.getElementById('helpModal').style.display = 'none'; }
 
+// Chart.js Visualizations
 function updateCharts() {
   if (mainChartInstance) mainChartInstance.destroy();
   if (secondChartInstance) secondChartInstance.destroy();
 
-  const mainCtx = document.getElementById('mainChart').getContext('2d');
-  const secondCtx = document.getElementById('secondChart').getContext('2d');
+  const mainCanvas = document.getElementById('mainChart');
+  const secondCanvas = document.getElementById('secondChart');
+  if (!mainCanvas || !secondCanvas) return;
+
+  const mainCtx = mainCanvas.getContext('2d');
+  const secondCtx = secondCanvas.getContext('2d');
+
+  const isDark = document.documentElement.classList.contains('dark');
+  const textColor = isDark ? '#94a3b8' : '#64748b';
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+
+  const mainTitle = document.getElementById('mainChartTitle');
+  const secondTitle = document.getElementById('secondChartTitle');
 
   if (activeView === 'chatwoot') {
+    if (mainTitle) mainTitle.innerHTML = '💬 Top 10 Clientes por Volume de Atendimento (Chatwoot)';
+    if (secondTitle) secondTitle.innerHTML = '🩺 Saúde Operacional das Clínicas';
+
     const top10 = [...DATA].filter(c => c.cw_leads > 0).sort((a,b) => b.cw_leads - a.cw_leads).slice(0, 10);
     mainChartInstance = new Chart(mainCtx, {
       type: 'bar',
@@ -1926,13 +2736,13 @@ function updateCharts() {
           {
             label: 'Respondidos',
             data: top10.map(c => c.cw_resp),
-            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+            backgroundColor: isDark ? 'rgba(16, 185, 129, 0.85)' : 'rgba(16, 185, 129, 0.9)',
             borderRadius: 6
           },
           {
             label: 'Sem Resposta',
             data: top10.map(c => c.cw_unresp),
-            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+            backgroundColor: isDark ? 'rgba(239, 68, 68, 0.85)' : 'rgba(239, 68, 68, 0.9)',
             borderRadius: 6
           }
         ]
@@ -1940,10 +2750,19 @@ function updateCharts() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: 'top', labels: { color: '#8c9bb0', boxWidth: 12 } } },
+        plugins: {
+          legend: { position: 'top', labels: { color: textColor, boxWidth: 12, font: { family: 'Plus Jakarta Sans', size: 11 } } },
+          tooltip: {
+            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+            titleColor: isDark ? '#f8fafc' : '#0f172a',
+            bodyColor: isDark ? '#cbd5e1' : '#334155',
+            borderColor: isDark ? '#334155' : '#e2e8f0',
+            borderWidth: 1
+          }
+        },
         scales: {
-          x: { stacked: true, ticks: { color: '#8c9bb0', font: { size: 10 } }, grid: { display: false } },
-          y: { stacked: true, ticks: { color: '#8c9bb0' }, grid: { color: '#1e2838' } }
+          x: { stacked: true, ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 10 } }, grid: { display: false } },
+          y: { stacked: true, ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 10 } }, grid: { color: gridColor } }
         }
       }
     });
@@ -1961,28 +2780,45 @@ function updateCharts() {
         datasets: [{
           data: [saudeCount, atencaoCount, gargaloCount, desconCount, semEntradaCount],
           backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#7f1d1d', '#64748b'],
-          borderWidth: 0
+          borderColor: isDark ? '#1e293b' : '#ffffff',
+          borderWidth: 2
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom', labels: { color: '#8c9bb0', boxWidth: 10, padding: 8, font: { size: 11 } } }
+          legend: { position: 'bottom', labels: { color: textColor, boxWidth: 10, padding: 8, font: { family: 'Plus Jakarta Sans', size: 11 } } }
         },
         cutout: '70%'
       }
     });
 
   } else if (activeView === 'leads') {
-    const top10 = [...DATA].filter(c => c.set > 0).sort((a,b) => b.set - a.set).slice(0, 10);
+    let leadMetric = 'set';
+    let leadLabel = 'Leads Setembro/26';
+    if (currentPeriod === 'hoje') {
+      leadMetric = 'hoje';
+      leadLabel = 'Leads Hoje';
+    } else if (currentPeriod === 'ago') {
+      leadMetric = 'ago';
+      leadLabel = 'Leads Agosto/26';
+    } else if (currentPeriod === 'all') {
+      leadMetric = 'total';
+      leadLabel = 'Leads Total';
+    }
+    updateLeadsChartTitle();
+    if (secondTitle) secondTitle.innerHTML = '🏷️ Distribuição de Clientes por Segmento';
+
+    const top10 = [...DATA].filter(c => (c[leadMetric] || 0) > 0).sort((a,b) => (b[leadMetric] || 0) - (a[leadMetric] || 0)).slice(0, 10);
     mainChartInstance = new Chart(mainCtx, {
       type: 'bar',
       data: {
         labels: top10.map(c => c.name),
         datasets: [{
-          data: top10.map(c => c.set),
-          backgroundColor: 'rgba(59, 130, 246, 0.75)',
+          label: leadLabel,
+          data: top10.map(c => c[leadMetric] || 0),
+          backgroundColor: isDark ? 'rgba(59, 130, 246, 0.85)' : 'rgba(59, 130, 246, 0.9)',
           borderColor: '#3b82f6',
           borderWidth: 1,
           borderRadius: 6
@@ -1991,10 +2827,19 @@ function updateCharts() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+            titleColor: isDark ? '#f8fafc' : '#0f172a',
+            bodyColor: isDark ? '#cbd5e1' : '#334155',
+            borderColor: isDark ? '#334155' : '#e2e8f0',
+            borderWidth: 1
+          }
+        },
         scales: {
-          x: { ticks: { color: '#8c9bb0', font: { size: 10 } }, grid: { display: false } },
-          y: { ticks: { color: '#8c9bb0' }, grid: { color: '#1e2838' } }
+          x: { ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 10 } }, grid: { display: false } },
+          y: { ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 10 } }, grid: { color: gridColor } }
         }
       }
     });
@@ -2010,20 +2855,24 @@ function updateCharts() {
         datasets: [{
           data: [saude, odonto, estetica],
           backgroundColor: ['#3b82f6', '#10b981', '#ec4899'],
-          borderWidth: 0
+          borderColor: isDark ? '#1e293b' : '#ffffff',
+          borderWidth: 2
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom', labels: { color: '#8c9bb0', boxWidth: 12, padding: 12 } }
+          legend: { position: 'bottom', labels: { color: textColor, boxWidth: 12, padding: 12, font: { family: 'Plus Jakarta Sans', size: 11 } } }
         },
         cutout: '70%'
       }
     });
 
   } else {
+    if (mainTitle) mainTitle.innerHTML = '🎯 Top 10 Clientes em Agendamentos & Conversões';
+    if (secondTitle) secondTitle.innerHTML = '⚖️ Funil Agendamento ➔ Presença ➔ Vendas';
+
     const topAgend = [...DATA].sort((a,b) => b.agendados - a.agendados).slice(0, 10);
     mainChartInstance = new Chart(mainCtx, {
       type: 'bar',
@@ -2033,19 +2882,19 @@ function updateCharts() {
           {
             label: 'Agendados',
             data: topAgend.map(c => c.agendados),
-            backgroundColor: 'rgba(59, 130, 246, 0.75)',
+            backgroundColor: isDark ? 'rgba(59, 130, 246, 0.8)' : 'rgba(59, 130, 246, 0.85)',
             borderRadius: 6
           },
           {
             label: 'Compareceram',
             data: topAgend.map(c => c.comp),
-            backgroundColor: 'rgba(245, 158, 11, 0.8)',
+            backgroundColor: isDark ? 'rgba(245, 158, 11, 0.8)' : 'rgba(245, 158, 11, 0.85)',
             borderRadius: 6
           },
           {
             label: 'Vendas',
             data: topAgend.map(c => c.vendas),
-            backgroundColor: 'rgba(16, 185, 129, 0.85)',
+            backgroundColor: isDark ? 'rgba(16, 185, 129, 0.85)' : 'rgba(16, 185, 129, 0.9)',
             borderRadius: 6
           }
         ]
@@ -2054,11 +2903,18 @@ function updateCharts() {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'top', labels: { color: '#8c9bb0', boxWidth: 12 } }
+          legend: { position: 'top', labels: { color: textColor, boxWidth: 12, font: { family: 'Plus Jakarta Sans', size: 11 } } },
+          tooltip: {
+            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+            titleColor: isDark ? '#f8fafc' : '#0f172a',
+            bodyColor: isDark ? '#cbd5e1' : '#334155',
+            borderColor: isDark ? '#334155' : '#e2e8f0',
+            borderWidth: 1
+          }
         },
         scales: {
-          x: { ticks: { color: '#8c9bb0', font: { size: 10 } }, grid: { display: false } },
-          y: { ticks: { color: '#8c9bb0' }, grid: { color: '#1e2838' } }
+          x: { ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 10 } }, grid: { display: false } },
+          y: { ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 10 } }, grid: { color: gridColor } }
         }
       }
     });
@@ -2074,14 +2930,15 @@ function updateCharts() {
         datasets: [{
           data: [totAg, totCp, totVd],
           backgroundColor: ['#3b82f6', '#f59e0b', '#10b981'],
-          borderWidth: 0
+          borderColor: isDark ? '#1e293b' : '#ffffff',
+          borderWidth: 2
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom', labels: { color: '#8c9bb0', boxWidth: 12, padding: 12 } }
+          legend: { position: 'bottom', labels: { color: textColor, boxWidth: 12, padding: 12, font: { family: 'Plus Jakarta Sans', size: 11 } } }
         },
         cutout: '70%'
       }
@@ -2089,8 +2946,28 @@ function updateCharts() {
   }
 }
 
+function updatePeriodCounts() {
+  const bAll = document.getElementById('p-badge-all');
+  const bHoje = document.getElementById('p-badge-hoje');
+  const bSet = document.getElementById('p-badge-set');
+  const bAgo = document.getElementById('p-badge-ago');
+  if (bAll) bAll.textContent = DATA.length;
+  if (bHoje) bHoje.textContent = DATA.filter(c => (c.hoje || 0) > 0).length;
+  if (bSet) bSet.textContent = DATA.filter(c => (c.set || 0) > 0).length;
+  if (bAgo) bAgo.textContent = DATA.filter(c => (c.ago || 0) > 0).length;
+}
+
+window.onclick = function(event) {
+  const modal = document.getElementById('helpModal');
+  if (event.target === modal) {
+    modal.style.display = 'none';
+  }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
-  renderTable(DATA);
+  updateThemeButton();
+  updatePeriodCounts();
+  filterData();
   updateCharts();
 });
 </script>
