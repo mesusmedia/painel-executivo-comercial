@@ -535,6 +535,10 @@ tr:hover td {
 .status-alta { background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); }
 .status-mod { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); }
 .status-descon { background: rgba(239, 68, 68, 0.14); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.status-saudavel { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+.status-atencao { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.status-gargalo { background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
+.alert-tag-num { background: rgba(239, 68, 68, 0.2); color: #ef4444; font-weight: 700; padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.4); font-size: 0.75rem; }
 .status-pausado { background: rgba(140, 155, 176, 0.12); color: #8c9bb0; border: 1px solid rgba(140, 155, 176, 0.2); }
 .status-erro { background: rgba(168, 85, 247, 0.14); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
 
@@ -619,7 +623,7 @@ tr:hover td {
     </div>
     <div class="header-right">
       <div class="live-pill"><span class="live-dot"></span> Sincronizado com CRMs</div>
-      <div style="font-size:0.85rem;color:var(--text-muted);">08/09/2026 às 19:14</div>
+      <div style="font-size:0.85rem;color:var(--text-muted);">08/09/2026 às 19:15</div>
     </div>
   </div>
 </header>
@@ -700,16 +704,41 @@ tr:hover td {
   <!-- Navegação de Visão: Leads Diários vs Funil Completo -->
   <div class="view-tabs-wrap">
     <div class="nav-tabs">
-      <button class="nav-tab active" id="tabBtnLeads" onclick="switchView('leads')">📊 Visão Leads & Velocidade</button>
-      <button class="nav-tab" id="tabBtnFunnel" onclick="switchView('funnel')">🎯 Cruzamento de Agendamentos & Funil</button>
+      <button class="nav-tab active" id="tabBtnChatwoot" onclick="switchView('chatwoot')">💬 Atendimento Comercial (Chatwoot)</button>
+      <button class="nav-tab" id="tabBtnLeads" onclick="switchView('leads')">📊 Captação de Leads (Diário)</button>
+      <button class="nav-tab" id="tabBtnFunnel" onclick="switchView('funnel')">🎯 Cruzamento de Funil & Agendamentos</button>
     </div>
     <div style="font-size:0.8rem;color:var(--text-muted);">
-      Mostrando: <strong id="viewSubtitle" style="color:#fff">Volume de Captação e Status Diário</strong>
+      Mostrando: <strong id="viewSubtitle" style="color:#fff">Atendimento no Chatwoot, Respostas e Alertas</strong>
     </div>
   </div>
 
-  <!-- KPIs de Leads (Visão 1) -->
-  <section class="kpi-grid" id="kpiLeadsRow">
+  <!-- KPIs de Atendimento Chatwoot (Visão Principal) -->
+  <section class="kpi-grid" id="kpiChatwootRow">
+    <div class="kpi-card kpi-primary">
+      <div class="kpi-label">Leads no Chatwoot (Setembro)</div>
+      <div class="kpi-val" id="kpi-cw-leads">469</div>
+      <div class="kpi-sub">32 caixas de entrada auditadas</div>
+    </div>
+    <div class="kpi-card kpi-success">
+      <div class="kpi-label">Leads Respondidos pela Equipe</div>
+      <div class="kpi-val" id="kpi-cw-resp" style="color:#34d399">445</div>
+      <div class="kpi-sub" style="color:var(--success)">▲ 94.9% taxa de primeiro contato</div>
+    </div>
+    <div class="kpi-card kpi-warning">
+      <div class="kpi-label">Sem Resposta / No Vácuo</div>
+      <div class="kpi-val" id="kpi-cw-unresp" style="color:#fbbf24">24</div>
+      <div class="kpi-sub" style="color:#f87171">🚨 7 com alerta crítico > 24h</div>
+    </div>
+    <div class="kpi-card kpi-purple">
+      <div class="kpi-label">Tempo Médio de 1ª Resposta</div>
+      <div class="kpi-val" id="kpi-cw-time" style="color:#c084fc">7.6h</div>
+      <div class="kpi-sub">Varia de 0.1h (Peruíbe) a 42.7h (Keeyner)</div>
+    </div>
+  </section>
+
+  <!-- KPIs de Leads (Visão 2) -->
+  <section class="kpi-grid" id="kpiLeadsRow" style="display:none;">
     <div class="kpi-card kpi-primary">
       <div class="kpi-label">Total Leads na Base</div>
       <div class="kpi-val">26.280</div>
@@ -1225,20 +1254,20 @@ const DATA = [
     "name": "Odonto Prime",
     "seg": "Odonto",
     "inbox_id": 138,
-    "cw_leads": 17,
-    "cw_resp": 17,
+    "cw_leads": 0,
+    "cw_resp": 0,
     "cw_unresp": 0,
-    "cw_pct_resp": 100.0,
+    "cw_pct_resp": 0.0,
     "cw_alerts": 0,
-    "cw_avg_resp_h": 4.5,
-    "cw_status": "Saudável",
+    "cw_avg_resp_h": 0.0,
+    "cw_status": "Sem Entrada",
     "total": 88,
     "set": 19,
     "ago": 69,
     "hoje": 0,
     "ult": "06/09/2026",
-    "status": "alta",
-    "statusText": "🟢 Alta Tração",
+    "status": "pausado",
+    "statusText": "⚪ Sem Leads",
     "agendados": 16,
     "tx_agend": 18.2,
     "comp": 0,
@@ -1664,21 +1693,34 @@ const DATA = [
   }
 ];
 
-let activeView = 'leads';
+let activeView = 'chatwoot';
 let currentFilter = 'all';
 let mainChartInstance = null;
 let secondChartInstance = null;
 
 function switchView(view) {
   activeView = view;
+  document.getElementById('tabBtnChatwoot').classList.toggle('active', view === 'chatwoot');
   document.getElementById('tabBtnLeads').classList.toggle('active', view === 'leads');
   document.getElementById('tabBtnFunnel').classList.toggle('active', view === 'funnel');
 
+  document.getElementById('kpiChatwootRow').style.display = view === 'chatwoot' ? 'grid' : 'none';
   document.getElementById('kpiLeadsRow').style.display = view === 'leads' ? 'grid' : 'none';
   document.getElementById('kpiFunnelRow').style.display = view === 'funnel' ? 'grid' : 'none';
 
-  document.getElementById('viewSubtitle').textContent = view === 'leads' ? 'Volume de Captação e Status Diário' : 'Cruzamento de Agendamentos, Comparecimentos e Vendas';
-  document.getElementById('mainChartTitle').textContent = view === 'leads' ? '🏆 Top 10 Clientes por Captação em Setembro' : '📅 Top 10 Clientes por Volume de Agendamentos';
+  if (view === 'chatwoot') {
+    document.getElementById('viewSubtitle').textContent = 'Atendimento no Chatwoot, Respostas e Alertas';
+    document.getElementById('mainChartTitle').textContent = '💬 Top 10 Clientes por Volume de Atendimento (Chatwoot)';
+    document.getElementById('secondChartTitle').textContent = '🩺 Saúde Operacional das Clínicas';
+  } else if (view === 'leads') {
+    document.getElementById('viewSubtitle').textContent = 'Volume de Captação e Entrada Diária';
+    document.getElementById('mainChartTitle').textContent = '🏆 Top 10 Clientes por Captação em Setembro';
+    document.getElementById('secondChartTitle').textContent = '🥧 Distribuição por Segmento';
+  } else {
+    document.getElementById('viewSubtitle').textContent = 'Cruzamento de Agendamentos, Comparecimentos e Vendas';
+    document.getElementById('mainChartTitle').textContent = '📅 Top 10 Clientes por Volume de Agendamentos';
+    document.getElementById('secondChartTitle').textContent = '🎯 Proporção do Funil Global';
+  }
 
   updateCharts();
   filterData();
@@ -1688,12 +1730,73 @@ function renderTable(list) {
   const thead = document.getElementById('tableHead');
   const tbody = document.getElementById('tableBody');
 
-  if (activeView === 'leads') {
+  if (activeView === 'chatwoot') {
     thead.innerHTML = `
       <tr>
         <th>Cliente</th>
         <th>Segmento</th>
-        <th>Status Operacional</th>
+        <th>Saúde Operacional</th>
+        <th style="text-align:right">Leads Chatwoot</th>
+        <th style="text-align:right">Respondidos</th>
+        <th style="text-align:right">Taxa Resposta</th>
+        <th style="text-align:right">Sem Resposta</th>
+        <th style="text-align:right">Alertas > 24h</th>
+        <th style="text-align:right">Tempo 1ª Resp.</th>
+      </tr>
+    `;
+    tbody.innerHTML = list.map(c => {
+      const segClass = c.seg === 'Saúde' ? 'seg-saude' : (c.seg === 'Odonto' ? 'seg-odonto' : 'seg-estetica');
+      
+      let saudeClass = 'status-saudavel';
+      let saudeText = '🟢 Saudável';
+      if (c.cw_status === 'Atenção') { saudeClass = 'status-atencao'; saudeText = '🟡 Atenção'; }
+      else if (c.cw_status === 'Gargalo') { saudeClass = 'status-gargalo'; saudeText = '🔴 Gargalo'; }
+      else if (c.cw_status === 'Desconectado') { saudeClass = 'status-descon'; saudeText = '⚠️ WhatsApp Off'; }
+      else if (c.cw_status === 'Sem Entrada') { saudeClass = 'status-pausado'; saudeText = '⚪ Sem Entrada'; }
+
+      const respRateClass = c.cw_pct_resp >= 90 ? 'rate-good' : (c.cw_pct_resp >= 75 ? 'rate-mid' : 'rate-low');
+      const alertHtml = c.cw_alerts > 0 
+        ? `<span class="alert-tag-num">${c.cw_alerts} lead${c.cw_alerts > 1 ? 's' : ''}</span>`
+        : `<span class="num-val num-zero">0</span>`;
+
+      const unrespHtml = c.cw_unresp > 0 
+        ? `<span class="num-val" style="color:#fbbf24;font-weight:700">${c.cw_unresp}</span>` 
+        : `<span class="num-val num-zero">0</span>`;
+
+      const respHtml = c.cw_resp > 0 
+        ? `<span class="num-val" style="color:#34d399;font-weight:700">${c.cw_resp}</span>` 
+        : `<span class="num-val num-zero">0</span>`;
+
+      const timeHtml = c.cw_avg_resp_h > 0 
+        ? `<span class="num-val" style="color:${c.cw_avg_resp_h > 24 ? '#ef4444' : '#8c9bb0'}">${c.cw_avg_resp_h}h</span>`
+        : `<span class="num-val num-zero">—</span>`;
+
+      return `
+        <tr>
+          <td>
+            <div class="client-name-cell">
+              <span class="client-name">${c.name}</span>
+              <span class="client-id-sub">${c.id}</span>
+            </div>
+          </td>
+          <td><span class="seg-pill ${segClass}">${c.seg}</span></td>
+          <td><span class="status-badge ${saudeClass}">${saudeText}</span></td>
+          <td style="text-align:right"><span class="num-val" style="color:#fff;font-weight:700">${c.cw_leads}</span></td>
+          <td style="text-align:right">${respHtml}</td>
+          <td style="text-align:right"><span class="num-rate ${respRateClass}">${c.cw_pct_resp}%</span></td>
+          <td style="text-align:right">${unrespHtml}</td>
+          <td style="text-align:right">${alertHtml}</td>
+          <td style="text-align:right">${timeHtml}</td>
+        </tr>
+      `;
+    }).join('');
+
+  } else if (activeView === 'leads') {
+    thead.innerHTML = `
+      <tr>
+        <th>Cliente</th>
+        <th>Segmento</th>
+        <th>Status Entrada</th>
         <th style="text-align:right">Leads Hoje</th>
         <th style="text-align:right">Setembro/26</th>
         <th style="text-align:right">Agosto/26</th>
@@ -1730,6 +1833,7 @@ function renderTable(list) {
         </tr>
       `;
     }).join('');
+
   } else {
     thead.innerHTML = `
       <tr>
@@ -1779,10 +1883,17 @@ function filterData() {
     const matchQuery = c.name.toLowerCase().includes(query) || c.id.toLowerCase().includes(query) || c.seg.toLowerCase().includes(query);
     if (!matchQuery) return false;
     if (currentFilter === 'all') return true;
-    if (currentFilter === 'alta') return c.status === 'alta';
-    if (currentFilter === 'mod') return c.status === 'mod';
-    if (currentFilter === 'descon') return c.status === 'descon';
-    if (currentFilter === 'pausado') return c.status === 'pausado' || c.status === 'erro';
+    if (activeView === 'chatwoot') {
+      if (currentFilter === 'saudavel') return c.cw_status === 'Saudável';
+      if (currentFilter === 'atencao') return c.cw_status === 'Atenção' || c.cw_status === 'Gargalo';
+      if (currentFilter === 'descon') return c.cw_status === 'Desconectado';
+      if (currentFilter === 'pausado') return c.cw_status === 'Sem Entrada';
+    } else {
+      if (currentFilter === 'alta') return c.status === 'alta';
+      if (currentFilter === 'mod') return c.status === 'mod';
+      if (currentFilter === 'descon') return c.status === 'descon';
+      if (currentFilter === 'pausado') return c.status === 'pausado' || c.status === 'erro';
+    }
     return true;
   });
   renderTable(filtered);
@@ -1805,8 +1916,66 @@ function updateCharts() {
   const mainCtx = document.getElementById('mainChart').getContext('2d');
   const secondCtx = document.getElementById('secondChart').getContext('2d');
 
-  if (activeView === 'leads') {
-    const top10 = [...DATA].filter(c => c.set > 0).slice(0, 10);
+  if (activeView === 'chatwoot') {
+    const top10 = [...DATA].filter(c => c.cw_leads > 0).sort((a,b) => b.cw_leads - a.cw_leads).slice(0, 10);
+    mainChartInstance = new Chart(mainCtx, {
+      type: 'bar',
+      data: {
+        labels: top10.map(c => c.name),
+        datasets: [
+          {
+            label: 'Respondidos',
+            data: top10.map(c => c.cw_resp),
+            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+            borderRadius: 6
+          },
+          {
+            label: 'Sem Resposta',
+            data: top10.map(c => c.cw_unresp),
+            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+            borderRadius: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'top', labels: { color: '#8c9bb0', boxWidth: 12 } } },
+        scales: {
+          x: { stacked: true, ticks: { color: '#8c9bb0', font: { size: 10 } }, grid: { display: false } },
+          y: { stacked: true, ticks: { color: '#8c9bb0' }, grid: { color: '#1e2838' } }
+        }
+      }
+    });
+
+    const saudeCount = DATA.filter(c => c.cw_status === 'Saudável').length;
+    const atencaoCount = DATA.filter(c => c.cw_status === 'Atenção').length;
+    const gargaloCount = DATA.filter(c => c.cw_status === 'Gargalo').length;
+    const desconCount = DATA.filter(c => c.cw_status === 'Desconectado').length;
+    const semEntradaCount = DATA.filter(c => c.cw_status === 'Sem Entrada').length;
+
+    secondChartInstance = new Chart(secondCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Saudável', 'Atenção', 'Gargalo', 'WhatsApp Off', 'Sem Entrada'],
+        datasets: [{
+          data: [saudeCount, atencaoCount, gargaloCount, desconCount, semEntradaCount],
+          backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#7f1d1d', '#64748b'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#8c9bb0', boxWidth: 10, padding: 8, font: { size: 11 } } }
+        },
+        cutout: '70%'
+      }
+    });
+
+  } else if (activeView === 'leads') {
+    const top10 = [...DATA].filter(c => c.set > 0).sort((a,b) => b.set - a.set).slice(0, 10);
     mainChartInstance = new Chart(mainCtx, {
       type: 'bar',
       data: {
@@ -1853,8 +2022,8 @@ function updateCharts() {
         cutout: '70%'
       }
     });
+
   } else {
-    // Funnel view charts: Top Agendados
     const topAgend = [...DATA].sort((a,b) => b.agendados - a.agendados).slice(0, 10);
     mainChartInstance = new Chart(mainCtx, {
       type: 'bar',
@@ -1894,7 +2063,6 @@ function updateCharts() {
       }
     });
 
-    // Funnel distribution
     const totAg = DATA.reduce((a,b)=>a+b.agendados,0);
     const totCp = DATA.reduce((a,b)=>a+b.comp,0);
     const totVd = DATA.reduce((a,b)=>a+b.vendas,0);
