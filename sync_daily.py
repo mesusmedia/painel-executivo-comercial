@@ -7,10 +7,26 @@ import subprocess
 from concurrent.futures import ThreadPoolExecutor
 import requests
 
-sys.stdout.reconfigure(encoding='utf-8')
+if sys.stdout is not None and hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
 
 REPO_DIR = r"C:\Users\oluca\painel-executivo-comercial"
 ENV_PATH = os.path.join(REPO_DIR, ".env")
+LOG_FILE = os.path.join(REPO_DIR, "sync_daily.log")
+
+def log_msg(msg):
+    ts = datetime.datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
+    line = f"{ts} {msg}"
+    if sys.stdout is not None:
+        try:
+            print(line, flush=True)
+        except Exception:
+            pass
+    try:
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+    except Exception:
+        pass
 
 # 1. Load Environment Variables safely from local .env
 env = {}
@@ -208,7 +224,7 @@ SHEET_CACHE = {
 }
 
 def sync():
-    print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Iniciando varredura no Chatwoot para todas as clínicas...")
+    log_msg("Iniciando varredura no Chatwoot para todas as clínicas...")
     
     # 2. Parallel Chatwoot Extraction
     with ThreadPoolExecutor(max_workers=8) as executor:
@@ -284,7 +300,7 @@ def sync():
     avg_resp_global = round((total_resp_time_acc / total_resp_clinics), 1) if total_resp_clinics > 0 else 0.0
     pct_resp_global = round((tot_cw_resp / tot_cw_leads * 100), 1) if tot_cw_leads > 0 else 0.0
 
-    print(f"Chatwoot Set/26: Leads={tot_cw_leads} | Respondidos={tot_cw_resp} ({pct_resp_global}%) | Sem Resposta={tot_cw_unresp} | Alertas >24h={tot_cw_alerts} | Tempo Médio={avg_resp_global}h")
+    log_msg(f"Chatwoot Set/26: Leads={tot_cw_leads} | Respondidos={tot_cw_resp} ({pct_resp_global}%) | Sem Resposta={tot_cw_unresp} | Alertas >24h={tot_cw_alerts} | Tempo Médio={avg_resp_global}h")
 
     # 3. Read current index.html template and inject new DATA
     index_path = os.path.join(REPO_DIR, "index.html")
@@ -311,7 +327,7 @@ def sync():
     with open(index_path, "w", encoding="utf-8") as f:
         f.write(html)
 
-    print("index.html atualizado com sucesso!")
+    log_msg("index.html atualizado com sucesso!")
 
     # 4. Commit and Push to GitHub (auto-deploys to Vercel)
     try:
@@ -319,9 +335,9 @@ def sync():
         msg = f"chore: sync diario comercial & chatwoot ({datetime.datetime.now().strftime('%d/%m/%Y %H:%M')})"
         subprocess.run(["git", "commit", "-m", msg], cwd=REPO_DIR, check=True)
         subprocess.run(["git", "push", "origin", "main"], cwd=REPO_DIR, check=True)
-        print("Git commit & push executados! Deploy no Vercel iniciado automaticamente.")
+        log_msg("Git commit & push executados! Deploy no Vercel iniciado automaticamente.")
     except Exception as e:
-        print("Aviso ao rodar git push:", e)
+        log_msg(f"Aviso ao rodar git push: {e}")
 
 if __name__ == "__main__":
     sync()
