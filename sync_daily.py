@@ -171,11 +171,15 @@ def process_client(client):
                 cp_val = get_v(idx_comp).lower()
                 gh_val = get_v(idx_ganh).lower()
 
-                if "agendad" in ag_val or (ag_val and ag_val not in ["não agendado", "nao agendado", "não", "nao", "0", "false", "em atendimento", "n/a"]):
+                is_agend = "agendad" in ag_val or (ag_val and ag_val not in ["não agendado", "nao agendado", "não", "nao", "0", "false", "em atendimento", "n/a"])
+                is_comp = "compareceu" in cp_val or "sim" in cp_val
+                is_ganho = "ganh" in gh_val or "sim" in gh_val or (idx_ganh and "data" in cols[idx_ganh].lower() and gh_val)
+
+                if is_agend:
                     agendados += 1
-                if "compareceu" in cp_val or "sim" in cp_val:
+                if is_comp:
                     compareceram += 1
-                if "ganh" in gh_val or "sim" in gh_val or (idx_ganh and "data" in cols[idx_ganh].lower() and gh_val):
+                if is_ganho:
                     vendas += 1
 
                 if d.year == now.year and d.month == now.month:
@@ -189,7 +193,10 @@ def process_client(client):
                         "nome": n_raw if n_raw else "Lead sem nome",
                         "clean_nome": re.sub(r'[^\w\s]', '', n_raw).strip().lower(),
                         "phone": p_raw,
-                        "clean_phone": re.sub(r'\D', '', p_raw)
+                        "clean_phone": re.sub(r'\D', '', p_raw),
+                        "is_agend": is_agend,
+                        "is_comp": is_comp,
+                        "is_ganho": is_ganho
                     }
                     sept_leads.append(lead_obj)
                     if d == now:
@@ -238,7 +245,21 @@ def process_client(client):
             except Exception:
                 break
 
-    # 3. Match Helper: A ÚLTIMA MENSAGEM TEM QUE SER NOSSA OU RESOLVIDA
+    # 3. Match Helper: Validação Contextual Profunda da Conversa
+    CLOSING_WORDS = {
+        "ok", "okay", "blz", "beleza", "combinado", "show", "certo", "perfeito", "tá bom", "ta bom", "tá bem", "ta bem",
+        "pode deixar", "obrigado", "obrigada", "obg", "valeu", "vlw", "muito obrigado", "muito obrigada", "agradeço", "disponha",
+        "tchau", "boa noite", "bom dia", "boa tarde", "ate mais", "até mais", "até logo", "ate logo", "abraço", "beijo", "bom descanso",
+        "esta mensagem foi apagada", "mensagem apagada", "liguei por engano", "foi engano", "engano", "chamada de voz perdida",
+        "não tenho interesse", "nao tenho interesse", "não quero", "nao quero", "já fiz", "ja fiz", "já fechei", "ja fechei",
+        "não posso", "nao posso", "sem interesse", "agora não", "agora nao", "não tenho papada", "não preciso",
+        "vou remarcar", "teremos que remarcar", "depois vejo", "aviso vocês", "aviso voces"
+    }
+
+    CLOSING_EMOJIS = ["👍", "❤️", "🙏", "😊", "🙌", "👏", "👋", "🤝", "🫱🏻‍🫲🏻", "😘", "🥰", "✨", "😉"]
+
+    QUESTION_WORDS = ["?", "quanto", "qual", "preco", "preço", "valor", "onde", "quando", "horario", "horário", "como funciona", "tem vaga"]
+
     now_dt = datetime.datetime.now()
     def evaluate_subset(leads_list):
         if not leads_list:
@@ -256,8 +277,12 @@ def process_client(client):
             cp = l["clean_phone"]
             cn = l["clean_nome"]
             cv = cw_by_full_phone.get(cp) or cw_by_suffix.get(cp[-8:] if len(cp) >= 8 else "") or cw_by_name.get(cn if len(cn) > 3 else "")
-            is_resp = False
             cv_id = cv.get("id") if cv else None
+            is_resp = False
+            waiting_context = ""
+
+            # 1. Validação no CRM (Planilha): Se o lead já agendou, compareceu ou comprou, já teve êxito
+            is_crm_concluded = l.get("is_agend") or l.get("is_comp") or l.get("is_ganho")
 
             if cv:
                 last_msg = cv.get("last_non_activity_message") or {}
@@ -267,17 +292,56 @@ def process_client(client):
                 c_at = cv.get("created_at")
                 created_dt = datetime.datetime.fromtimestamp(c_at) if c_at else datetime.datetime.combine(l["data_obj"], datetime.time(12, 0))
 
-                # REGRA ABSOLUTA: A última mensagem tem que ser nossa (m_type == 1) ou conversa resolvida!
-                if m_type == 1 or status == "resolved":
+                raw_content = (last_msg.get("content") or "").strip()
+                content_lower = raw_content.lower()
+                clean_txt = re.sub(r'[^\w\s]', '', content_lower).strip()
+
+                # A) Conclusão comprovada no CRM da planilha (Agendado, Compareceu ou Venda)
+                if is_crm_concluded:
                     is_resp = True
-                    if first_reply:
-                        diff_h = (datetime.datetime.fromtimestamp(first_reply) - created_dt).total_seconds() / 3600.0
-                        if diff_h >= 0:
-                            resp_times.append(diff_h)
+                # B) Conversa resolvida ou silenciada no Chatwoot
+                elif status in ["resolved", "snoozed"]:
+                    is_resp = True
+                # C) A última mensagem partiu da nossa equipe ou bot
+                elif m_type in [1, "outgoing"]:
+                    is_resp = True
+                # D) Validação profunda do contexto da conversa quando a última mensagem foi do lead:
+                elif first_reply and first_reply > 0:
+                    # D.1) Emojis de agradecimento/despedida
+                    if any(e in raw_content for e in CLOSING_EMOJIS) and len(raw_content) <= 10:
+                        is_resp = True
+                    # D.2) Frases de encerramento, agradecimento ou desinteresse expresso
+                    elif any(clean_txt == w or content_lower == w or clean_txt.startswith(w + " ") or clean_txt.endswith(" " + w) for w in CLOSING_WORDS):
+                        is_resp = True
+                    # D.3) Confirmação curta sem perguntas abertas
+                    elif not any(qw in content_lower for qw in QUESTION_WORDS) and len(clean_txt) <= 15:
+                        if clean_txt in ["ok", "ta", "sim", "isso", "obg", "vlw", "certo", "beleza", "show", "combinado"]:
+                            is_resp = True
+                        else:
+                            is_resp = False
+                            waiting_context = f"Aguardando resposta: '{raw_content[:50]}'"
+                    else:
+                        is_resp = False
+                        waiting_context = f"Dúvida aberta do lead: '{raw_content[:50]}'"
+                else:
+                    # first_reply == 0 ou ausente: a equipe NUNCA respondeu o lead
+                    is_resp = False
+                    waiting_context = f"Nunca respondido pela equipe: '{raw_content[:50]}'" if raw_content else "Nunca respondido pela equipe"
+
+                if is_resp and first_reply:
+                    diff_h = (datetime.datetime.fromtimestamp(first_reply) - created_dt).total_seconds() / 3600.0
+                    if diff_h >= 0:
+                        resp_times.append(diff_h)
+
                 hours_wait = round((now_dt - created_dt).total_seconds() / 3600.0, 1)
             else:
                 created_dt = datetime.datetime.combine(l["data_obj"], datetime.time(12, 0))
                 hours_wait = round((now_dt - created_dt).total_seconds() / 3600.0, 1)
+                if is_crm_concluded:
+                    is_resp = True
+                else:
+                    is_resp = False
+                    waiting_context = "Sem conversa criada no Chatwoot"
 
             if is_resp:
                 resp += 1
@@ -293,6 +357,7 @@ def process_client(client):
                     "data": l["data"] + (" " + l["hora"] if l["hora"] else ""),
                     "espera_h": hours_wait,
                     "is_alert": is_alert,
+                    "contexto": waiting_context or "Aguardando resposta da clínica",
                     "link": f"{CHATWOOT_BASE}/app/accounts/1/conversations/{cv_id}" if cv_id else (f"https://wa.me/{cp}" if cp else "")
                 })
 
