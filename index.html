@@ -6175,9 +6175,6 @@ function formatClinicWhatsAppText(client, leadsList, isHoje) {
     if (l.contexto) {
       text += `   💬 *Motivo/Status:* ${l.contexto}\n`;
     }
-    if (l.link) {
-      text += `   ↗️ *Abrir no Chatwoot:* ${l.link}\n`;
-    }
     text += `\n`;
   });
 
@@ -6198,9 +6195,6 @@ function formatSingleLeadWhatsAppText(client, lead) {
   text += `⏰ *Chegada:* ${lead.data} (${lead.espera_h}h de espera) — ${alertTag}\n`;
   if (lead.contexto) {
     text += `💬 *Motivo/Status:* ${lead.contexto}\n`;
-  }
-  if (lead.link) {
-    text += `↗️ *Chatwoot:* ${lead.link}\n`;
   }
   text += `\nPor favor, verificar e responder este contato com prioridade! 🙏`;
   return text;
@@ -6238,9 +6232,6 @@ function formatAllClinicsWhatsAppText(items, isHoje) {
       }
       if (waLink) {
         text += `   📱 ${waLink}\n`;
-      }
-      if (l.link) {
-        text += `   ↗️ Chatwoot: ${l.link}\n`;
       }
       text += `\n`;
     });
