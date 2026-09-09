@@ -102,6 +102,7 @@ def process_client(client):
 
     # 1. Fetch CRM Sheet (Single Source of Truth)
     sept_leads = []
+    hoje_leads = []
     total_leads = 0
     today_leads = 0
     ago_leads = 0
@@ -181,7 +182,7 @@ def process_client(client):
                     n_raw = get_v(idx_nome)
                     p_raw = get_v(idx_num)
                     h_raw = get_v(idx_hora)
-                    sept_leads.append({
+                    lead_obj = {
                         "data": d.strftime("%d/%m/%Y"),
                         "data_obj": d,
                         "hora": h_raw,
@@ -189,23 +190,25 @@ def process_client(client):
                         "clean_nome": re.sub(r'[^\w\s]', '', n_raw).strip().lower(),
                         "phone": p_raw,
                         "clean_phone": re.sub(r'\D', '', p_raw)
-                    })
+                    }
+                    sept_leads.append(lead_obj)
                     if d == now:
-                        today_leads += 1
+                        hoje_leads.append(lead_obj)
                 elif d.year == now.year and d.month == (now.month - 1):
                     ago_leads += 1
         except Exception as e:
             log_msg(f"Aviso ao ler planilha {name}: {e}")
 
     # 2. Fetch Chatwoot Conversations for inbox (Index by phone suffix & name)
+    cw_by_full_phone = {}
     cw_by_suffix = {}
     cw_by_name = {}
 
     if ib_id and not is_discon and sept_leads:
         page = 1
-        has_more = True
         sept_start = datetime.datetime(2026, 9, 1, 0, 0, 0)
-        while has_more and page <= 8:
+        sept_start_ts = int(sept_start.timestamp())
+        while page <= 30:
             url_cw = f"{CHATWOOT_BASE}/api/v1/accounts/1/conversations?inbox_id={ib_id}&status=all&page={page}"
             try:
                 r = requests.get(url_cw, headers=HEADERS_CW, timeout=12)
@@ -215,112 +218,106 @@ def process_client(client):
                 if not payload:
                     break
                 for cv in payload:
-                    c_at = cv.get("created_at")
-                    if c_at and datetime.datetime.fromtimestamp(c_at) < sept_start:
-                        pass
                     sender = cv.get("meta", {}).get("sender", {})
                     s_phone = re.sub(r'\D', '', sender.get("phone_number") or '')
                     s_name = re.sub(r'[^\w\s]', '', sender.get("name") or '').strip().lower()
-                    if len(s_phone) >= 8:
-                        suffix = s_phone[-8:]
-                        if suffix not in cw_by_suffix:
-                            cw_by_suffix[suffix] = cv
+                    if s_phone:
+                        cw_by_full_phone[s_phone] = cv
+                        if len(s_phone) >= 8:
+                            cw_by_suffix[s_phone[-8:]] = cv
                     if s_name and len(s_name) > 3:
-                        if s_name not in cw_by_name:
-                            cw_by_name[s_name] = cv
+                        cw_by_name[s_name] = cv
+
+                last_item = payload[-1]
+                last_act = last_item.get("last_activity_at") or last_item.get("created_at")
+                if last_act and last_act < sept_start_ts:
+                    break
                 if len(payload) < 25:
                     break
                 page += 1
             except Exception:
                 break
 
-    # 3. Match ONLY the leads from the client's spreadsheet
-    responded = 0
-    unresponded = 0
-    alerts_24h = 0
-    resp_times = []
-    unresp_leads = []
+    # 3. Match Helper: A ÚLTIMA MENSAGEM TEM QUE SER NOSSA OU RESOLVIDA
     now_dt = datetime.datetime.now()
+    def evaluate_subset(leads_list):
+        if not leads_list:
+            return {
+                "leads": 0, "resp": 0, "unresp": 0, "pct_resp": 0.0,
+                "alerts": 0, "avg_h": 0.0, "status": "Sem Entrada", "unresp_leads": []
+            }
+        resp = 0
+        unresp = 0
+        alerts = 0
+        resp_times = []
+        unresp_items = []
 
-    for lead in sept_leads:
-        clean_p = lead["clean_phone"]
-        clean_n = lead["clean_nome"]
+        for l in leads_list:
+            cp = l["clean_phone"]
+            cn = l["clean_nome"]
+            cv = cw_by_full_phone.get(cp) or cw_by_suffix.get(cp[-8:] if len(cp) >= 8 else "") or cw_by_name.get(cn if len(cn) > 3 else "")
+            is_resp = False
+            cv_id = cv.get("id") if cv else None
 
-        cv = None
-        if len(clean_p) >= 8 and clean_p[-8:] in cw_by_suffix:
-            cv = cw_by_suffix[clean_p[-8:]]
-        elif clean_n and len(clean_n) > 3 and clean_n in cw_by_name:
-            cv = cw_by_name[clean_n]
+            if cv:
+                last_msg = cv.get("last_non_activity_message") or {}
+                m_type = last_msg.get("message_type")
+                status = cv.get("status")
+                first_reply = cv.get("first_reply_created_at")
+                c_at = cv.get("created_at")
+                created_dt = datetime.datetime.fromtimestamp(c_at) if c_at else datetime.datetime.combine(l["data_obj"], datetime.time(12, 0))
 
-        is_resp = False
-        cv_id = cv.get("id") if cv else None
-
-        if cv:
-            first_reply = cv.get("first_reply_created_at")
-            c_at = cv.get("created_at")
-            created_dt = datetime.datetime.fromtimestamp(c_at) if c_at else datetime.datetime.combine(lead["data_obj"], datetime.time(12, 0))
-            if first_reply:
-                is_resp = True
-                resp_dt = datetime.datetime.fromtimestamp(first_reply)
-                diff_h = (resp_dt - created_dt).total_seconds() / 3600.0
-                if diff_h >= 0:
-                    resp_times.append(diff_h)
-            else:
-                msgs = cv.get("messages", [])
-                outgoing = [m for m in msgs if m.get("message_type") in [1, "outgoing"]]
-                if outgoing:
+                # REGRA ABSOLUTA: A última mensagem tem que ser nossa (m_type == 1) ou conversa resolvida!
+                if m_type == 1 or status == "resolved":
                     is_resp = True
-                    first_out = outgoing[0].get("created_at")
-                    if first_out:
-                        diff_h = (datetime.datetime.fromtimestamp(first_out) - created_dt).total_seconds() / 3600.0
+                    if first_reply:
+                        diff_h = (datetime.datetime.fromtimestamp(first_reply) - created_dt).total_seconds() / 3600.0
                         if diff_h >= 0:
                             resp_times.append(diff_h)
-            hours_wait = round((now_dt - created_dt).total_seconds() / 3600.0, 1)
+                hours_wait = round((now_dt - created_dt).total_seconds() / 3600.0, 1)
+            else:
+                created_dt = datetime.datetime.combine(l["data_obj"], datetime.time(12, 0))
+                hours_wait = round((now_dt - created_dt).total_seconds() / 3600.0, 1)
+
+            if is_resp:
+                resp += 1
+            else:
+                unresp += 1
+                is_alert = hours_wait > 24
+                if is_alert:
+                    alerts += 1
+                unresp_items.append({
+                    "id": cv_id,
+                    "name": l["nome"],
+                    "phone": l["phone"] if l["phone"] else "—",
+                    "data": l["data"] + (" " + l["hora"] if l["hora"] else ""),
+                    "espera_h": hours_wait,
+                    "is_alert": is_alert,
+                    "link": f"{CHATWOOT_BASE}/app/accounts/1/conversations/{cv_id}" if cv_id else (f"https://wa.me/{cp}" if cp else "")
+                })
+
+        pct = round((resp / len(leads_list) * 100), 1) if leads_list else 0.0
+        avg_t = round((sum(resp_times) / len(resp_times)), 1) if resp_times else 0.0
+
+        if is_discon:
+            saude = "Desconectado"
+        elif alerts >= 3 or (len(leads_list) > 5 and pct < 70):
+            saude = "Gargalo"
+        elif alerts > 0 or (len(leads_list) > 5 and pct < 90) or avg_t > 24:
+            saude = "Atenção"
+        elif len(leads_list) == 0:
+            saude = "Sem Entrada"
         else:
-            created_dt = datetime.datetime.combine(lead["data_obj"], datetime.time(12, 0))
-            hours_wait = round((now_dt - created_dt).total_seconds() / 3600.0, 1)
+            saude = "Saudável"
 
-        if is_resp:
-            responded += 1
-        else:
-            unresponded += 1
-            is_alert = hours_wait > 24
-            if is_alert:
-                alerts_24h += 1
-            unresp_leads.append({
-                "id": cv_id,
-                "name": lead["nome"],
-                "phone": lead["phone"] if lead["phone"] else "—",
-                "data": lead["data"] + (" " + lead["hora"] if lead["hora"] else ""),
-                "espera_h": hours_wait,
-                "is_alert": is_alert,
-                "link": f"{CHATWOOT_BASE}/app/accounts/1/conversations/{cv_id}" if cv_id else (f"https://wa.me/{clean_p}" if clean_p else "")
-            })
+        return {
+            "leads": len(leads_list), "resp": resp, "unresp": unresp,
+            "pct_resp": pct, "alerts": alerts, "avg_h": avg_t,
+            "status": saude, "unresp_leads": unresp_items
+        }
 
-    cw_leads = len(sept_leads)
-    pct_resp = round((responded / cw_leads * 100), 1) if cw_leads > 0 else 0.0
-    avg_resp_h = round((sum(resp_times) / len(resp_times)), 1) if resp_times else 0.0
-
-    if is_discon:
-        cw_status = "Desconectado"
-        status_code = "descon"
-        status_text = "🔴 WhatsApp Off"
-    elif alerts_24h >= 3 or (cw_leads > 5 and pct_resp < 70):
-        cw_status = "Gargalo"
-        status_code = "alta" if today_leads > 0 or cw_leads > 10 else "mod"
-        status_text = "🟢 Alta Tração" if status_code == "alta" else "🟡 Moderado"
-    elif alerts_24h > 0 or (cw_leads > 5 and pct_resp < 90) or avg_resp_h > 24:
-        cw_status = "Atenção"
-        status_code = "alta" if today_leads > 0 or cw_leads > 10 else "mod"
-        status_text = "🟢 Alta Tração" if status_code == "alta" else "🟡 Moderado"
-    elif cw_leads == 0:
-        cw_status = "Sem Entrada"
-        status_code = "pausado"
-        status_text = "⚪ Sem Leads"
-    else:
-        cw_status = "Saudável"
-        status_code = "alta" if today_leads > 0 or cw_leads > 10 else "mod"
-        status_text = "🟢 Alta Tração" if status_code == "alta" else "🟡 Moderado"
+    m_set = evaluate_subset(sept_leads)
+    m_hoje = evaluate_subset(hoje_leads)
 
     tx_ag = round((agendados / total_leads * 100), 1) if total_leads > 0 else 0.0
     tx_cp = round((compareceram / agendados * 100), 1) if agendados > 0 else 0.0
@@ -331,21 +328,32 @@ def process_client(client):
         "name": name,
         "seg": client["seg"],
         "inbox_id": ib_id,
-        "cw_leads": cw_leads,
-        "cw_resp": responded,
-        "cw_unresp": unresponded,
-        "cw_pct_resp": pct_resp,
-        "cw_alerts": alerts_24h,
-        "cw_avg_resp_h": avg_resp_h,
-        "cw_status": cw_status,
-        "unresp_leads": unresp_leads,
+        # Setembro Metrics (Default)
+        "cw_leads": m_set["leads"],
+        "cw_resp": m_set["resp"],
+        "cw_unresp": m_set["unresp"],
+        "cw_pct_resp": m_set["pct_resp"],
+        "cw_alerts": m_set["alerts"],
+        "cw_avg_resp_h": m_set["avg_h"],
+        "cw_status": m_set["status"],
+        "unresp_leads": m_set["unresp_leads"],
+        # Hoje Metrics
+        "hoje_cw_leads": m_hoje["leads"],
+        "hoje_cw_resp": m_hoje["resp"],
+        "hoje_cw_unresp": m_hoje["unresp"],
+        "hoje_cw_pct_resp": m_hoje["pct_resp"],
+        "hoje_cw_alerts": m_hoje["alerts"],
+        "hoje_cw_avg_resp_h": m_hoje["avg_h"],
+        "hoje_cw_status": m_hoje["status"],
+        "hoje_unresp_leads": m_hoje["unresp_leads"],
+        # Baseline Leads
         "total": total_leads,
-        "set": cw_leads,
+        "set": m_set["leads"],
         "ago": ago_leads,
-        "hoje": today_leads,
+        "hoje": m_hoje["leads"],
         "ult": latest_date.strftime("%d/%m/%Y") if latest_date else "—",
-        "status": status_code,
-        "statusText": status_text,
+        "status": "descon" if is_discon else ("alta" if m_hoje["leads"] > 0 or m_set["leads"] > 10 else ("mod" if m_set["leads"] > 0 else "pausado")),
+        "statusText": "🔴 WhatsApp Off" if is_discon else ("🟢 Alta Tração" if m_hoje["leads"] > 0 or m_set["leads"] > 10 else ("🟡 Moderado" if m_set["leads"] > 0 else "⚪ Sem Leads")),
         "agendados": agendados,
         "tx_agend": tx_ag,
         "comp": compareceram,
