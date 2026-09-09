@@ -87,7 +87,8 @@ def fetch_chatwoot_metrics(client):
     if not ib_id:
         return {
             "cw_leads": 0, "cw_resp": 0, "cw_unresp": 0, "cw_pct_resp": 0.0,
-            "cw_alerts": 0, "cw_avg_resp_h": 0.0, "cw_status": "Desconectado" if client.get("disconnected") else "Sem Entrada"
+            "cw_alerts": 0, "cw_avg_resp_h": 0.0, "cw_status": "Desconectado" if client.get("disconnected") else "Sem Entrada",
+            "unresp_leads": []
         }
 
     now = datetime.datetime.now()
@@ -128,6 +129,7 @@ def fetch_chatwoot_metrics(client):
     alerts_24h = 0
     total_resp_time_h = 0.0
     resp_count = 0
+    unresp_leads = []
 
     for cv in sept_convs:
         c_at = cv.get("created_at")
@@ -159,9 +161,27 @@ def fetch_chatwoot_metrics(client):
             responded += 1
         else:
             unresponded += 1
-            hours_since = (now - created_dt).total_seconds() / 3600.0
-            if hours_since > 24 and status != "resolved":
+            hours_since = round((now - created_dt).total_seconds() / 3600.0, 1)
+            is_alert = hours_since > 24 and status != "resolved"
+            if is_alert:
                 alerts_24h += 1
+
+            sender = cv.get("meta", {}).get("sender", {})
+            lead_name = (sender.get("name") or "").strip()
+            if not lead_name or lead_name == "..":
+                lead_name = "Lead sem nome"
+            lead_phone = (sender.get("phone_number") or "").strip()
+            cv_id = cv.get("id")
+
+            unresp_leads.append({
+                "id": cv_id,
+                "name": lead_name,
+                "phone": lead_phone if lead_phone else "—",
+                "data": created_dt.strftime("%d/%m %H:%M"),
+                "espera_h": hours_since,
+                "is_alert": is_alert,
+                "link": f"{CHATWOOT_BASE}/app/accounts/1/conversations/{cv_id}"
+            })
 
     pct_resp = round((responded / total_leads * 100), 1) if total_leads > 0 else 0.0
     avg_resp_h = round((total_resp_time_h / resp_count), 1) if resp_count > 0 else 0.0
@@ -184,7 +204,8 @@ def fetch_chatwoot_metrics(client):
         "cw_pct_resp": pct_resp,
         "cw_alerts": alerts_24h,
         "cw_avg_resp_h": avg_resp_h,
-        "cw_status": saude
+        "cw_status": saude,
+        "unresp_leads": unresp_leads
     }
 
 # Historical CRM Baseline (Sheet Totals & Funnel)
@@ -272,6 +293,7 @@ def sync():
             "cw_alerts": cw["cw_alerts"],
             "cw_avg_resp_h": cw["cw_avg_resp_h"],
             "cw_status": cw["cw_status"],
+            "unresp_leads": cw.get("unresp_leads", []),
             # Leads baseline
             "total": base["total"],
             "set": base["set"],
