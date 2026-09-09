@@ -292,7 +292,7 @@ def process_client(client):
                 c_at = cv.get("created_at")
                 created_dt = datetime.datetime.fromtimestamp(c_at) if c_at else datetime.datetime.combine(l["data_obj"], datetime.time(12, 0))
 
-                raw_content = (last_msg.get("content") or "").strip()
+                raw_content = re.sub(r'[\r\n\t\xa0]+', ' ', (last_msg.get("content") or "")).strip()
                 content_lower = raw_content.lower()
                 clean_txt = re.sub(r'[^\w\s]', '', content_lower).strip()
 
@@ -460,7 +460,7 @@ def sync():
     data_json = json.dumps(compiled, indent=2, ensure_ascii=False)
     html = re.sub(
         r'const DATA = \[[\s\S]*?\];',
-        f'const DATA = {data_json};',
+        lambda _: f'const DATA = {data_json};',
         html
     )
 
