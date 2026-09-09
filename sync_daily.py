@@ -215,35 +215,46 @@ def process_client(client):
         page = 1
         sept_start = datetime.datetime(2026, 9, 1, 0, 0, 0)
         sept_start_ts = int(sept_start.timestamp())
+        session = requests.Session()
         while page <= 30:
             url_cw = f"{CHATWOOT_BASE}/api/v1/accounts/1/conversations?inbox_id={ib_id}&status=all&page={page}"
-            try:
-                r = requests.get(url_cw, headers=HEADERS_CW, timeout=12)
-                if r.status_code != 200:
-                    break
-                payload = r.json().get("data", {}).get("payload", [])
-                if not payload:
-                    break
-                for cv in payload:
-                    sender = cv.get("meta", {}).get("sender", {})
-                    s_phone = re.sub(r'\D', '', sender.get("phone_number") or '')
-                    s_name = re.sub(r'[^\w\s]', '', sender.get("name") or '').strip().lower()
-                    if s_phone:
-                        cw_by_full_phone[s_phone] = cv
-                        if len(s_phone) >= 8:
-                            cw_by_suffix[s_phone[-8:]] = cv
-                    if s_name and len(s_name) > 3:
-                        cw_by_name[s_name] = cv
+            payload = None
+            for attempt in range(3):
+                try:
+                    r = session.get(url_cw, headers=HEADERS_CW, timeout=15)
+                    if r.status_code == 200:
+                        payload = r.json().get("data", {}).get("payload", [])
+                        break
+                    elif r.status_code in [429, 502, 503, 504]:
+                        import time
+                        time.sleep(1.5 * (attempt + 1))
+                    else:
+                        break
+                except Exception:
+                    import time
+                    time.sleep(1.5 * (attempt + 1))
 
-                last_item = payload[-1]
-                last_act = last_item.get("last_activity_at") or last_item.get("created_at")
-                if last_act and last_act < sept_start_ts:
-                    break
-                if len(payload) < 25:
-                    break
-                page += 1
-            except Exception:
+            if not payload:
                 break
+
+            for cv in payload:
+                sender = cv.get("meta", {}).get("sender", {})
+                s_phone = re.sub(r'\D', '', sender.get("phone_number") or '')
+                s_name = re.sub(r'[^\w\s]', '', sender.get("name") or '').strip().lower()
+                if s_phone:
+                    cw_by_full_phone[s_phone] = cv
+                    if len(s_phone) >= 8:
+                        cw_by_suffix[s_phone[-8:]] = cv
+                if s_name and len(s_name) > 3:
+                    cw_by_name[s_name] = cv
+
+            last_item = payload[-1]
+            last_act = last_item.get("last_activity_at") or last_item.get("created_at")
+            if last_act and last_act < sept_start_ts:
+                break
+            if len(payload) < 25:
+                break
+            page += 1
 
     # 3. Match Helper: Validação Contextual Profunda da Conversa
     CLOSING_WORDS = {
@@ -430,8 +441,8 @@ def process_client(client):
 def sync():
     log_msg("Iniciando varredura no Google Sheets CRM e Chatwoot para todas as clínicas...")
 
-    # Parallel CRM & Chatwoot Extraction
-    with ThreadPoolExecutor(max_workers=8) as executor:
+    # Parallel CRM & Chatwoot Extraction (4 workers to avoid EasyPanel/Chatwoot rate limits)
+    with ThreadPoolExecutor(max_workers=4) as executor:
         compiled = list(executor.map(process_client, CLIENTS))
 
     # Sort primarily by september leads, then today
