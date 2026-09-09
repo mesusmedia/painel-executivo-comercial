@@ -9,7 +9,7 @@ import requests
 REPO_DIR = r"C:\Users\oluca\painel-executivo-comercial"
 LOG_FILE = os.path.join(REPO_DIR, "sync_daily.log")
 PID_FILE = os.path.join(REPO_DIR, ".sync_daemon.pid")
-INTERVAL_SECONDS = 7200  # Sincroniza a cada 2 horas em background
+INTERVAL_SECONDS = 3600  # Sincroniza a cada 1 hora em background
 
 def log(msg):
     ts = datetime.datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
@@ -119,7 +119,7 @@ def main():
     # 1. Sincroniza imediatamente na inicializacao
     execute_sync()
 
-    log(f"Daemon ativo em background. Proxima sincronizacao automatica em {INTERVAL_SECONDS // 3600} horas.")
+    log(f"Daemon ativo em background. Proxima sincronizacao automatica em {INTERVAL_SECONDS // 3600} hora.")
     try:
         while True:
             time.sleep(INTERVAL_SECONDS)
