@@ -1097,6 +1097,170 @@ th.col-period-header {
 .modal-close:hover {
   border-color: var(--ring);
 }
+
+/* Expandable Unresponded Leads Accordion */
+.btn-expand-leads {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: color-mix(in oklch, var(--secondary) 15%, transparent);
+  color: var(--secondary);
+  border: 1px solid color-mix(in oklch, var(--secondary) 35%, transparent);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.btn-expand-leads:hover {
+  background: var(--secondary);
+  color: #ffffff;
+  border-color: var(--secondary);
+}
+.btn-expand-leads.active {
+  background: var(--secondary);
+  color: #ffffff;
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--secondary) 30%, transparent);
+}
+.expand-detail-row {
+  background: color-mix(in oklch, var(--card) 94%, var(--muted));
+  transition: all 0.25s ease;
+}
+.expand-detail-row > td {
+  padding: 0 !important;
+  border-bottom: 2px solid color-mix(in oklch, var(--secondary) 40%, transparent) !important;
+}
+.expand-card {
+  margin: 10px 14px 16px 14px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  animation: slideDown 0.2s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.expand-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.expand-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--foreground);
+}
+.expand-title strong {
+  color: var(--foreground);
+}
+.expand-sub {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin-left: 6px;
+}
+.btn-close-expand {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-close-expand:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+.expand-table-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.expand-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  background: var(--card);
+}
+.expand-table th {
+  background: color-mix(in oklch, var(--card) 85%, var(--muted));
+  color: var(--muted-foreground);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 12px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.expand-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid color-mix(in oklch, var(--border) 60%, transparent);
+  vertical-align: middle;
+}
+.expand-table tr:last-child td {
+  border-bottom: none;
+}
+.lead-phone-link {
+  color: var(--secondary);
+  text-decoration: none;
+  font-weight: 500;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.lead-phone-link:hover {
+  text-decoration: underline;
+}
+.lead-tag-alert {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.lead-tag-normal {
+  background: color-mix(in oklch, var(--muted) 45%, transparent);
+  color: var(--muted-foreground);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+.btn-open-cw {
+  background: var(--primary);
+  color: #ffffff !important;
+  padding: 5px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+.btn-open-cw:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
 </style>
 </head>
 <body>
@@ -1118,7 +1282,7 @@ th.col-period-header {
         <span id="themeToggleText">Modo Claro</span>
       </button>
       <div class="live-pill"><span class="live-dot"></span> Sincronizado com CRMs</div>
-      <div style="font-size:0.85rem;color:var(--text-muted);">08/09/2026 às 21:12</div>
+      <div style="font-size:0.85rem;color:var(--text-muted);">08/09/2026 às 21:22</div>
     </div>
   </div>
 </header>
@@ -1400,13 +1564,33 @@ const DATA = [
     "name": "Dr. Bruno Araújo",
     "seg": "Saúde",
     "inbox_id": 103,
-    "cw_leads": 17,
-    "cw_resp": 15,
+    "cw_leads": 18,
+    "cw_resp": 16,
     "cw_unresp": 2,
-    "cw_pct_resp": 88.2,
+    "cw_pct_resp": 88.9,
     "cw_alerts": 0,
-    "cw_avg_resp_h": 2.7,
+    "cw_avg_resp_h": 2.5,
     "cw_status": "Atenção",
+    "unresp_leads": [
+      {
+        "id": 59479,
+        "name": "Iva Borges",
+        "phone": "+5527988771204",
+        "data": "08/09 19:21",
+        "espera_h": 2.0,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59479"
+      },
+      {
+        "id": 59422,
+        "name": "ADEIR CARVALHO",
+        "phone": "+5528999521901",
+        "data": "08/09 16:50",
+        "espera_h": 4.5,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59422"
+      }
+    ],
     "total": 1077,
     "set": 189,
     "ago": 193,
@@ -1426,13 +1610,14 @@ const DATA = [
     "name": "Victoriano Faces",
     "seg": "Estética",
     "inbox_id": 124,
-    "cw_leads": 21,
-    "cw_resp": 20,
-    "cw_unresp": 1,
-    "cw_pct_resp": 95.2,
+    "cw_leads": 0,
+    "cw_resp": 0,
+    "cw_unresp": 0,
+    "cw_pct_resp": 0.0,
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.0,
-    "cw_status": "Saudável",
+    "cw_status": "Sem Entrada",
+    "unresp_leads": [],
     "total": 2468,
     "set": 173,
     "ago": 615,
@@ -1452,13 +1637,78 @@ const DATA = [
     "name": "Dr. Caio Figueira",
     "seg": "Saúde",
     "inbox_id": 134,
-    "cw_leads": 0,
-    "cw_resp": 0,
-    "cw_unresp": 0,
-    "cw_pct_resp": 0.0,
+    "cw_leads": 22,
+    "cw_resp": 15,
+    "cw_unresp": 7,
+    "cw_pct_resp": 68.2,
     "cw_alerts": 0,
-    "cw_avg_resp_h": 0.0,
-    "cw_status": "Sem Entrada",
+    "cw_avg_resp_h": 24.4,
+    "cw_status": "Gargalo",
+    "unresp_leads": [
+      {
+        "id": 59508,
+        "name": "Ana Paula Sampaio",
+        "phone": "+558598435141",
+        "data": "08/09 20:53",
+        "espera_h": 0.5,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59508"
+      },
+      {
+        "id": 59507,
+        "name": "Fabiola",
+        "phone": "+558588413705",
+        "data": "08/09 20:44",
+        "espera_h": 0.6,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59507"
+      },
+      {
+        "id": 59496,
+        "name": "Aldezite",
+        "phone": "+558597526155",
+        "data": "08/09 20:02",
+        "espera_h": 1.3,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59496"
+      },
+      {
+        "id": 59498,
+        "name": "Aurea Estela Esteves",
+        "phone": "+558588238152",
+        "data": "08/09 20:05",
+        "espera_h": 1.3,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59498"
+      },
+      {
+        "id": 59480,
+        "name": "Josy Oliveira",
+        "phone": "+553588362454",
+        "data": "08/09 19:29",
+        "espera_h": 1.9,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59480"
+      },
+      {
+        "id": 59442,
+        "name": "Abralina Gomes",
+        "phone": "+558898075247",
+        "data": "08/09 17:40",
+        "espera_h": 3.7,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59442"
+      },
+      {
+        "id": 59389,
+        "name": "Lucas Medeiros",
+        "phone": "+558399836304",
+        "data": "08/09 15:41",
+        "espera_h": 5.7,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59389"
+      }
+    ],
     "total": 474,
     "set": 156,
     "ago": 316,
@@ -1485,6 +1735,62 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 41.0,
     "cw_status": "Atenção",
+    "unresp_leads": [
+      {
+        "id": 59505,
+        "name": "Valta Viana",
+        "phone": "+5519998925858",
+        "data": "08/09 20:28",
+        "espera_h": 0.9,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59505"
+      },
+      {
+        "id": 59476,
+        "name": "🍀",
+        "phone": "+554391456623",
+        "data": "08/09 19:09",
+        "espera_h": 2.2,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59476"
+      },
+      {
+        "id": 59455,
+        "name": "Cleuza",
+        "phone": "+556286231300",
+        "data": "08/09 18:09",
+        "espera_h": 3.2,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59455"
+      },
+      {
+        "id": 59394,
+        "name": "Roze 🌺🌺",
+        "phone": "+5527997877692",
+        "data": "08/09 15:50",
+        "espera_h": 5.5,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59394"
+      },
+      {
+        "id": 59351,
+        "name": "Silvia",
+        "phone": "+556791014040",
+        "data": "08/09 14:24",
+        "espera_h": 7.0,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59351"
+      },
+      {
+        "id": 59323,
+        "name": "Marili",
+        "phone": "+554391353811",
+        "data": "08/09 13:09",
+        "espera_h": 8.2,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59323"
+      }
+    ],
     "total": 473,
     "set": 80,
     "ago": 224,
@@ -1511,6 +1817,17 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 15.1,
     "cw_status": "Saudável",
+    "unresp_leads": [
+      {
+        "id": 59464,
+        "name": "~ • Dayane Cohenes  🌷",
+        "phone": "+5513997687726",
+        "data": "08/09 18:44",
+        "espera_h": 2.6,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59464"
+      }
+    ],
     "total": 2718,
     "set": 77,
     "ago": 356,
@@ -1531,12 +1848,50 @@ const DATA = [
     "seg": "Estética",
     "inbox_id": 139,
     "cw_leads": 14,
-    "cw_resp": 11,
-    "cw_unresp": 3,
-    "cw_pct_resp": 78.6,
+    "cw_resp": 10,
+    "cw_unresp": 4,
+    "cw_pct_resp": 71.4,
     "cw_alerts": 0,
-    "cw_avg_resp_h": 1.3,
+    "cw_avg_resp_h": 0.3,
     "cw_status": "Atenção",
+    "unresp_leads": [
+      {
+        "id": 59517,
+        "name": "Luciana Arruda",
+        "phone": "+5515997815965",
+        "data": "08/09 21:14",
+        "espera_h": 0.1,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59517"
+      },
+      {
+        "id": 59512,
+        "name": "Fatima Aparecida",
+        "phone": "+5515997850503",
+        "data": "08/09 21:03",
+        "espera_h": 0.3,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59512"
+      },
+      {
+        "id": 59502,
+        "name": "valzinha",
+        "phone": "+5515997372451",
+        "data": "08/09 20:13",
+        "espera_h": 1.1,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59502"
+      },
+      {
+        "id": 59412,
+        "name": "68999404605566",
+        "phone": "+68999404605566",
+        "data": "08/09 16:23",
+        "espera_h": 5.0,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59412"
+      }
+    ],
     "total": 225,
     "set": 74,
     "ago": 151,
@@ -1563,6 +1918,26 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.1,
     "cw_status": "Saudável",
+    "unresp_leads": [
+      {
+        "id": 59503,
+        "name": "Daniela Sartorio",
+        "phone": "+5513981839488",
+        "data": "08/09 20:15",
+        "espera_h": 1.1,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59503"
+      },
+      {
+        "id": 59461,
+        "name": "Sidineia Santana",
+        "phone": "+5513982046056",
+        "data": "08/09 18:37",
+        "espera_h": 2.7,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59461"
+      }
+    ],
     "total": 4610,
     "set": 65,
     "ago": 401,
@@ -1582,13 +1957,14 @@ const DATA = [
     "name": "Orgulho de Sorrir Peruíbe",
     "seg": "Odonto",
     "inbox_id": 115,
-    "cw_leads": 0,
-    "cw_resp": 0,
+    "cw_leads": 9,
+    "cw_resp": 9,
     "cw_unresp": 0,
-    "cw_pct_resp": 0.0,
+    "cw_pct_resp": 100.0,
     "cw_alerts": 0,
-    "cw_avg_resp_h": 0.0,
-    "cw_status": "Sem Entrada",
+    "cw_avg_resp_h": 0.1,
+    "cw_status": "Saudável",
+    "unresp_leads": [],
     "total": 1692,
     "set": 61,
     "ago": 352,
@@ -1615,6 +1991,17 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.0,
     "cw_status": "Atenção",
+    "unresp_leads": [
+      {
+        "id": 59487,
+        "name": "Leninha Godoy",
+        "phone": "+5513991544496",
+        "data": "08/09 19:56",
+        "espera_h": 1.4,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59487"
+      }
+    ],
     "total": 769,
     "set": 50,
     "ago": 97,
@@ -1641,6 +2028,7 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.0,
     "cw_status": "Saudável",
+    "unresp_leads": [],
     "total": 107,
     "set": 43,
     "ago": 60,
@@ -1667,6 +2055,7 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.0,
     "cw_status": "Saudável",
+    "unresp_leads": [],
     "total": 654,
     "set": 42,
     "ago": 167,
@@ -1686,13 +2075,24 @@ const DATA = [
     "name": "Clínica Glow",
     "seg": "Estética",
     "inbox_id": 82,
-    "cw_leads": 5,
+    "cw_leads": 6,
     "cw_resp": 5,
-    "cw_unresp": 0,
-    "cw_pct_resp": 100.0,
+    "cw_unresp": 1,
+    "cw_pct_resp": 83.3,
     "cw_alerts": 0,
     "cw_avg_resp_h": 2.2,
-    "cw_status": "Saudável",
+    "cw_status": "Atenção",
+    "unresp_leads": [
+      {
+        "id": 59519,
+        "name": "Cristiane Valentini",
+        "phone": "+555491730353",
+        "data": "08/09 21:20",
+        "espera_h": 0.0,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59519"
+      }
+    ],
     "total": 1213,
     "set": 34,
     "ago": 113,
@@ -1719,6 +2119,17 @@ const DATA = [
     "cw_alerts": 1,
     "cw_avg_resp_h": 16.3,
     "cw_status": "Atenção",
+    "unresp_leads": [
+      {
+        "id": 58104,
+        "name": "marciamirandam3",
+        "phone": "+556799093709",
+        "data": "03/09 19:59",
+        "espera_h": 121.4,
+        "is_alert": true,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/58104"
+      }
+    ],
     "total": 1401,
     "set": 23,
     "ago": 94,
@@ -1745,6 +2156,35 @@ const DATA = [
     "cw_alerts": 2,
     "cw_avg_resp_h": 12.0,
     "cw_status": "Atenção",
+    "unresp_leads": [
+      {
+        "id": 59265,
+        "name": "Eugenia Ostapechem",
+        "phone": "+15082927600",
+        "data": "08/09 10:28",
+        "espera_h": 10.9,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59265"
+      },
+      {
+        "id": 57895,
+        "name": "Mak Advogados",
+        "phone": "+553199934661",
+        "data": "03/09 11:09",
+        "espera_h": 130.2,
+        "is_alert": true,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/57895"
+      },
+      {
+        "id": 57958,
+        "name": "Altrac comércio de Instrumentos cirúrgicos",
+        "phone": "+5511994270089",
+        "data": "03/09 13:46",
+        "espera_h": 127.6,
+        "is_alert": true,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/57958"
+      }
+    ],
     "total": 1212,
     "set": 19,
     "ago": 48,
@@ -1771,6 +2211,7 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 2.1,
     "cw_status": "Saudável",
+    "unresp_leads": [],
     "total": 105,
     "set": 19,
     "ago": 75,
@@ -1797,6 +2238,7 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 4.5,
     "cw_status": "Saudável",
+    "unresp_leads": [],
     "total": 88,
     "set": 19,
     "ago": 69,
@@ -1823,6 +2265,26 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 9.1,
     "cw_status": "Atenção",
+    "unresp_leads": [
+      {
+        "id": 59477,
+        "name": "Everton Garcia",
+        "phone": "+553190197868",
+        "data": "08/09 19:12",
+        "espera_h": 2.2,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59477"
+      },
+      {
+        "id": 59458,
+        "name": "Aléxia Santos",
+        "phone": "+553189576620",
+        "data": "08/09 18:23",
+        "espera_h": 3.0,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59458"
+      }
+    ],
     "total": 977,
     "set": 15,
     "ago": 71,
@@ -1849,6 +2311,7 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 7.7,
     "cw_status": "Saudável",
+    "unresp_leads": [],
     "total": 1798,
     "set": 13,
     "ago": 0,
@@ -1875,6 +2338,17 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 6.1,
     "cw_status": "Atenção",
+    "unresp_leads": [
+      {
+        "id": 59484,
+        "name": "Silvana Lemos",
+        "phone": "+5519997893351",
+        "data": "08/09 19:48",
+        "espera_h": 1.6,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59484"
+      }
+    ],
     "total": 1285,
     "set": 11,
     "ago": 82,
@@ -1894,13 +2368,24 @@ const DATA = [
     "name": "Clínica Elodonto",
     "seg": "Odonto",
     "inbox_id": 122,
-    "cw_leads": 12,
-    "cw_resp": 11,
+    "cw_leads": 11,
+    "cw_resp": 10,
     "cw_unresp": 1,
-    "cw_pct_resp": 91.7,
+    "cw_pct_resp": 90.9,
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.4,
     "cw_status": "Saudável",
+    "unresp_leads": [
+      {
+        "id": 59365,
+        "name": "Helite Dedetizadora",
+        "phone": "+554197901722",
+        "data": "08/09 14:53",
+        "espera_h": 6.5,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59365"
+      }
+    ],
     "total": 117,
     "set": 5,
     "ago": 30,
@@ -1927,6 +2412,17 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 1.3,
     "cw_status": "Atenção",
+    "unresp_leads": [
+      {
+        "id": 59509,
+        "name": "Vagner",
+        "phone": "+555199058110",
+        "data": "08/09 21:02",
+        "espera_h": 0.3,
+        "is_alert": false,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/59509"
+      }
+    ],
     "total": 85,
     "set": 3,
     "ago": 15,
@@ -1953,6 +2449,35 @@ const DATA = [
     "cw_alerts": 3,
     "cw_avg_resp_h": 2.1,
     "cw_status": "Desconectado",
+    "unresp_leads": [
+      {
+        "id": 58024,
+        "name": "Princess",
+        "phone": "+555193216167",
+        "data": "03/09 16:54",
+        "espera_h": 124.5,
+        "is_alert": true,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/58024"
+      },
+      {
+        "id": 58010,
+        "name": "Comissaria Raquel✈️🚁",
+        "phone": "+555199526516",
+        "data": "03/09 16:16",
+        "espera_h": 125.1,
+        "is_alert": true,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/58010"
+      },
+      {
+        "id": 57978,
+        "name": "Luma Vitória Scheffer",
+        "phone": "+555196226565",
+        "data": "03/09 14:40",
+        "espera_h": 126.7,
+        "is_alert": true,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/57978"
+      }
+    ],
     "total": 1272,
     "set": 14,
     "ago": 64,
@@ -1979,6 +2504,7 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.0,
     "cw_status": "Desconectado",
+    "unresp_leads": [],
     "total": 85,
     "set": 0,
     "ago": 30,
@@ -2005,6 +2531,7 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.0,
     "cw_status": "Desconectado",
+    "unresp_leads": [],
     "total": 125,
     "set": 0,
     "ago": 30,
@@ -2031,6 +2558,7 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.0,
     "cw_status": "Desconectado",
+    "unresp_leads": [],
     "total": 126,
     "set": 0,
     "ago": 10,
@@ -2057,6 +2585,7 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 2.0,
     "cw_status": "Saudável",
+    "unresp_leads": [],
     "total": 212,
     "set": 2,
     "ago": 57,
@@ -2083,6 +2612,7 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 1.8,
     "cw_status": "Saudável",
+    "unresp_leads": [],
     "total": 336,
     "set": 2,
     "ago": 48,
@@ -2109,6 +2639,7 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.0,
     "cw_status": "Sem Entrada",
+    "unresp_leads": [],
     "total": 592,
     "set": 0,
     "ago": 44,
@@ -2135,6 +2666,7 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 6.8,
     "cw_status": "Saudável",
+    "unresp_leads": [],
     "total": 120,
     "set": 10,
     "ago": 25,
@@ -2161,6 +2693,7 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.2,
     "cw_status": "Saudável",
+    "unresp_leads": [],
     "total": 85,
     "set": 7,
     "ago": 18,
@@ -2187,6 +2720,7 @@ const DATA = [
     "cw_alerts": 0,
     "cw_avg_resp_h": 4.8,
     "cw_status": "Saudável",
+    "unresp_leads": [],
     "total": 150,
     "set": 7,
     "ago": 22,
@@ -2213,6 +2747,17 @@ const DATA = [
     "cw_alerts": 1,
     "cw_avg_resp_h": 0.5,
     "cw_status": "Atenção",
+    "unresp_leads": [
+      {
+        "id": 58045,
+        "name": "C175 - Vivaz Odontologia (GROUP)",
+        "phone": "—",
+        "data": "03/09 17:37",
+        "espera_h": 123.8,
+        "is_alert": true,
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/58045"
+      }
+    ],
     "total": 350,
     "set": 125,
     "ago": 45,
@@ -2545,8 +3090,21 @@ function renderTable(list) {
         ? `<span class="alert-tag-num">${c.cw_alerts} lead${c.cw_alerts > 1 ? 's' : ''}</span>`
         : `<span class="num-val num-zero">0</span>`;
 
-      const unrespHtml = c.cw_unresp > 0 
-        ? `<span class="num-val" style="color:#fbbf24;font-weight:700">${c.cw_unresp}</span>` 
+      const unrespCount = c.cw_unresp || 0;
+      const leadsList = c.unresp_leads || [];
+      const hasLeads = leadsList.length > 0;
+
+      const unrespHtml = unrespCount > 0 
+        ? `
+          <div style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end;">
+            <span class="num-val" style="color:#fbbf24;font-weight:700">${unrespCount}</span>
+            ${hasLeads ? `
+              <button class="btn-expand-leads" id="btn-exp-${c.id}" onclick="toggleExpandLeads('${c.id}', this)" title="Ver ${leadsList.length} leads sem resposta">
+                <span>▼ Leads (${leadsList.length})</span>
+              </button>
+            ` : ''}
+          </div>
+        ` 
         : `<span class="num-val num-zero">0</span>`;
 
       const respHtml = c.cw_resp > 0 
@@ -2556,6 +3114,73 @@ function renderTable(list) {
       const timeHtml = c.cw_avg_resp_h > 0 
         ? `<span class="num-val" style="color:${c.cw_avg_resp_h > 24 ? 'var(--destructive)' : 'var(--muted-foreground)'}">${c.cw_avg_resp_h}h</span>`
         : `<span class="num-val num-zero">—</span>`;
+
+      const leadsListHtml = hasLeads ? `
+        <tr id="expand-row-${c.id}" class="expand-detail-row" style="display:none;">
+          <td colspan="9">
+            <div class="expand-card">
+              <div class="expand-header">
+                <div class="expand-title">
+                  <span>🚨 Leads sem resposta em <strong>${c.name}</strong> (${leadsList.length})</span>
+                  <span class="expand-sub">— Repasse para o analista verificar e responder no Chatwoot</span>
+                </div>
+                <button class="btn-close-expand" onclick="toggleExpandLeads('${c.id}')">✕ Fechar</button>
+              </div>
+              <div class="expand-table-wrap">
+                <table class="expand-table">
+                  <thead>
+                    <tr>
+                      <th style="width:35px">#</th>
+                      <th>Nome do Lead</th>
+                      <th>WhatsApp / Contato</th>
+                      <th>Chegada</th>
+                      <th>Tempo de Espera</th>
+                      <th style="text-align:right">Ação Direta</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${leadsList.map((l, idx) => {
+                      const alertBadge = l.is_alert ? '<span class="lead-tag-alert">⚠️ > 24h</span>' : '<span class="lead-tag-normal">Aguardando</span>';
+                      const cleanPhone = (l.phone || '').replace(/[^0-9]/g, '');
+                      const waLink = cleanPhone ? `https://wa.me/${cleanPhone}` : '';
+                      return `
+                        <tr>
+                          <td style="color:var(--muted-foreground);font-size:0.75rem">${idx + 1}</td>
+                          <td style="font-weight:600;color:var(--foreground)">
+                            <div style="display:flex;align-items:center;gap:6px">
+                              <span>👤</span>
+                              <span>${l.name}</span>
+                            </div>
+                          </td>
+                          <td>
+                            ${cleanPhone ? `
+                              <a href="${waLink}" target="_blank" class="lead-phone-link" title="Abrir conversa no WhatsApp">
+                                💬 ${l.phone}
+                              </a>
+                            ` : `<span style="color:var(--muted-foreground)">—</span>`}
+                          </td>
+                          <td style="color:var(--muted-foreground);font-size:0.8rem">⏰ ${l.data}</td>
+                          <td>
+                            <div style="display:flex;align-items:center;gap:6px">
+                              <span style="font-weight:700;color:${l.is_alert ? 'var(--destructive)' : '#fbbf24'}">${l.espera_h}h</span>
+                              ${alertBadge}
+                            </div>
+                          </td>
+                          <td style="text-align:right">
+                            <a href="${l.link}" target="_blank" class="btn-open-cw" title="Abrir conversa no Chatwoot">
+                              ↗️ Abrir Chatwoot
+                            </a>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </td>
+        </tr>
+      ` : '';
 
       return `
         <tr>
@@ -2574,6 +3199,7 @@ function renderTable(list) {
           <td style="text-align:right" class="${currentSort.col === 'cw_alerts' ? 'col-sorted-active' : ''}">${alertHtml}</td>
           <td style="text-align:right" class="${currentSort.col === 'cw_avg_resp_h' ? 'col-sorted-active' : ''}">${timeHtml}</td>
         </tr>
+        ${leadsListHtml}
       `;
     }).join('');
 
@@ -2698,6 +3324,25 @@ function renderTable(list) {
         </tr>
       `;
     }).join('');
+  }
+}
+
+function toggleExpandLeads(clientId, btn) {
+  const row = document.getElementById(`expand-row-${clientId}`);
+  const btnElem = btn || document.getElementById(`btn-exp-${clientId}`);
+  if (!row) return;
+  const isHidden = row.style.display === 'none' || !row.style.display;
+  row.style.display = isHidden ? 'table-row' : 'none';
+  if (btnElem) {
+    if (isHidden) {
+      btnElem.classList.add('active');
+      btnElem.innerHTML = '▲ Ocultar';
+    } else {
+      const match = btnElem.innerHTML.match(/\(\d+\)/);
+      const countSuffix = match ? ` ${match[0]}` : '';
+      btnElem.classList.remove('active');
+      btnElem.innerHTML = `▼ Leads${countSuffix}`;
+    }
   }
 }
 
