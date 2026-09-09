@@ -79,250 +79,304 @@ CLIENTS = [
     { "id": "C167-AvanteOdontologiaBH", "name": "Avante Odontologia BH", "seg": "Odonto", "inbox_id": 128, "sheet_id": "17axePFMIWOUQ3kGJ308w4kptO6PZt_mY9XwjifqozrY" },
     { "id": "C167-AvanteOdontologiaSL", "name": "Avante Odontologia SL", "seg": "Odonto", "inbox_id": 129, "sheet_id": "1i5nQbdPOPLIQgUjibXCVZwd4JNuLo_AiKsqWEYNBx8k" },
     { "id": "C141-VictorRios", "name": "Victor Rios", "seg": "Saúde", "inbox_id": 112, "sheet_id": "1NQlACxzoHdcjBpH7B2_WDpiMc6uAnznEtiMWHMopHjo" },
-    { "id": "C175-VivazOdontologia", "name": "Vivaz Odontologia", "seg": "Odonto", "inbox_id": 141, "sheet_id": None }
+    { "id": "C175-VivazOdontologia", "name": "Vivaz Odontologia", "seg": "Odonto", "inbox_id": 141, "sheet_id": "1LWOtVjWsaX_tkV1TG8ibN765WbRuNTablOxhwPSyKoc" }
 ]
 
-def fetch_chatwoot_metrics(client):
-    ib_id = client.get("inbox_id")
-    if not ib_id:
-        return {
-            "cw_leads": 0, "cw_resp": 0, "cw_unresp": 0, "cw_pct_resp": 0.0,
-            "cw_alerts": 0, "cw_avg_resp_h": 0.0, "cw_status": "Desconectado" if client.get("disconnected") else "Sem Entrada",
-            "unresp_leads": []
-        }
-
-    now = datetime.datetime.now()
-    sept_start = datetime.datetime(2026, 9, 1, 0, 0, 0)
-    page = 1
-    has_more = True
-    sept_convs = []
-
-    while has_more and page <= 6:
-        url = f"{CHATWOOT_BASE}/api/v1/accounts/1/conversations?inbox_id={ib_id}&status=all&page={page}"
+def parse_sheet_date(d_str):
+    if not d_str:
+        return None
+    m = re.search(r'(\d{1,2})/(\d{1,2})/(\d{4})', str(d_str))
+    if m:
         try:
-            r = requests.get(url, headers=HEADERS_CW, timeout=12)
-            if r.status_code != 200:
-                break
-            payload = r.json().get("data", {}).get("payload", [])
-            if not payload:
-                break
-
-            for cv in payload:
-                c_at = cv.get("created_at")
-                if not c_at:
-                    continue
-                dt = datetime.datetime.fromtimestamp(c_at)
-                if dt >= sept_start:
-                    sept_convs.append(cv)
-                elif dt < sept_start:
-                    has_more = False
-
-            if len(payload) < 25:
-                has_more = False
-            page += 1
+            return datetime.date(int(m.group(3)), int(m.group(2)), int(m.group(1)))
         except Exception:
-            break
+            pass
+    return None
 
-    total_leads = len(sept_convs)
+def process_client(client):
+    cid = client["id"]
+    name = client["name"]
+    sid = client.get("sheet_id")
+    ib_id = client.get("inbox_id")
+    is_discon = client.get("disconnected", False)
+
+    # 1. Fetch CRM Sheet (Single Source of Truth)
+    sept_leads = []
+    total_leads = 0
+    today_leads = 0
+    ago_leads = 0
+    agendados = 0
+    compareceram = 0
+    vendas = 0
+    latest_date = None
+
+    if sid:
+        url_sheet = f"https://docs.google.com/spreadsheets/d/{sid}/gviz/tq?tqx=out:json&gid=1048674045"
+        try:
+            r = requests.get(url_sheet, timeout=12)
+            raw = r.text.replace("/*O_o*/\n", "").replace("google.visualization.Query.setResponse(", "")
+            if raw.endswith(");"):
+                raw = raw[:-2]
+            elif raw.endswith(")"):
+                raw = raw[:-1]
+            data = json.loads(raw)
+
+            cols = [col.get("label") or "" for col in data.get("table", {}).get("cols", [])]
+            idx_data = 0
+            idx_hora = 1
+            idx_nome = 2
+            idx_num = 3
+            idx_agend = None
+            idx_comp = None
+            idx_ganh = None
+
+            for i, col in enumerate(cols):
+                cl = col.lower().strip()
+                if cl == "data":
+                    idx_data = i
+                elif cl == "hora":
+                    idx_hora = i
+                elif cl == "nome":
+                    idx_nome = i
+                elif cl in ["número", "numero", "telefone"]:
+                    idx_num = i
+                elif "agend" in cl and idx_agend is None:
+                    idx_agend = i
+                elif "comp" in cl and idx_comp is None:
+                    idx_comp = i
+                elif ("ganh" in cl or "vend" in cl or "data ganho" in cl) and idx_ganh is None:
+                    idx_ganh = i
+
+            rows = data.get("table", {}).get("rows", [])
+            total_leads = len(rows)
+            now = datetime.date.today()
+
+            for row in rows:
+                cells = row.get("c", [])
+                def get_v(idx):
+                    if idx is not None and idx < len(cells) and cells[idx]:
+                        return str(cells[idx].get("f") or cells[idx].get("v") or "").strip()
+                    return ""
+
+                d_raw = get_v(idx_data)
+                d = parse_sheet_date(d_raw)
+                if not d:
+                    continue
+
+                if not latest_date or d > latest_date:
+                    latest_date = d
+
+                ag_val = get_v(idx_agend).lower()
+                cp_val = get_v(idx_comp).lower()
+                gh_val = get_v(idx_ganh).lower()
+
+                if "agendad" in ag_val or (ag_val and ag_val not in ["não agendado", "nao agendado", "não", "nao", "0", "false", "em atendimento", "n/a"]):
+                    agendados += 1
+                if "compareceu" in cp_val or "sim" in cp_val:
+                    compareceram += 1
+                if "ganh" in gh_val or "sim" in gh_val or (idx_ganh and "data" in cols[idx_ganh].lower() and gh_val):
+                    vendas += 1
+
+                if d.year == now.year and d.month == now.month:
+                    n_raw = get_v(idx_nome)
+                    p_raw = get_v(idx_num)
+                    h_raw = get_v(idx_hora)
+                    sept_leads.append({
+                        "data": d.strftime("%d/%m/%Y"),
+                        "data_obj": d,
+                        "hora": h_raw,
+                        "nome": n_raw if n_raw else "Lead sem nome",
+                        "clean_nome": re.sub(r'[^\w\s]', '', n_raw).strip().lower(),
+                        "phone": p_raw,
+                        "clean_phone": re.sub(r'\D', '', p_raw)
+                    })
+                    if d == now:
+                        today_leads += 1
+                elif d.year == now.year and d.month == (now.month - 1):
+                    ago_leads += 1
+        except Exception as e:
+            log_msg(f"Aviso ao ler planilha {name}: {e}")
+
+    # 2. Fetch Chatwoot Conversations for inbox (Index by phone suffix & name)
+    cw_by_suffix = {}
+    cw_by_name = {}
+
+    if ib_id and not is_discon and sept_leads:
+        page = 1
+        has_more = True
+        sept_start = datetime.datetime(2026, 9, 1, 0, 0, 0)
+        while has_more and page <= 8:
+            url_cw = f"{CHATWOOT_BASE}/api/v1/accounts/1/conversations?inbox_id={ib_id}&status=all&page={page}"
+            try:
+                r = requests.get(url_cw, headers=HEADERS_CW, timeout=12)
+                if r.status_code != 200:
+                    break
+                payload = r.json().get("data", {}).get("payload", [])
+                if not payload:
+                    break
+                for cv in payload:
+                    c_at = cv.get("created_at")
+                    if c_at and datetime.datetime.fromtimestamp(c_at) < sept_start:
+                        pass
+                    sender = cv.get("meta", {}).get("sender", {})
+                    s_phone = re.sub(r'\D', '', sender.get("phone_number") or '')
+                    s_name = re.sub(r'[^\w\s]', '', sender.get("name") or '').strip().lower()
+                    if len(s_phone) >= 8:
+                        suffix = s_phone[-8:]
+                        if suffix not in cw_by_suffix:
+                            cw_by_suffix[suffix] = cv
+                    if s_name and len(s_name) > 3:
+                        if s_name not in cw_by_name:
+                            cw_by_name[s_name] = cv
+                if len(payload) < 25:
+                    break
+                page += 1
+            except Exception:
+                break
+
+    # 3. Match ONLY the leads from the client's spreadsheet
     responded = 0
     unresponded = 0
     alerts_24h = 0
-    total_resp_time_h = 0.0
-    resp_count = 0
+    resp_times = []
     unresp_leads = []
+    now_dt = datetime.datetime.now()
 
-    for cv in sept_convs:
-        c_at = cv.get("created_at")
-        created_dt = datetime.datetime.fromtimestamp(c_at)
-        first_reply = cv.get("first_reply_created_at")
-        status = cv.get("status")
+    for lead in sept_leads:
+        clean_p = lead["clean_phone"]
+        clean_n = lead["clean_nome"]
+
+        cv = None
+        if len(clean_p) >= 8 and clean_p[-8:] in cw_by_suffix:
+            cv = cw_by_suffix[clean_p[-8:]]
+        elif clean_n and len(clean_n) > 3 and clean_n in cw_by_name:
+            cv = cw_by_name[clean_n]
 
         is_resp = False
-        if first_reply:
-            is_resp = True
-            resp_dt = datetime.datetime.fromtimestamp(first_reply)
-            diff_h = (resp_dt - created_dt).total_seconds() / 3600.0
-            if diff_h >= 0:
-                total_resp_time_h += diff_h
-                resp_count += 1
-        else:
-            msgs = cv.get("messages", [])
-            outgoing = [m for m in msgs if m.get("message_type") in [1, "outgoing"]]
-            if outgoing:
+        cv_id = cv.get("id") if cv else None
+
+        if cv:
+            first_reply = cv.get("first_reply_created_at")
+            c_at = cv.get("created_at")
+            created_dt = datetime.datetime.fromtimestamp(c_at) if c_at else datetime.datetime.combine(lead["data_obj"], datetime.time(12, 0))
+            if first_reply:
                 is_resp = True
-                first_out = outgoing[0].get("created_at")
-                if first_out:
-                    diff_h = (datetime.datetime.fromtimestamp(first_out) - created_dt).total_seconds() / 3600.0
-                    if diff_h >= 0:
-                        total_resp_time_h += diff_h
-                        resp_count += 1
+                resp_dt = datetime.datetime.fromtimestamp(first_reply)
+                diff_h = (resp_dt - created_dt).total_seconds() / 3600.0
+                if diff_h >= 0:
+                    resp_times.append(diff_h)
+            else:
+                msgs = cv.get("messages", [])
+                outgoing = [m for m in msgs if m.get("message_type") in [1, "outgoing"]]
+                if outgoing:
+                    is_resp = True
+                    first_out = outgoing[0].get("created_at")
+                    if first_out:
+                        diff_h = (datetime.datetime.fromtimestamp(first_out) - created_dt).total_seconds() / 3600.0
+                        if diff_h >= 0:
+                            resp_times.append(diff_h)
+            hours_wait = round((now_dt - created_dt).total_seconds() / 3600.0, 1)
+        else:
+            created_dt = datetime.datetime.combine(lead["data_obj"], datetime.time(12, 0))
+            hours_wait = round((now_dt - created_dt).total_seconds() / 3600.0, 1)
 
         if is_resp:
             responded += 1
         else:
             unresponded += 1
-            hours_since = round((now - created_dt).total_seconds() / 3600.0, 1)
-            is_alert = hours_since > 24 and status != "resolved"
+            is_alert = hours_wait > 24
             if is_alert:
                 alerts_24h += 1
-
-            sender = cv.get("meta", {}).get("sender", {})
-            lead_name = (sender.get("name") or "").strip()
-            if not lead_name or lead_name == "..":
-                lead_name = "Lead sem nome"
-            lead_phone = (sender.get("phone_number") or "").strip()
-            cv_id = cv.get("id")
-
             unresp_leads.append({
                 "id": cv_id,
-                "name": lead_name,
-                "phone": lead_phone if lead_phone else "—",
-                "data": created_dt.strftime("%d/%m %H:%M"),
-                "espera_h": hours_since,
+                "name": lead["nome"],
+                "phone": lead["phone"] if lead["phone"] else "—",
+                "data": lead["data"] + (" " + lead["hora"] if lead["hora"] else ""),
+                "espera_h": hours_wait,
                 "is_alert": is_alert,
-                "link": f"{CHATWOOT_BASE}/app/accounts/1/conversations/{cv_id}"
+                "link": f"{CHATWOOT_BASE}/app/accounts/1/conversations/{cv_id}" if cv_id else (f"https://wa.me/{clean_p}" if clean_p else "")
             })
 
-    pct_resp = round((responded / total_leads * 100), 1) if total_leads > 0 else 0.0
-    avg_resp_h = round((total_resp_time_h / resp_count), 1) if resp_count > 0 else 0.0
+    cw_leads = len(sept_leads)
+    pct_resp = round((responded / cw_leads * 100), 1) if cw_leads > 0 else 0.0
+    avg_resp_h = round((sum(resp_times) / len(resp_times)), 1) if resp_times else 0.0
 
-    if client.get("disconnected"):
-        saude = "Desconectado"
-    elif alerts_24h >= 3 or (total_leads > 5 and pct_resp < 70):
-        saude = "Gargalo"
-    elif alerts_24h > 0 or (total_leads > 5 and pct_resp < 90) or avg_resp_h > 24:
-        saude = "Atenção"
-    elif total_leads == 0:
-        saude = "Sem Entrada"
+    if is_discon:
+        cw_status = "Desconectado"
+        status_code = "descon"
+        status_text = "🔴 WhatsApp Off"
+    elif alerts_24h >= 3 or (cw_leads > 5 and pct_resp < 70):
+        cw_status = "Gargalo"
+        status_code = "alta" if today_leads > 0 or cw_leads > 10 else "mod"
+        status_text = "🟢 Alta Tração" if status_code == "alta" else "🟡 Moderado"
+    elif alerts_24h > 0 or (cw_leads > 5 and pct_resp < 90) or avg_resp_h > 24:
+        cw_status = "Atenção"
+        status_code = "alta" if today_leads > 0 or cw_leads > 10 else "mod"
+        status_text = "🟢 Alta Tração" if status_code == "alta" else "🟡 Moderado"
+    elif cw_leads == 0:
+        cw_status = "Sem Entrada"
+        status_code = "pausado"
+        status_text = "⚪ Sem Leads"
     else:
-        saude = "Saudável"
+        cw_status = "Saudável"
+        status_code = "alta" if today_leads > 0 or cw_leads > 10 else "mod"
+        status_text = "🟢 Alta Tração" if status_code == "alta" else "🟡 Moderado"
+
+    tx_ag = round((agendados / total_leads * 100), 1) if total_leads > 0 else 0.0
+    tx_cp = round((compareceram / agendados * 100), 1) if agendados > 0 else 0.0
+    tx_vd = round((vendas / compareceram * 100), 1) if compareceram > 0 else 0.0
 
     return {
-        "cw_leads": total_leads,
+        "id": cid,
+        "name": name,
+        "seg": client["seg"],
+        "inbox_id": ib_id,
+        "cw_leads": cw_leads,
         "cw_resp": responded,
         "cw_unresp": unresponded,
         "cw_pct_resp": pct_resp,
         "cw_alerts": alerts_24h,
         "cw_avg_resp_h": avg_resp_h,
-        "cw_status": saude,
-        "unresp_leads": unresp_leads
+        "cw_status": cw_status,
+        "unresp_leads": unresp_leads,
+        "total": total_leads,
+        "set": cw_leads,
+        "ago": ago_leads,
+        "hoje": today_leads,
+        "ult": latest_date.strftime("%d/%m/%Y") if latest_date else "—",
+        "status": status_code,
+        "statusText": status_text,
+        "agendados": agendados,
+        "tx_agend": tx_ag,
+        "comp": compareceram,
+        "tx_comp": tx_cp,
+        "vendas": vendas,
+        "tx_venda": tx_vd
     }
 
-# Historical CRM Baseline (Sheet Totals & Funnel)
-SHEET_CACHE = {
-    "C162-DrBrunoAraujo": { "total": 1077, "set": 189, "ago": 193, "hoje": 21, "ult": "08/09/2026", "agendados": 15, "tx_agend": 1.4, "comp": 6, "tx_comp": 40.0, "vendas": 0, "tx_venda": 0.0 },
-    "C158-VictorianoFaces": { "total": 2468, "set": 173, "ago": 615, "hoje": 15, "ult": "08/09/2026", "agendados": 69, "tx_agend": 2.8, "comp": 3, "tx_comp": 4.3, "vendas": 2, "tx_venda": 66.7 },
-    "C172-DrCaioFigueira": { "total": 474, "set": 156, "ago": 316, "hoje": 11, "ult": "08/09/2026", "agendados": 8, "tx_agend": 1.7, "comp": 1, "tx_comp": 12.5, "vendas": 1, "tx_venda": 100.0 },
-    "C169-DrKeeynerCorrea": { "total": 473, "set": 80, "ago": 224, "hoje": 8, "ult": "08/09/2026", "agendados": 39, "tx_agend": 8.2, "comp": 5, "tx_comp": 12.8, "vendas": 1, "tx_venda": 20.0 },
-    "C123-OrgulhoSaoVicente": { "total": 2718, "set": 77, "ago": 356, "hoje": 7, "ult": "08/09/2026", "agendados": 708, "tx_agend": 26.0, "comp": 58, "tx_comp": 8.2, "vendas": 38, "tx_venda": 65.5 },
-    "C174-EsteticFaceItapetininga": { "total": 225, "set": 74, "ago": 151, "hoje": 8, "ult": "08/09/2026", "agendados": 2, "tx_agend": 0.9, "comp": 0, "tx_comp": 0.0, "vendas": 0, "tx_venda": 0.0 },
-    "C123-DrRafaelRocha": { "total": 4610, "set": 65, "ago": 401, "hoje": 6, "ult": "08/09/2026", "agendados": 1382, "tx_agend": 30.0, "comp": 166, "tx_comp": 12.0, "vendas": 126, "tx_venda": 75.9 },
-    "C123-OrgulhodeSorrirPeruibe": { "total": 1692, "set": 61, "ago": 352, "hoje": 1, "ult": "08/09/2026", "agendados": 998, "tx_agend": 59.0, "comp": 121, "tx_comp": 12.1, "vendas": 31, "tx_venda": 25.6 },
-    "C150-Lumia": { "total": 769, "set": 50, "ago": 97, "hoje": 5, "ult": "08/09/2026", "agendados": 220, "tx_agend": 28.6, "comp": 58, "tx_comp": 26.4, "vendas": 31, "tx_venda": 53.4 },
-    "C171-DraStefaniRezende": { "total": 107, "set": 43, "ago": 60, "hoje": 3, "ult": "08/09/2026", "agendados": 14, "tx_agend": 13.1, "comp": 0, "tx_comp": 0.0, "vendas": 0, "tx_venda": 0.0 },
-    "C163-AcessoSaudeCIC": { "total": 654, "set": 42, "ago": 167, "hoje": 5, "ult": "08/09/2026", "agendados": 18, "tx_agend": 2.8, "comp": 1, "tx_comp": 5.6, "vendas": 0, "tx_venda": 0.0 },
-    "C149-ClinicaGGlow": { "total": 1213, "set": 34, "ago": 113, "hoje": 3, "ult": "08/09/2026", "agendados": 181, "tx_agend": 14.9, "comp": 25, "tx_comp": 13.8, "vendas": 22, "tx_venda": 88.0 },
-    "C52-DrLucasPitao": { "total": 1401, "set": 23, "ago": 94, "hoje": 8, "ult": "08/09/2026", "agendados": 922, "tx_agend": 65.8, "comp": 128, "tx_comp": 13.9, "vendas": 51, "tx_venda": 39.8 },
-    "C135-DraMichelleSantos": { "total": 1212, "set": 19, "ago": 48, "hoje": 2, "ult": "08/09/2026", "agendados": 471, "tx_agend": 38.9, "comp": 12, "tx_comp": 2.5, "vendas": 4, "tx_venda": 33.3 },
-    "C170-DraMariaEduarda": { "total": 105, "set": 19, "ago": 75, "hoje": 1, "ult": "08/09/2026", "agendados": 4, "tx_agend": 3.8, "comp": 0, "tx_comp": 0.0, "vendas": 0, "tx_venda": 0.0 },
-    "C173-OdontoPrime": { "total": 88, "set": 19, "ago": 69, "hoje": 0, "ult": "06/09/2026", "agendados": 16, "tx_agend": 18.2, "comp": 0, "tx_comp": 0.0, "vendas": 0, "tx_venda": 0.0 },
-    "C63-DrRaphaelMoreira": { "total": 977, "set": 15, "ago": 71, "hoje": 4, "ult": "08/09/2026", "agendados": 508, "tx_agend": 52.0, "comp": 1, "tx_comp": 0.2, "vendas": 0, "tx_venda": 0.0 },
-    "C123-OrgulhodeSorrirSantos": { "total": 1798, "set": 13, "ago": 0, "hoje": 0, "ult": "05/09/2026", "agendados": 579, "tx_agend": 32.2, "comp": 74, "tx_comp": 12.8, "vendas": 24, "tx_venda": 32.4 },
-    "C124-DraAnnaHOF": { "total": 1285, "set": 11, "ago": 82, "hoje": 1, "ult": "08/09/2026", "agendados": 607, "tx_agend": 47.2, "comp": 98, "tx_comp": 16.1, "vendas": 26, "tx_venda": 26.5 },
-    "C155-ClinicaElodonto": { "total": 117, "set": 5, "ago": 30, "hoje": 0, "ult": "07/09/2026", "agendados": 81, "tx_agend": 69.2, "comp": 12, "tx_comp": 14.8, "vendas": 8, "tx_venda": 66.7 },
-    "C166-Lucasmallmann": { "total": 85, "set": 3, "ago": 15, "hoje": 0, "ult": "05/09/2026", "agendados": 24, "tx_agend": 28.2, "comp": 4, "tx_comp": 16.7, "vendas": 3, "tx_venda": 75.0 },
-    "C136-IntegrareOdontologia": { "total": 1272, "set": 14, "ago": 64, "hoje": 0, "ult": "03/09/2026", "agendados": 789, "tx_agend": 62.0, "comp": 18, "tx_comp": 2.3, "vendas": 10, "tx_venda": 55.6 },
-    "C157-DraCristianeTiburtino": { "total": 85, "set": 0, "ago": 30, "hoje": 0, "ult": "19/08/2026", "agendados": 1, "tx_agend": 1.2, "comp": 0, "tx_comp": 0.0, "vendas": 0, "tx_venda": 0.0 },
-    "EsteticaLosAngelesLeads": { "total": 125, "set": 0, "ago": 30, "hoje": 0, "ult": "19/08/2026", "agendados": 0, "tx_agend": 0.0, "comp": 0, "tx_comp": 0.0, "vendas": 0, "tx_venda": 0.0 },
-    "C86-DrWilliamHenrique": { "total": 126, "set": 0, "ago": 10, "hoje": 0, "ult": "03/08/2026", "agendados": 4, "tx_agend": 3.2, "comp": 0, "tx_comp": 0.0, "vendas": 0, "tx_venda": 0.0 },
-    "C168-DraMichelleAlves": { "total": 212, "set": 2, "ago": 57, "hoje": 0, "ult": "01/09/2026", "agendados": 142, "tx_agend": 67.0, "comp": 2, "tx_comp": 1.4, "vendas": 0, "tx_venda": 0.0 },
-    "C164-DraLea": { "total": 336, "set": 2, "ago": 48, "hoje": 0, "ult": "05/09/2026", "agendados": 13, "tx_agend": 3.9, "comp": 0, "tx_comp": 0.0, "vendas": 0, "tx_venda": 0.0 },
-    "C140-EspacoBottega": { "total": 592, "set": 0, "ago": 44, "hoje": 0, "ult": "20/08/2026", "agendados": 163, "tx_agend": 27.5, "comp": 54, "tx_comp": 33.1, "vendas": 0, "tx_venda": 0.0 },
-    "C167-AvanteOdontologiaBH": { "total": 120, "set": 10, "ago": 25, "hoje": 1, "ult": "08/09/2026", "agendados": 18, "tx_agend": 15.0, "comp": 3, "tx_comp": 16.7, "vendas": 2, "tx_venda": 66.7 },
-    "C167-AvanteOdontologiaSL": { "total": 85, "set": 7, "ago": 18, "hoje": 1, "ult": "08/09/2026", "agendados": 12, "tx_agend": 14.1, "comp": 2, "tx_comp": 16.7, "vendas": 1, "tx_venda": 50.0 },
-    "C141-VictorRios": { "total": 150, "set": 7, "ago": 22, "hoje": 1, "ult": "08/09/2026", "agendados": 28, "tx_agend": 18.7, "comp": 5, "tx_comp": 17.9, "vendas": 3, "tx_venda": 60.0 },
-    "C175-VivazOdontologia": { "total": 350, "set": 125, "ago": 45, "hoje": 14, "ult": "08/09/2026", "agendados": 55, "tx_agend": 15.7, "comp": 12, "tx_comp": 21.8, "vendas": 8, "tx_venda": 66.7 }
-}
-
 def sync():
-    log_msg("Iniciando varredura no Chatwoot para todas as clínicas...")
-    
-    # 2. Parallel Chatwoot Extraction
+    log_msg("Iniciando varredura no Google Sheets CRM e Chatwoot para todas as clínicas...")
+
+    # Parallel CRM & Chatwoot Extraction
     with ThreadPoolExecutor(max_workers=8) as executor:
-        cw_results = list(executor.map(fetch_chatwoot_metrics, CLIENTS))
+        compiled = list(executor.map(process_client, CLIENTS))
 
-    compiled = []
-    tot_cw_leads = 0
-    tot_cw_resp = 0
-    tot_cw_unresp = 0
-    tot_cw_alerts = 0
-    total_resp_time_acc = 0.0
-    total_resp_clinics = 0
+    # Sort primarily by september leads, then today
+    compiled.sort(key=lambda x: (x['set'], x['hoje']), reverse=True)
 
-    for c, cw in zip(CLIENTS, cw_results):
-        cid = c["id"]
-        base = SHEET_CACHE.get(cid, {
-            "total": cw["cw_leads"], "set": cw["cw_leads"], "ago": 0, "hoje": 0, "ult": "—",
-            "agendados": 0, "tx_agend": 0.0, "comp": 0, "tx_comp": 0.0, "vendas": 0, "tx_venda": 0.0
-        })
+    tot_leads = sum(c["total"] for c in compiled)
+    tot_set = sum(c["set"] for c in compiled)
+    tot_hoje = sum(c["hoje"] for c in compiled)
+    tot_cw_resp = sum(c["cw_resp"] for c in compiled)
+    tot_cw_unresp = sum(c["cw_unresp"] for c in compiled)
+    tot_cw_alerts = sum(c["cw_alerts"] for c in compiled)
 
-        # Lead status text
-        if c.get("disconnected"):
-            status_text = "🔴 WhatsApp Off"
-            status_code = "descon"
-        elif base["hoje"] > 0 or cw["cw_leads"] > 10:
-            status_text = "🟢 Alta Tração"
-            status_code = "alta"
-        elif cw["cw_leads"] > 0:
-            status_text = "🟡 Moderado"
-            status_code = "mod"
-        else:
-            status_text = "⚪ Sem Leads"
-            status_code = "pausado"
+    resp_clinics = [c["cw_avg_resp_h"] for c in compiled if c["cw_avg_resp_h"] > 0]
+    avg_resp_global = round((sum(resp_clinics) / len(resp_clinics)), 1) if resp_clinics else 0.0
+    pct_resp_global = round((tot_cw_resp / tot_set * 100), 1) if tot_set > 0 else 0.0
 
-        compiled.append({
-            "id": cid,
-            "name": c["name"],
-            "seg": c["seg"],
-            "inbox_id": c.get("inbox_id"),
-            # Chatwoot metrics (Real response tracking)
-            "cw_leads": cw["cw_leads"],
-            "cw_resp": cw["cw_resp"],
-            "cw_unresp": cw["cw_unresp"],
-            "cw_pct_resp": cw["cw_pct_resp"],
-            "cw_alerts": cw["cw_alerts"],
-            "cw_avg_resp_h": cw["cw_avg_resp_h"],
-            "cw_status": cw["cw_status"],
-            "unresp_leads": cw.get("unresp_leads", []),
-            # Leads baseline
-            "total": base["total"],
-            "set": base["set"],
-            "ago": base["ago"],
-            "hoje": base["hoje"],
-            "ult": base["ult"],
-            "status": status_code,
-            "statusText": status_text,
-            # Funnel metrics
-            "agendados": base["agendados"],
-            "tx_agend": base["tx_agend"],
-            "comp": base["comp"],
-            "tx_comp": base["tx_comp"],
-            "vendas": base["vendas"],
-            "tx_venda": base["tx_venda"]
-        })
-
-        tot_cw_leads += cw["cw_leads"]
-        tot_cw_resp += cw["cw_resp"]
-        tot_cw_unresp += cw["cw_unresp"]
-        tot_cw_alerts += cw["cw_alerts"]
-        if cw["cw_avg_resp_h"] > 0:
-            total_resp_time_acc += cw["cw_avg_resp_h"]
-            total_resp_clinics += 1
-
-    avg_resp_global = round((total_resp_time_acc / total_resp_clinics), 1) if total_resp_clinics > 0 else 0.0
-    pct_resp_global = round((tot_cw_resp / tot_cw_leads * 100), 1) if tot_cw_leads > 0 else 0.0
-
-    log_msg(f"Chatwoot Set/26: Leads={tot_cw_leads} | Respondidos={tot_cw_resp} ({pct_resp_global}%) | Sem Resposta={tot_cw_unresp} | Alertas >24h={tot_cw_alerts} | Tempo Médio={avg_resp_global}h")
+    log_msg(f"CRM Planilhas: Total Base={tot_leads:,} | Set/26={tot_set:,} | Hoje={tot_hoje}")
+    log_msg(f"Chatwoot Set/26: Leads Planilha={tot_set} | Respondidos={tot_cw_resp} ({pct_resp_global}%) | Sem Resposta={tot_cw_unresp} | Alertas >24h={tot_cw_alerts} | Tempo Médio={avg_resp_global}h")
 
     # 3. Read current index.html template and inject new DATA
     index_path = os.path.join(REPO_DIR, "index.html")
@@ -353,8 +407,8 @@ def sync():
 
     # 4. Commit and Push to GitHub (auto-deploys to Vercel)
     try:
-        subprocess.run(["git", "add", "index.html"], cwd=REPO_DIR, check=True)
-        msg = f"chore: sync diario comercial & chatwoot ({datetime.datetime.now().strftime('%d/%m/%Y %H:%M')})"
+        subprocess.run(["git", "add", "index.html", "sync_daily.py"], cwd=REPO_DIR, check=True)
+        msg = f"chore: sync crm sheets & chatwoot ({datetime.datetime.now().strftime('%d/%m/%Y %H:%M')})"
         subprocess.run(["git", "commit", "-m", msg], cwd=REPO_DIR, check=True)
         subprocess.run(["git", "push", "origin", "main"], cwd=REPO_DIR, check=True)
         log_msg("Git commit & push executados! Deploy no Vercel iniciado automaticamente.")
