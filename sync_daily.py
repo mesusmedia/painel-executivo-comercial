@@ -46,6 +46,23 @@ HEADERS_CW = {
     "token-type": env.get("CHATWOOT_TOKEN_TYPE", "Bearer")
 }
 
+EVOLUTION_BASE = env.get("EVOLUTION_BASE", "https://evo.mesusmedia.com.br")
+EVOLUTION_API_KEY = env.get("EVOLUTION_API_KEY", "0417bf43b0a8969bd6685bcb49d783df")
+
+# Query Evolution API to map live instance connection statuses
+evo_live_status = {}
+try:
+    r_evo = requests.get(f"{EVOLUTION_BASE}/instance/fetchInstances", headers={"apikey": EVOLUTION_API_KEY}, timeout=8)
+    if r_evo.status_code == 200:
+        for inst in r_evo.json():
+            in_name = (inst.get("name") or inst.get("instance", {}).get("instanceName") or "").strip().lower()
+            in_st = (inst.get("connectionStatus") or inst.get("instance", {}).get("status") or inst.get("status") or "").strip().lower()
+            if in_name:
+                evo_live_status[in_name] = in_st
+        log_msg(f"Evolution API: {len(evo_live_status)} instâncias mapeadas com sucesso.")
+except Exception as e:
+    log_msg(f"Aviso ao consultar Evolution API: {e}")
+
 # Master Clients Directory with Chatwoot Inboxes and CRM Sheet IDs
 CLIENTS = [
     { "id": "C162-DrBrunoAraujo", "name": "Dr. Bruno Araújo", "seg": "Saúde", "inbox_id": 103, "sheet_id": "1Vc5IT497LN25AUD8ckoH7CkXJ-72O7ypn8ZxuoAUELg" },
@@ -70,7 +87,7 @@ CLIENTS = [
     { "id": "C155-ClinicaElodonto", "name": "Clínica Elodonto", "seg": "Odonto", "inbox_id": 122, "sheet_id": "17eesV8xZKnisx9pJo11RndZOcKDwIT6zet8dBfHrPlM" },
     { "id": "C166-Lucasmallmann", "name": "Lucas Mallmann", "seg": "Saúde", "inbox_id": 126, "sheet_id": "1t4KLQdv9bjYcftwMw81rn-WvMs0NW92omQLWR_MkiF4" },
     { "id": "C136-IntegrareOdontologia", "name": "Integrar Odontologia", "seg": "Odonto", "inbox_id": 119, "sheet_id": "1TEuyWftgK9iM2rINKEeg-xTAZGVFxibmWZpokn6XCEc", "disconnected": True },
-    { "id": "C157-DraCristianeTiburtino", "name": "Dra. Cristiane Tiburtino", "seg": "Saúde", "inbox_id": 114, "sheet_id": "1bM8T1h-gAZdbOgjWQqkFoJPU_vODLI-ObIt9OtTLGic", "disconnected": True },
+    { "id": "C157-DraCristianeTiburtino", "name": "Dra. Cristiane Tiburtino", "seg": "Saúde", "inbox_id": 114, "sheet_id": "1bM8T1h-gAZdbOgjWQqkFoJPU_vODLI-ObIt9OtTLGic" },
     { "id": "EsteticaLosAngelesLeads", "name": "Estética Los Angeles", "seg": "Estética", "inbox_id": 108, "sheet_id": "1zBcRC0HaV4JXg1Cix-XBl6cZzQ6044oFMhM3NlTZn7E", "disconnected": True },
     { "id": "C86-DrWilliamHenrique", "name": "Dr. William Henrique", "seg": "Saúde", "inbox_id": 125, "sheet_id": "14Ss2564FyP_SJeXxTI8OI-5n0tRMlchsJJYFJrxRrxY", "disconnected": True },
     { "id": "C168-DraMichelleAlves", "name": "Dra. Michelle Alves", "seg": "Saúde", "inbox_id": 130, "sheet_id": "1VMbs_ElKqEs0l_OmEgf354Xo4nW5b7IexbpUki_Wtw0" },
@@ -99,6 +116,19 @@ def process_client(client):
     sid = client.get("sheet_id")
     ib_id = client.get("inbox_id")
     is_discon = client.get("disconnected", False)
+
+    # Dynamic check against Evolution API live status
+    cid_low = cid.lower()
+    evo_st = None
+    for ek, ev in evo_live_status.items():
+        if cid_low in ek or ek in cid_low:
+            evo_st = ev
+            break
+    
+    if evo_st == "open":
+        is_discon = False
+    elif evo_st in ["close", "connecting"] and is_discon:
+        is_discon = True
 
     # 1. Fetch CRM Sheet (Single Source of Truth)
     sept_leads = []
