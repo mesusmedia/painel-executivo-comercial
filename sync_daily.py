@@ -316,7 +316,7 @@ def process_client(client):
         if not leads_list:
             return {
                 "leads": 0, "resp": 0, "unresp": 0, "pct_resp": 0.0,
-                "alerts": 0, "avg_h": 0.0, "status": "Sem Entrada", "unresp_leads": []
+                "alerts": 0, "avg_h": 0.0, "status": "Desconectado" if is_discon else "Sem Entrada", "unresp_leads": []
             }
         resp = 0
         unresp = 0
