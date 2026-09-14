@@ -63,6 +63,12 @@ try:
 except Exception as e:
     log_msg(f"Aviso ao consultar Evolution API: {e}")
 
+EVO_ALIASES = {
+    "c123-orgulhodesorrirsantos": "c123-orgulhosantos",
+    "c164-dralea": "c164-dralea",
+    "c149-clinicagglow": "c149-clinicagglow",
+}
+
 # Master Clients Directory with Chatwoot Inboxes and CRM Sheet IDs
 CLIENTS = [
     { "id": "C162-DrBrunoAraujo", "name": "Dr. Bruno Araújo", "seg": "Saúde", "inbox_id": 103, "sheet_id": "1Vc5IT497LN25AUD8ckoH7CkXJ-72O7ypn8ZxuoAUELg" },
@@ -119,16 +125,20 @@ def process_client(client):
 
     # Dynamic check against Evolution API live status
     cid_low = cid.lower()
-    evo_st = None
-    for ek, ev in evo_live_status.items():
-        if cid_low in ek or ek in cid_low:
-            evo_st = ev
-            break
+    target_key = EVO_ALIASES.get(cid_low, cid_low)
+    evo_st = evo_live_status.get(target_key)
+    if not evo_st:
+        for ek, ev in evo_live_status.items():
+            if target_key in ek or ek in target_key:
+                evo_st = ev
+                break
     
     if evo_st == "open":
         is_discon = False
-    elif evo_st in ["close", "connecting"] and is_discon:
+    elif evo_st in ["close", "connecting", "closed"]:
         is_discon = True
+    else:
+        is_discon = client.get("disconnected", False)
 
     # 1. Fetch CRM Sheet (Single Source of Truth)
     sept_leads = []
@@ -241,7 +251,7 @@ def process_client(client):
     cw_by_suffix = {}
     cw_by_name = {}
 
-    if ib_id and not is_discon and sept_leads:
+    if ib_id and sept_leads:
         page = 1
         sept_start = datetime.datetime(2026, 9, 1, 0, 0, 0)
         sept_start_ts = int(sept_start.timestamp())
@@ -434,6 +444,8 @@ def process_client(client):
         "name": name,
         "seg": client["seg"],
         "inbox_id": ib_id,
+        "is_discon": is_discon,
+        "evo_status": evo_st or ("close" if is_discon else "open"),
         # Setembro Metrics (Default)
         "cw_leads": m_set["leads"],
         "cw_resp": m_set["resp"],
