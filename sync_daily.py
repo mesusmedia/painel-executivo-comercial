@@ -356,32 +356,23 @@ def process_client(client):
                 # C) A última mensagem partiu da nossa equipe ou bot
                 elif m_type in [1, "outgoing"]:
                     is_resp = True
-                # D) Validação profunda do contexto da conversa quando a última mensagem foi do lead:
+                # D) Validação comprovada de resposta: se a equipe JÁ RESPONDEU (first_reply > 0)
                 elif first_reply and first_reply > 0:
-                    # D.1) Emojis de agradecimento/despedida
-                    if any(e in raw_content for e in CLOSING_EMOJIS) and len(raw_content) <= 10:
-                        is_resp = True
-                    # D.2) Frases de encerramento, agradecimento ou desinteresse expresso
-                    elif any(clean_txt == w or content_lower == w or clean_txt.startswith(w + " ") or clean_txt.endswith(" " + w) for w in CLOSING_WORDS):
-                        is_resp = True
-                    # D.3) Confirmação curta sem perguntas abertas
-                    elif not any(qw in content_lower for qw in QUESTION_WORDS) and len(clean_txt) <= 15:
-                        if clean_txt in ["ok", "ta", "sim", "isso", "obg", "vlw", "certo", "beleza", "show", "combinado"]:
-                            is_resp = True
-                        else:
-                            is_resp = False
-                            waiting_context = f"Aguardando resposta: '{raw_content[:50]}'"
+                    is_resp = True
+                    # Apenas anotar o contexto se o lead enviou a última mensagem
+                    if any(e in raw_content for e in CLOSING_EMOJIS) or any(clean_txt == w or content_lower == w for w in CLOSING_WORDS):
+                        waiting_context = "Conversa concluída pelo lead"
                     else:
-                        is_resp = False
-                        waiting_context = f"Dúvida aberta do lead: '{raw_content[:50]}'"
+                        waiting_context = f"Lead enviou por último: '{raw_content[:50]}'"
                 else:
-                    # first_reply == 0 ou ausente: a equipe NUNCA respondeu o lead
+                    # first_reply == 0 ou ausente E última mensagem NÃO é da equipe:
                     is_resp = False
                     waiting_context = f"Nunca respondido pela equipe: '{raw_content[:50]}'" if raw_content else "Nunca respondido pela equipe"
 
-                if is_resp and first_reply:
+                if is_resp and first_reply and first_reply > 0:
                     diff_h = (datetime.datetime.fromtimestamp(first_reply) - created_dt).total_seconds() / 3600.0
-                    if diff_h >= 0:
+                    # Desconsiderar anomalias de reabertura de contatos antigos (> 168h / 7 dias)
+                    if 0 <= diff_h <= 168:
                         resp_times.append(diff_h)
 
                 hours_wait = round((now_dt - created_dt).total_seconds() / 3600.0, 1)
@@ -415,14 +406,15 @@ def process_client(client):
         pct = round((resp / len(leads_list) * 100), 1) if leads_list else 0.0
         avg_t = round((sum(resp_times) / len(resp_times)), 1) if resp_times else 0.0
 
+        # Classificação de Saúde Realista e Justa:
         if is_discon:
             saude = "Desconectado"
-        elif alerts >= 3 or (len(leads_list) > 5 and pct < 70):
-            saude = "Gargalo"
-        elif alerts > 0 or (len(leads_list) > 5 and pct < 90) or avg_t > 24:
-            saude = "Atenção"
         elif len(leads_list) == 0:
             saude = "Sem Entrada"
+        elif pct < 75.0 or (avg_t > 48.0 and len(leads_list) > 5):
+            saude = "Gargalo"
+        elif pct < 90.0 or avg_t > 24.0:
+            saude = "Atenção"
         else:
             saude = "Saudável"
 
