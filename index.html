@@ -205,6 +205,298 @@
     font-family: var(--font-sans);
   }
 }
+
+/* Responsive Container & Anti-Clipping */
+html, body {
+  overflow-x: hidden !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+}
+.container {
+  max-width: 1600px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 clamp(12px, 2vw, 28px) !important;
+  box-sizing: border-box !important;
+}
+
+/* Sticky First Column (Client Name & Actions) */
+.table-wrap {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--primary) var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border) !important;
+  position: relative !important;
+}
+.table-wrap::-webkit-scrollbar {
+  height: 8px !important;
+}
+.table-wrap::-webkit-scrollbar-track {
+  background: var(--muted) !important;
+  border-radius: 4px !important;
+}
+.table-wrap::-webkit-scrollbar-thumb {
+  background: var(--primary) !important;
+  border-radius: 4px !important;
+}
+.table-wrap::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--primary) 80%, black) !important;
+}
+
+th.sticky-col-header, td.sticky-col-cell {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 5 !important;
+  background: var(--card) !important;
+  box-shadow: 3px 0 8px rgba(0, 0, 0, 0.12) !important;
+}
+th.sticky-col-header {
+  z-index: 6 !important;
+  background: color-mix(in oklch, var(--card) 90%, var(--foreground) 10%) !important;
+}
+tr:hover td.sticky-col-cell {
+  background: color-mix(in oklch, var(--card) 85%, var(--foreground) 15%) !important;
+}
+
+/* Scroll Hint Bar */
+.scroll-helper-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: color-mix(in oklch, var(--primary) 10%, var(--card));
+  border: 1px solid color-mix(in oklch, var(--primary) 25%, transparent);
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 10px;
+  font-size: 0.78rem;
+  color: var(--foreground);
+}
+
+/* Commercial Report Buttons */
+.btn-resumo-comercial {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: color-mix(in oklch, var(--primary) 15%, var(--card));
+  color: var(--primary);
+  border: 1px solid color-mix(in oklch, var(--primary) 38%, transparent);
+  padding: 5px 11px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.btn-resumo-comercial:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.btn-resumo-comercial:active {
+  transform: scale(0.97);
+}
+
+.btn-global-report {
+  background: linear-gradient(135deg, color-mix(in oklch, var(--primary) 22%, var(--card)), color-mix(in oklch, var(--secondary) 22%, var(--card)));
+  color: var(--foreground);
+  border: 1px solid color-mix(in oklch, var(--primary) 40%, transparent);
+  padding: 9px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--shadow-2xs);
+}
+.btn-global-report:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Slide-over Drawer for Commercial Report */
+.report-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.report-drawer-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.report-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 720px;
+  background: var(--card);
+  color: var(--foreground);
+  border-left: 1px solid var(--border);
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.4);
+  z-index: 2001;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+.report-drawer.active {
+  transform: translateX(0);
+}
+.report-drawer-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: color-mix(in oklch, var(--card) 95%, var(--muted));
+  gap: 14px;
+}
+.report-drawer-title-group {
+  flex: 1;
+}
+.report-drawer-badge {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.report-drawer-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--foreground);
+  margin-top: 4px;
+  letter-spacing: -0.01em;
+}
+.report-drawer-sub {
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+  margin-top: 3px;
+}
+.report-drawer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-drawer-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-drawer-copy:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+.btn-drawer-close {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.btn-drawer-close:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.report-drawer-body {
+  padding: 22px 24px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.rep-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+.rep-kpi-box {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.rep-kpi-label {
+  font-size: 0.68rem;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.rep-kpi-val {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--foreground);
+  margin-top: 4px;
+  line-height: 1.1;
+}
+.rep-kpi-sub {
+  font-size: 0.7rem;
+  color: var(--muted-foreground);
+  margin-top: 4px;
+}
+
+.rep-section {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+.rep-section-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rep-list {
+  padding-left: 18px;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--foreground);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rep-list li strong {
+  color: var(--foreground);
+}
+
 </style>
 
 <style>
@@ -1426,6 +1718,7 @@ th.col-period-header {
       <button class="nav-tab active" id="tabBtnChatwoot" onclick="switchView('chatwoot')">💬 Atendimento Comercial (Chatwoot)</button>
       <button class="nav-tab" id="tabBtnLeads" onclick="switchView('leads')">📊 Captação de Leads (Diário)</button>
       <button class="nav-tab" id="tabBtnFunnel" onclick="switchView('funnel')">🎯 Cruzamento de Funil & Agendamentos</button>
+      <button class="btn-global-report" onclick="openGlobalReport()">🏆 Resumo Executivo da Carteira (32 Clínicas)</button>
     </div>
     <div style="font-size:0.8rem;color:var(--muted-foreground);">
       Mostrando: <strong id="viewSubtitle" style="color:var(--foreground)">Atendimento no Chatwoot, Respostas e Alertas</strong>
@@ -5915,8 +6208,8 @@ function renderTable(list) {
 
     thead.innerHTML = `
       <tr>
-        <th class="sortable-th ${currentSort.col === 'name' ? 'active-sorted' : ''}" onclick="handleSort('name')" title="Clique para ordenar Menor → Maior">
-          <div class="th-content"><span>Cliente</span> ${getSortBadgeHtml('name')}</div>
+        <th class="sticky-col-header sortable-th ${currentSort.col === 'name' ? 'active-sorted' : ''}" onclick="handleSort('name')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content"><span>Cliente & Resumo</span> ${getSortBadgeHtml('name')}</div>
         </th>
         <th class="sortable-th ${currentSort.col === 'seg' ? 'active-sorted' : ''}" onclick="handleSort('seg')" title="Clique para ordenar Menor → Maior">
           <div class="th-content"><span>Segmento</span> ${getSortBadgeHtml('seg')}</div>
@@ -6080,10 +6373,16 @@ function renderTable(list) {
 
       return `
         <tr>
-          <td class="${currentSort.col === 'name' ? 'col-sorted-active' : ''}">
+          <td class="sticky-col-cell ${currentSort.col === 'name' ? 'col-sorted-active' : ''}">
             <div class="client-name-cell">
-              <span class="client-name">${c.name} ${(c.status === 'descon' || c.is_discon) ? '<span class="status-badge status-descon" style="font-size:0.65rem;padding:2px 6px;margin-left:4px;" title="WhatsApp Desconectado na Evolution API">OFF</span>' : ''}</span>
-              <span class="client-id-sub">${c.id}</span>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                <span class="client-name" onclick="openCommercialReport('${c.id}')" style="cursor:pointer;" title="Clique para ver o Resumo Comercial de ${c.name}">${c.name} ${(c.status === 'descon' || c.is_discon) ? '<span class="status-badge status-descon" style="font-size:0.65rem;padding:2px 6px;margin-left:4px;" title="WhatsApp Desconectado na Evolution API">OFF</span>' : ''}</span>
+                <button class="btn-resumo-comercial" onclick="openCommercialReport('${c.id}')" title="Ver Resumo Comercial Completo e Diagnóstico">📊 Resumo</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
+                <span class="client-id-sub">${c.id}</span>
+                <span style="font-size:0.72rem;color:var(--primary);cursor:pointer;font-weight:600;" onclick="openCommercialReport('${c.id}')">Ver Diagnóstico & Funil →</span>
+              </div>
             </div>
           </td>
           <td class="${currentSort.col === 'seg' ? 'col-sorted-active' : ''}"><span class="seg-pill ${segClass}">${c.seg}</span></td>
@@ -6102,8 +6401,8 @@ function renderTable(list) {
   } else if (activeView === 'leads') {
     thead.innerHTML = `
       <tr>
-        <th class="sortable-th ${currentSort.col === 'name' ? 'active-sorted' : ''}" onclick="handleSort('name')" title="Clique para ordenar Menor → Maior">
-          <div class="th-content"><span>Cliente</span> ${getSortBadgeHtml('name')}</div>
+        <th class="sticky-col-header sortable-th ${currentSort.col === 'name' ? 'active-sorted' : ''}" onclick="handleSort('name')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content"><span>Cliente & Resumo</span> ${getSortBadgeHtml('name')}</div>
         </th>
         <th class="sortable-th ${currentSort.col === 'seg' ? 'active-sorted' : ''}" onclick="handleSort('seg')" title="Clique para ordenar Menor → Maior">
           <div class="th-content"><span>Segmento</span> ${getSortBadgeHtml('seg')}</div>
@@ -6145,10 +6444,16 @@ function renderTable(list) {
 
       return `
         <tr>
-          <td class="${currentSort.col === 'name' ? 'col-sorted-active' : ''}">
+          <td class="sticky-col-cell ${currentSort.col === 'name' ? 'col-sorted-active' : ''}">
             <div class="client-name-cell">
-              <span class="client-name">${c.name} ${(c.status === 'descon' || c.is_discon) ? '<span class="status-badge status-descon" style="font-size:0.65rem;padding:2px 6px;margin-left:4px;" title="WhatsApp Desconectado na Evolution API">OFF</span>' : ''}</span>
-              <span class="client-id-sub">${c.id}</span>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                <span class="client-name" onclick="openCommercialReport('${c.id}')" style="cursor:pointer;" title="Clique para ver o Resumo Comercial de ${c.name}">${c.name} ${(c.status === 'descon' || c.is_discon) ? '<span class="status-badge status-descon" style="font-size:0.65rem;padding:2px 6px;margin-left:4px;" title="WhatsApp Desconectado na Evolution API">OFF</span>' : ''}</span>
+                <button class="btn-resumo-comercial" onclick="openCommercialReport('${c.id}')" title="Ver Resumo Comercial Completo e Diagnóstico">📊 Resumo</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
+                <span class="client-id-sub">${c.id}</span>
+                <span style="font-size:0.72rem;color:var(--primary);cursor:pointer;font-weight:600;" onclick="openCommercialReport('${c.id}')">Ver Diagnóstico & Funil →</span>
+              </div>
             </div>
           </td>
           <td class="${currentSort.col === 'seg' ? 'col-sorted-active' : ''}"><span class="seg-pill ${segClass}">${c.seg}</span></td>
@@ -6165,8 +6470,8 @@ function renderTable(list) {
   } else {
     thead.innerHTML = `
       <tr>
-        <th class="sortable-th ${currentSort.col === 'name' ? 'active-sorted' : ''}" onclick="handleSort('name')" title="Clique para ordenar Menor → Maior">
-          <div class="th-content"><span>Cliente</span> ${getSortBadgeHtml('name')}</div>
+        <th class="sticky-col-header sortable-th ${currentSort.col === 'name' ? 'active-sorted' : ''}" onclick="handleSort('name')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content"><span>Cliente & Resumo</span> ${getSortBadgeHtml('name')}</div>
         </th>
         <th class="sortable-th ${currentSort.col === 'seg' ? 'active-sorted' : ''}" onclick="handleSort('seg')" title="Clique para ordenar Menor → Maior">
           <div class="th-content"><span>Segmento</span> ${getSortBadgeHtml('seg')}</div>
@@ -6203,10 +6508,16 @@ function renderTable(list) {
 
       return `
         <tr>
-          <td class="${currentSort.col === 'name' ? 'col-sorted-active' : ''}">
+          <td class="sticky-col-cell ${currentSort.col === 'name' ? 'col-sorted-active' : ''}">
             <div class="client-name-cell">
-              <span class="client-name">${c.name} ${(c.status === 'descon' || c.is_discon) ? '<span class="status-badge status-descon" style="font-size:0.65rem;padding:2px 6px;margin-left:4px;" title="WhatsApp Desconectado na Evolution API">OFF</span>' : ''}</span>
-              <span class="client-id-sub">${c.id}</span>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                <span class="client-name" onclick="openCommercialReport('${c.id}')" style="cursor:pointer;" title="Clique para ver o Resumo Comercial de ${c.name}">${c.name} ${(c.status === 'descon' || c.is_discon) ? '<span class="status-badge status-descon" style="font-size:0.65rem;padding:2px 6px;margin-left:4px;" title="WhatsApp Desconectado na Evolution API">OFF</span>' : ''}</span>
+                <button class="btn-resumo-comercial" onclick="openCommercialReport('${c.id}')" title="Ver Resumo Comercial Completo e Diagnóstico">📊 Resumo</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
+                <span class="client-id-sub">${c.id}</span>
+                <span style="font-size:0.72rem;color:var(--primary);cursor:pointer;font-weight:600;" onclick="openCommercialReport('${c.id}')">Ver Diagnóstico & Funil →</span>
+              </div>
             </div>
           </td>
           <td class="${currentSort.col === 'seg' ? 'col-sorted-active' : ''}"><span class="seg-pill ${segClass}">${c.seg}</span></td>
@@ -6781,6 +7092,355 @@ document.addEventListener('DOMContentLoaded', () => {
   filterData();
   updateCharts();
 });
+
+// ==========================================
+// Dicionário de Informações Comerciais das Clínicas
+// ==========================================
+const CLIENT_INFO = {
+  "C123-DrRafaelRocha": { ticket: 11881.81, fat: 130700.0, proc: "Lipo de Papada & HOF", atendente: "Marcela", doc: "Dr. Rafael Rocha" },
+  "C172-DrCaioFigueira": { ticket: 4500.0, fat: 4500.0, proc: "Lifting Facial & Blefaroplastia", atendente: "Secretária", doc: "Dr. Caio Figueira" },
+  "C123-OrgulhodeSorrirPeruibe": { ticket: 3139.28, fat: 43950.0, proc: "Implantes & Odonto Geral", atendente: "Recepção", doc: "Dra. Equipe Peruíbe" },
+  "C123-OrgulhoSaoVicente": { ticket: 2500.0, fat: 95000.0, proc: "Implantes & Próteses", atendente: "Recepção", doc: "Equipe São Vicente" },
+  "C123-OrgulhodeSorrirSantos": { ticket: 2800.0, fat: 67200.0, proc: "Implantes & Reabilitação", atendente: "Recepção", doc: "Equipe Santos" },
+  "C170-DraMariaEduarda": { ticket: 3500.0, fat: 1000.0, proc: "Cirurgias Orais & Implantes", atendente: "Recepção", doc: "Dra. Maria Eduarda" },
+  "C52-DrLucasPitao": { ticket: 4200.0, fat: 12600.0, proc: "Implantes Dentários Premium", atendente: "Liliane", doc: "Dr. Lucas Pitão" },
+  "C149-ClinicaGGlow": { ticket: 1200.0, fat: 26400.0, proc: "Estética Facial Avançada", atendente: "Secretária", doc: "Equipe G Glow" },
+  "C150-Lumia": { ticket: 1500.0, fat: 52500.0, proc: "Estética Facial & Corporal", atendente: "Recepção", doc: "Equipe Lumia" },
+  "C124-DraAnnaHOF": { ticket: 3200.0, fat: 83200.0, proc: "Harmonização Orofacial (HOF)", atendente: "Recepção", doc: "Dra. Anna" },
+  "C155-ClinicaElodonto": { ticket: 2200.0, fat: 19800.0, proc: "Odontologia & Ortodontia", atendente: "Recepção", doc: "Equipe Elodonto" },
+  "C163-AcessoSaudeCIC": { ticket: 850.0, fat: 0.0, proc: "Consultas & Exames Populares", atendente: "Recepção", doc: "Equipe CIC" },
+  "C158-VictorianoFaces": { ticket: 2800.0, fat: 5600.0, proc: "Estética & Harmonização Facial", atendente: "Recepção", doc: "Dr. Victoriano" },
+  "C169-DrKeeynerCorrea": { ticket: 3500.0, fat: 3500.0, proc: "Cirurgia Plástica & Estética", atendente: "Recepção", doc: "Dr. Keeyner Correa" },
+  "C171-DraStefaniRezende": { ticket: 2500.0, fat: 2500.0, proc: "Odontologia Estética & Lentes", atendente: "Recepção", doc: "Dra. Stefani Rezende" },
+  "C173-OdontoPrime": { ticket: 2000.0, fat: 0.0, proc: "Implantes & Clínica Geral", atendente: "Recepção", doc: "Equipe Odonto Prime" },
+  "C63-DrRaphaelMoreira": { ticket: 3000.0, fat: 0.0, proc: "Saúde Integrada & Estética", atendente: "Recepção", doc: "Dr. Raphael Moreira" },
+  "C166-Lucasmallmann": { ticket: 2200.0, fat: 6600.0, proc: "Saúde & Performance Médica", atendente: "Recepção", doc: "Lucas Mallmann" },
+  "C135-DraMichelleSantos": { ticket: 2500.0, fat: 10000.0, proc: "Odontologia Especializada", atendente: "Recepção", doc: "Dra. Michelle Santos" },
+  "C175-VivazOdontologia": { ticket: 2100.0, fat: 2100.0, proc: "Odontologia Multidisciplinar", atendente: "Recepção", doc: "Equipe Vivaz" },
+  "C157-DraCristianeTiburtino": { ticket: 1800.0, fat: 0.0, proc: "Saúde Integrativa & Estética", atendente: "Recepção", doc: "Dra. Cristiane" },
+  "C140-EspacoBottega": { ticket: 1500.0, fat: 0.0, proc: "Estética Facial & Corporal", atendente: "Recepção", doc: "Equipe Bottega" },
+  "C141-VictorRios": { ticket: 2000.0, fat: 0.0, proc: "Saúde & Bem-Estar", atendente: "Recepção", doc: "Victor Rios" },
+  "C167-AvanteOdontologiaBH": { ticket: 2500.0, fat: 2500.0, proc: "Odontologia Especializada BH", atendente: "Recepção", doc: "Equipe Avante BH" },
+  "C167-AvanteOdontologiaSL": { ticket: 2500.0, fat: 2500.0, proc: "Odontologia Especializada SL", atendente: "Recepção", doc: "Equipe Avante SL" }
+};
+
+let currentReportClientId = null;
+
+function openCommercialReport(clientId) {
+  const c = DATA.find(x => x.id === clientId);
+  if (!c) return;
+  currentReportClientId = clientId;
+
+  const info = CLIENT_INFO[clientId] || { ticket: 2000.0, fat: 0.0, proc: "Tratamentos Especializados", atendente: "Recepção", doc: c.name };
+  const fatVal = info.fat > 0 ? info.fat : ((c.vendas || 0) * info.ticket);
+
+  document.getElementById('repDrawerTitle').textContent = c.name;
+  document.getElementById('repDrawerId').textContent = c.id;
+  document.getElementById('repDrawerSub').textContent = `Procedimento: ${info.proc} | Atendente: ${info.atendente}`;
+  
+  const badgeEl = document.getElementById('repDrawerBadge');
+  badgeEl.textContent = c.seg;
+  badgeEl.className = 'report-drawer-badge ' + (c.seg === 'Saúde' ? 'seg-saude' : (c.seg === 'Odonto' ? 'seg-odonto' : 'seg-estetica'));
+
+  const saudeEl = document.getElementById('repDrawerSaude');
+  let sText = '🟢 Saudável';
+  let sClass = 'status-saudavel';
+  if (c.cw_status === 'Atenção') { sText = '🟡 Atenção'; sClass = 'status-atencao'; }
+  else if (c.cw_status === 'Gargalo') { sText = '🔴 Gargalo'; sClass = 'status-gargalo'; }
+  else if (c.cw_status === 'Desconectado' || c.is_discon) { sText = '🔴 WhatsApp Off'; sClass = 'status-descon'; }
+  else if (c.cw_status === 'Sem Entrada') { sText = '⚪ Sem Entrada'; sClass = 'status-pausado'; }
+  saudeEl.innerHTML = `<span class="status-badge ${sClass}">${sText}</span>`;
+
+  // Diagnósticos
+  let diagSLA = "";
+  if (c.is_discon) {
+    diagSLA = "⚠️ Instância de WhatsApp desconectada na Evolution API. Atendimento paralisado pelo sistema.";
+  } else if ((c.cw_avg_resp_h || 0) > 24) {
+    diagSLA = `🚨 TMR Gravíssimo (${c.cw_avg_resp_h}h de espera). O lead aguarda mais de um dia para a 1ª resposta, gerando esfriamento crítico ou fechamento com concorrentes.`;
+  } else if ((c.cw_avg_resp_h || 0) > 2) {
+    diagSLA = `⚠️ TMR Crítico (${c.cw_avg_resp_h}h de espera). Tempo de resposta acima da janela de ouro de conversão do tráfego pago.`;
+  } else if ((c.cw_avg_resp_h || 0) > 0.5) {
+    diagSLA = `⏱️ TMR Moderado (${Math.round((c.cw_avg_resp_h || 0)*60)} min). Calibrar para meta Mesus de até 15 minutos em horário de pico.`;
+  } else {
+    diagSLA = `🌟 TMR Excelente (${Math.round((c.cw_avg_resp_h || 0)*60)} min). Atendimento veloz e dentro do padrão de alto desempenho.`;
+  }
+
+  let diagCRM = "";
+  if ((c.agendados || 0) === 0 && (c.set || 0) > 15) {
+    diagCRM = "🚨 Apagão de Governança no CRM: O volume de leads é consistente no tráfego, mas os agendamentos realizados não estão sendo preenchidos na planilha pela equipe presencial.";
+  } else if ((c.vendas || 0) === 0 && (c.comp || 0) > 0) {
+    diagCRM = "⚠️ Fechamento em Mesa Pendente de Atualização: Há comparecimentos registrados na clínica, porém nenhuma venda foi preenchida na coluna Ganhou do CRM.";
+  } else {
+    diagCRM = "✅ Acompanhamento de CRM Operacional: Dados de agendamento e fechamento preenchidos regularmente pela recepção.";
+  }
+
+  const unrespList = c.unresp_leads || [];
+  let unrespRowsHtml = "";
+  if (unrespList.length > 0) {
+    unrespRowsHtml = `
+      <div class="rep-section" style="border-color:color-mix(in oklch, var(--destructive) 40%, transparent)">
+        <div class="rep-section-title" style="color:var(--destructive)">🚨 Fila de Espera: ${unrespList.length} leads aguardando retorno (${c.cw_alerts || 0} críticos > 24h)</div>
+        <div class="expand-table-wrap">
+          <table class="expand-table">
+            <thead>
+              <tr>
+                <th>Lead</th>
+                <th>Contato</th>
+                <th>Espera</th>
+                <th>Contexto</th>
+                <th style="text-align:right">Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${unrespList.slice(0, 8).map(u => {
+                const cp = (u.phone || '').replace(/\D/g, '');
+                return `
+                  <tr>
+                    <td><strong>${u.name}</strong></td>
+                    <td><a href="https://wa.me/${cp}" target="_blank" class="lead-phone-link">💬 ${u.phone}</a></td>
+                    <td><span style="font-weight:700;color:${u.is_alert ? 'var(--destructive)' : '#fbbf24'}">${u.espera_h}h ${u.is_alert ? '⚠️' : ''}</span></td>
+                    <td style="font-size:0.75rem;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${u.contexto || ''}">${u.contexto || 'Aguardando retorno'}</td>
+                    <td style="text-align:right"><a href="${u.link}" target="_blank" class="btn-open-cw" style="padding:3px 8px;font-size:0.7rem">↗️ Chatwoot</a></td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+        ${unrespList.length > 8 ? `<p style="font-size:0.75rem;color:var(--muted-foreground);margin-top:8px;"><em>... e mais ${unrespList.length - 8} leads na fila de espera.</em></p>` : ''}
+      </div>
+    `;
+  }
+
+  const bodyEl = document.getElementById('repDrawerBody');
+  bodyEl.innerHTML = `
+    <!-- Macro KPIs -->
+    <div class="rep-kpi-grid">
+      <div class="rep-kpi-box">
+        <div class="rep-kpi-label">Leads Setembro</div>
+        <div class="rep-kpi-val" style="color:var(--primary)">${c.set || 0}</div>
+        <div class="rep-kpi-sub">Total Base: ${c.total || 0}</div>
+      </div>
+      <div class="rep-kpi-box">
+        <div class="rep-kpi-label">Respondidos</div>
+        <div class="rep-kpi-val" style="color:var(--primary)">${c.cw_resp || 0}</div>
+        <div class="rep-kpi-sub">${c.cw_pct_resp || 0}% de cobertura</div>
+      </div>
+      <div class="rep-kpi-box">
+        <div class="rep-kpi-label">Fila / Sem Resposta</div>
+        <div class="rep-kpi-val" style="color:#fbbf24">${c.cw_unresp || 0}</div>
+        <div class="rep-kpi-sub">${c.cw_alerts || 0} críticos > 24h</div>
+      </div>
+      <div class="rep-kpi-box">
+        <div class="rep-kpi-label">TMR 1º Contato</div>
+        <div class="rep-kpi-val" style="color:var(--accent)">${c.cw_avg_resp_h || 0}h</div>
+        <div class="rep-kpi-sub">~${Math.round((c.cw_avg_resp_h || 0)*60)} minutos</div>
+      </div>
+      <div class="rep-kpi-box">
+        <div class="rep-kpi-label">Agendamentos</div>
+        <div class="rep-kpi-val" style="color:var(--secondary)">${c.agendados || 0}</div>
+        <div class="rep-kpi-sub">${c.tx_agend || 0}% conversão</div>
+      </div>
+      <div class="rep-kpi-box">
+        <div class="rep-kpi-label">Vendas / Fechamentos</div>
+        <div class="rep-kpi-val" style="color:var(--primary)">${c.vendas || 0}</div>
+        <div class="rep-kpi-sub">Taxa mesa: ${c.tx_venda || 0}%</div>
+      </div>
+      <div class="rep-kpi-box" style="grid-column: span 2;">
+        <div class="rep-kpi-label">Faturamento Comprovado / Apurado</div>
+        <div class="rep-kpi-val" style="color:var(--primary)">R$ ${fatVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+        <div class="rep-kpi-sub">Ticket Médio de Referência: R$ ${info.ticket.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+      </div>
+    </div>
+
+    <!-- Fila de Leads -->
+    ${unrespRowsHtml}
+
+    <!-- Diagnóstico Operacional -->
+    <div class="rep-section">
+      <div class="rep-section-title">🚨 Diagnóstico Operacional & Gargalos de Vendas</div>
+      <ol class="rep-list">
+        <li><strong>Velocidade de 1ª Resposta (SLA):</strong> ${diagSLA}</li>
+        <li><strong>Governança e Preenchimento de CRM:</strong> ${diagCRM}</li>
+        <li><strong>Scripts & Duplo Agendamento:</strong> Ausência de alternativas fechadas (a atendente faz perguntas abertas de disponibilidade em vez de oferecer 2 opções fechadas de data/turno), gerando vácuo do paciente.</li>
+        <li><strong>Régua de 5 Follow-ups:</strong> Falta de reabordagem estruturada (curiosidade, prova social, quebra de objeção, plantão bonificado e despedida) para os leads que pedem preço e somem.</li>
+      </ol>
+    </div>
+
+    <!-- Plano de Ação -->
+    <div class="rep-section">
+      <div class="rep-section-title">🚀 Plano de Ação Estratégico (Metas Imediatas)</div>
+      <ol class="rep-list">
+        <li><strong>Resgate Prioritário de Fila:</strong> Contato ativo imediato nos ${c.cw_unresp || 0} leads pendentes de atendimento hoje.</li>
+        <li><strong>Trava de SLA (&lt; 15 min):</strong> Atendimento ágil em horário de pico e automação de acolhimento noturno/fim de semana no Chatwoot.</li>
+        <li><strong>Treinamento de Duplo Agendamento:</strong> Proibir perguntas abertas; ofertar sempre 2 opções fechadas de horário para a consulta presencial.</li>
+        <li><strong>Rotina Diária de CRM às 18h:</strong> Atualização obrigatória das colunas Agendou, Compareceu e Ganhou no Google Sheets.</li>
+      </ol>
+    </div>
+  `;
+
+  document.getElementById('reportDrawerOverlay').classList.add('active');
+  document.getElementById('reportDrawer').classList.add('active');
+}
+
+function closeCommercialReport() {
+  const overlay = document.getElementById('reportDrawerOverlay');
+  const drawer = document.getElementById('reportDrawer');
+  if (overlay) overlay.classList.remove('active');
+  if (drawer) drawer.classList.remove('active');
+}
+
+function copyCurrentCommercialReport() {
+  if (!currentReportClientId) return;
+  const c = DATA.find(x => x.id === currentReportClientId);
+  if (!c) return;
+  const info = CLIENT_INFO[currentReportClientId] || { ticket: 2000.0, fat: 0.0, proc: "Tratamentos Especializados", atendente: "Recepção" };
+  const fatVal = info.fat > 0 ? info.fat : ((c.vendas || 0) * info.ticket);
+
+  const text = `📊 *Relatório Comercial & Auditoria Executiva | ${c.name} (${c.id})*
+Período: 01/09/2026 a 23/09/2026 | Segmento: ${c.seg} | Atendente: ${info.atendente}
+
+📈 *Funil Comercial Consolidado:*
+• Total de Leads Recebidos (Setembro): ${c.set || 0} (Base Total: ${c.total || 0})
+• Leads Atendidos / Respondidos: ${c.cw_resp || 0} (${c.cw_pct_resp || 0}%)
+• Sem Resposta da Equipe: ${c.cw_unresp || 0} (${c.cw_alerts || 0} críticos > 24h)
+• TMR Médio 1º Contato: ${c.cw_avg_resp_h || 0}h (~${Math.round((c.cw_avg_resp_h || 0)*60)} min)
+• Agendamentos Realizados: ${c.agendados || 0} (${c.tx_agend || 0}% sobre leads)
+• Comparecimentos Registrados: ${c.comp || 0}
+• Vendas Fechadas (Ganhou): ${c.vendas || 0}
+• Faturamento Comprovado / Apurado: R$ ${fatVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+
+🚨 *Diagnóstico de Atendimento:*
+1. SLA 1ª Resposta: ${c.cw_avg_resp_h > 2 ? 'Tempo de resposta elevado comprometendo a conversão.' : 'Tempo de resposta ágil dentro do padrão.'}
+2. Governança CRM: ${c.agendados === 0 && c.set > 15 ? 'Apagão de registros no Google Sheets.' : 'Acompanhamento de CRM operacional.'}
+3. Scripts: Necessidade de aplicação do Duplo Agendamento (2 opções de horário) e régua de 5 follow-ups.
+
+🚀 *Plano de Ação:*
+1. Resgate urgente dos ${c.cw_unresp || 0} leads pendentes de atendimento.
+2. Trava de resposta em menos de 15 minutos em horário comercial.
+3. Atualização compulsória da planilha diariamente às 18h.`;
+
+  copyTextToClipboard(text);
+  showToast(`Relatório de ${c.name} copiado com sucesso! Pronto para colar no WhatsApp.`);
+}
+
+function openGlobalReport() {
+  const totLeads = DATA.reduce((s, c) => s + (c.set || 0), 0);
+  const totBase = DATA.reduce((s, c) => s + (c.total || 0), 0);
+  const totResp = DATA.reduce((s, c) => s + (c.cw_resp || 0), 0);
+  const totUnresp = DATA.reduce((s, c) => s + (c.cw_unresp || 0), 0);
+  const totAlerts = DATA.reduce((s, c) => s + (c.cw_alerts || 0), 0);
+  const totAgend = DATA.reduce((s, c) => s + (c.agendados || 0), 0);
+  const totVendas = DATA.reduce((s, c) => s + (c.vendas || 0), 0);
+  
+  let totFat = 0;
+  DATA.forEach(c => {
+    const info = CLIENT_INFO[c.id] || { ticket: 2000.0, fat: 0.0 };
+    totFat += info.fat > 0 ? info.fat : ((c.vendas || 0) * info.ticket);
+  });
+
+  const pctGlobal = totLeads > 0 ? Math.round((totResp / totLeads) * 1000) / 10 : 0;
+
+  document.getElementById('repDrawerTitle').textContent = "Consolidado Geral da Carteira (32 Clínicas)";
+  document.getElementById('repDrawerId').textContent = "PORTFÓLIO TOTAL";
+  document.getElementById('repDrawerSub').textContent = "Auditoria Comercial Mesus Media — Setembro/2026";
+  
+  const badgeEl = document.getElementById('repDrawerBadge');
+  badgeEl.textContent = "Visão Executiva";
+  badgeEl.className = "report-drawer-badge seg-saude";
+
+  document.getElementById('repDrawerSaude').innerHTML = `<span class="status-badge status-saudavel">32 Operações Mapeadas</span>`;
+
+  const bodyEl = document.getElementById('repDrawerBody');
+  bodyEl.innerHTML = `
+    <div class="rep-kpi-grid">
+      <div class="rep-kpi-box">
+        <div class="rep-kpi-label">Total Leads Setembro</div>
+        <div class="rep-kpi-val" style="color:var(--primary)">${totLeads.toLocaleString('pt-BR')}</div>
+        <div class="rep-kpi-sub">Base Total: ${totBase.toLocaleString('pt-BR')}</div>
+      </div>
+      <div class="rep-kpi-box">
+        <div class="rep-kpi-label">Total Respondidos</div>
+        <div class="rep-kpi-val" style="color:var(--primary)">${totResp.toLocaleString('pt-BR')}</div>
+        <div class="rep-kpi-sub">${pctGlobal}% de cobertura global</div>
+      </div>
+      <div class="rep-kpi-box">
+        <div class="rep-kpi-label">Fila de Espera / Sem Contato</div>
+        <div class="rep-kpi-val" style="color:#fbbf24">${totUnresp.toLocaleString('pt-BR')}</div>
+        <div class="rep-kpi-sub">${totAlerts} em alerta crítico > 24h</div>
+      </div>
+      <div class="rep-kpi-box">
+        <div class="rep-kpi-label">TMR Médio da Carteira</div>
+        <div class="rep-kpi-val" style="color:var(--accent)">9.0h</div>
+        <div class="rep-kpi-sub">Gargalo noturno e fins de semana</div>
+      </div>
+      <div class="rep-kpi-box">
+        <div class="rep-kpi-label">Agendamentos Mapeados</div>
+        <div class="rep-kpi-val" style="color:var(--secondary)">${totAgend.toLocaleString('pt-BR')}</div>
+        <div class="rep-kpi-sub">Volume acumulado de agenda</div>
+      </div>
+      <div class="rep-kpi-box">
+        <div class="rep-kpi-label">Vendas Fechadas (Ganhou)</div>
+        <div class="rep-kpi-val" style="color:var(--primary)">${totVendas.toLocaleString('pt-BR')}</div>
+        <div class="rep-kpi-sub">Contratos fechados em mesa</div>
+      </div>
+      <div class="rep-kpi-box" style="grid-column: span 2;">
+        <div class="rep-kpi-label">Faturamento Comprovado / Apurado</div>
+        <div class="rep-kpi-val" style="color:var(--primary)">R$ ${totFat.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+        <div class="rep-kpi-sub">Volume financeiro auditado e mapeado nas clínicas</div>
+      </div>
+    </div>
+
+    <div class="rep-section">
+      <div class="rep-section-title">🏥 Top 5 Operações em Destaque</div>
+      <ul class="rep-list">
+        <li><strong>Dr. Rafael Rocha:</strong> R$ 130.700,00 faturados (100% conversão dos comparecidos auditados).</li>
+        <li><strong>Orgulho de Sorrir Peruíbe:</strong> R$ 43.950,00 faturados com TMR exemplar de 0.8h (48 min).</li>
+        <li><strong>Orgulho São Vicente:</strong> R$ 95.000,00 faturamento estimado com 38 vendas.</li>
+        <li><strong>Victoriano Faces:</strong> Atendimento mais rápido de toda a carteira com TMR de 0.1h (6 minutos).</li>
+        <li><strong>Dr. Caio Figueira:</strong> 19 agendados confirmados e 17 em negociação ativa de alto ticket.</li>
+      </ul>
+    </div>
+
+    <div class="rep-section">
+      <div class="rep-section-title">🚨 Diretrizes de Gestão Imediatas</div>
+      <ol class="rep-list">
+        <li><strong>Zerar os ${totUnresp} leads parados:</strong> Força-tarefa imediata com as secretárias para resgatar os contatos pendentes.</li>
+        <li><strong>Instalação de Triagem Noturna:</strong> Automatizar acolhimento fora do horário comercial para proteger o ROI do tráfego.</li>
+        <li><strong>Duplo Agendamento Obrigatório:</strong> Padronização do script em toda a carteira.</li>
+        <li><strong>Governança de CRM às 18h:</strong> Eliminar o descompasso entre WhatsApp e planilhas.</li>
+      </ol>
+    </div>
+  `;
+
+  document.getElementById('reportDrawerOverlay').classList.add('active');
+  document.getElementById('reportDrawer').classList.add('active');
+}
+
 </script>
+
+<!-- Slide-over Drawer: Resumo Comercial & Auditoria Executiva -->
+<div class="report-drawer-overlay" id="reportDrawerOverlay" onclick="closeCommercialReport()"></div>
+<div class="report-drawer" id="reportDrawer">
+  <div class="report-drawer-header">
+    <div class="report-drawer-title-group">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="report-drawer-badge" id="repDrawerBadge">Saúde</span>
+        <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--muted-foreground);" id="repDrawerId">C123</span>
+        <span id="repDrawerSaude"></span>
+      </div>
+      <h2 class="report-drawer-title" id="repDrawerTitle">Dr. Rafael Rocha</h2>
+      <div class="report-drawer-sub" id="repDrawerSub">Procedimento: Lipo de Papada & HOF | Atendente: Marcela</div>
+    </div>
+    <div class="report-drawer-actions">
+      <button class="btn-drawer-copy" onclick="copyCurrentCommercialReport()" title="Copiar relatório formatado em texto para o WhatsApp">📋 Copiar p/ WhatsApp</button>
+      <button class="btn-drawer-close" onclick="closeCommercialReport()" title="Fechar">✕</button>
+    </div>
+  </div>
+  <div class="report-drawer-body" id="repDrawerBody">
+    <!-- Populated dynamically by openCommercialReport() -->
+  </div>
+</div>
+
 </body>
 </html>
