@@ -211,18 +211,28 @@ def process_client(client):
                 cp_val = get_v(idx_comp).lower()
                 gh_val = get_v(idx_ganh).lower()
 
-                is_agend = "agendad" in ag_val or (ag_val and ag_val not in ["não agendado", "nao agendado", "não", "nao", "0", "false", "em atendimento", "n/a"])
-                is_comp = "compareceu" in cp_val or "sim" in cp_val
-                is_ganho = "ganh" in gh_val or "sim" in gh_val or (idx_ganh and "data" in cols[idx_ganh].lower() and gh_val)
+                # Strict check to avoid counting 'não agendado' or 'descartado' as agendado
+                is_agend = False
+                if ("agendad" in ag_val or ag_val in ["sim", "true", "1"]) and not any(w in ag_val for w in ["não", "nao", "desagend", "cancel", "descart"]):
+                    is_agend = True
 
-                if is_agend:
-                    agendados += 1
-                if is_comp:
-                    compareceram += 1
-                if is_ganho:
-                    vendas += 1
+                is_comp = False
+                if ("compareceu" in cp_val or cp_val in ["sim", "true", "1"]) and not any(w in cp_val for w in ["não", "nao", "desmarcou", "faltou"]):
+                    is_comp = True
 
+                is_ganho = False
+                if ("ganh" in gh_val or "vend" in gh_val or gh_val in ["sim", "true", "1"]) and not any(w in gh_val for w in ["não", "nao", "perdid"]):
+                    is_ganho = True
+
+                # IMPORTANT: Only count metrics if the lead belongs to the target month/year!
                 if d.year == now.year and d.month == now.month:
+                    if is_agend:
+                        agendados += 1
+                    if is_comp:
+                        compareceram += 1
+                    if is_ganho:
+                        vendas += 1
+
                     n_raw = get_v(idx_nome)
                     p_raw = get_v(idx_num)
                     h_raw = get_v(idx_hora)
@@ -427,9 +437,10 @@ def process_client(client):
     m_set = evaluate_subset(sept_leads)
     m_hoje = evaluate_subset(hoje_leads)
 
-    tx_ag = round((agendados / total_leads * 100), 1) if total_leads > 0 else 0.0
+    tx_ag = round((agendados / m_set["leads"] * 100), 1) if m_set["leads"] > 0 else 0.0
     tx_cp = round((compareceram / agendados * 100), 1) if agendados > 0 else 0.0
-    tx_vd = round((vendas / compareceram * 100), 1) if compareceram > 0 else 0.0
+    ref_base_venda = compareceram if compareceram > 0 else agendados
+    tx_vd = round((vendas / ref_base_venda * 100), 1) if ref_base_venda > 0 else 0.0
 
     return {
         "id": cid,
