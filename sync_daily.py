@@ -538,8 +538,8 @@ def sync():
     try:
         subprocess.run(["git", "add", "index.html", "sync_daily.py"], cwd=REPO_DIR, check=True)
         msg = f"chore: sync crm sheets & chatwoot ({datetime.datetime.now().strftime('%d/%m/%Y %H:%M')})"
-        subprocess.run(["git", "commit", "-m", msg], cwd=REPO_DIR, check=True)
-        subprocess.run(["git", "push", "origin", "main"], cwd=REPO_DIR, check=True)
+        subprocess.run(["git", "commit", "-m", msg], cwd=REPO_DIR, check=False)
+        subprocess.run(["git", "-c", "credential.helper=manager", "push", "origin", "main"], cwd=REPO_DIR, check=True)
         log_msg("Git commit & push executados! Deploy no Vercel iniciado automaticamente.")
     except Exception as e:
         log_msg(f"Aviso ao rodar git push: {e}")
