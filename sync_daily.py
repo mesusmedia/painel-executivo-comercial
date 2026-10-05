@@ -102,7 +102,8 @@ CLIENTS = [
     { "id": "C167-AvanteOdontologiaBH", "name": "Avante Odontologia BH", "seg": "Odonto", "inbox_id": 128, "sheet_id": "17axePFMIWOUQ3kGJ308w4kptO6PZt_mY9XwjifqozrY" },
     { "id": "C167-AvanteOdontologiaSL", "name": "Avante Odontologia SL", "seg": "Odonto", "inbox_id": 129, "sheet_id": "1i5nQbdPOPLIQgUjibXCVZwd4JNuLo_AiKsqWEYNBx8k" },
     { "id": "C141-VictorRios", "name": "Victor Rios", "seg": "Saúde", "inbox_id": 112, "sheet_id": "1NQlACxzoHdcjBpH7B2_WDpiMc6uAnznEtiMWHMopHjo" },
-    { "id": "C175-VivazOdontologia", "name": "Vivaz Odontologia", "seg": "Odonto", "inbox_id": 141, "sheet_id": "1LWOtVjWsaX_tkV1TG8ibN765WbRuNTablOxhwPSyKoc" }
+    { "id": "C175-VivazOdontologia", "name": "Vivaz Odontologia", "seg": "Odonto", "inbox_id": 141, "sheet_id": "1LWOtVjWsaX_tkV1TG8ibN765WbRuNTablOxhwPSyKoc" },
+    { "id": "C180-DrNathanNunes", "name": "Dr. Nathan Nunes", "seg": "Odonto", "inbox_id": 145, "sheet_id": "1dnsXrJS3W7MgH-sEbJrDS7gOUFtNOM8Kg8saZjAelEM" }
 ]
 
 def parse_sheet_date(d_str):
