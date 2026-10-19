@@ -580,7 +580,7 @@ def sync():
             '<a id="repDrawerPdfLink" href="#" target="_blank" class="btn-drawer-copy" style="text-decoration:none;background:#2563eb;color:#ffffff;display:inline-flex;align-items:center;gap:4px;" title="Baixar relatório em PDF">📄 Baixar PDF</a>\n      <button class="btn-drawer-copy" onclick="copyCurrentCommercialReport()" title="Copiar relatório formatado em texto para o WhatsApp">📋 Copiar p/ WhatsApp</button>'
         )
 
-    if 'repDrawerPdfLink.href' not in html:
+    if 'pdfBtn' not in html:
         html = html.replace(
             "document.getElementById('repDrawerTitle').textContent = c.name;",
             "document.getElementById('repDrawerTitle').textContent = c.name;\n  const pdfBtn = document.getElementById('repDrawerPdfLink'); if (pdfBtn) { pdfBtn.href = `/pdfs/relatorio_${clientId}.pdf`; }"
