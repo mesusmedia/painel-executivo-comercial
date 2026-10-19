@@ -481,7 +481,8 @@ def process_client(client):
         "comp": compareceram,
         "tx_comp": tx_cp,
         "vendas": vendas,
-        "tx_venda": tx_vd
+        "tx_venda": tx_vd,
+        "pdf_url": f"/pdfs/relatorio_{cid}.pdf"
     }
 
 def sync():
@@ -491,7 +492,41 @@ def sync():
     with ThreadPoolExecutor(max_workers=4) as executor:
         compiled = list(executor.map(process_client, CLIENTS))
 
-    # Sort primarily by september leads, then today
+    # Load audited October ground truth if available to enrich empty sheets
+    oct_path = os.path.join(REPO_DIR, "auditoria_outubro_01_18_consolidada.json")
+    if os.path.exists(oct_path):
+        try:
+            with open(oct_path, "r", encoding="utf-8") as f_oct:
+                oct_map = {item["id"]: item for item in json.load(f_oct)}
+            for c in compiled:
+                cid = c["id"]
+                if cid in oct_map:
+                    oct_c = oct_map[cid]
+                    # If Chatwoot in October has more verified leads than sheet or sheet had 0
+                    if c["cw_leads"] < oct_c.get("oct_leads", 0) or c["cw_leads"] == 0:
+                        c["cw_leads"] = oct_c["oct_leads"]
+                        c["cw_resp"] = oct_c["oct_resp"]
+                        c["cw_unresp"] = oct_c["oct_unresp"]
+                        c["cw_alerts"] = oct_c["oct_alerts"]
+                        c["cw_avg_resp_h"] = oct_c["oct_avg_resp_h"]
+                        c["cw_pct_resp"] = oct_c["oct_pct_resp"]
+                        c["cw_status"] = oct_c["oct_status"]
+                        c["unresp_leads"] = oct_c.get("unresp_items", c.get("unresp_leads", []))
+                        c["set"] = oct_c["oct_leads"]
+                        c["agendados"] = oct_c.get("sheet_agendados", c.get("agendados", 0))
+                        c["tx_agend"] = oct_c.get("tx_agend", c.get("tx_agend", 0.0))
+                        c["comp"] = oct_c.get("sheet_compareceram", c.get("comp", 0))
+                        c["tx_comp"] = oct_c.get("tx_comp", c.get("tx_comp", 0.0))
+                        c["vendas"] = oct_c.get("sheet_vendas", c.get("vendas", 0))
+                        c["tx_venda"] = oct_c.get("tx_venda", c.get("tx_venda", 0.0))
+                        c["is_discon"] = oct_c.get("is_discon", False)
+                        c["status"] = "alta" if oct_c["oct_leads"] > 10 else ("mod" if oct_c["oct_leads"] > 0 else "pausado")
+                        c["statusText"] = "🟢 Alta Tração" if oct_c["oct_leads"] > 10 else ("🟡 Moderado" if oct_c["oct_leads"] > 0 else "⚪ Sem Leads")
+                c["pdf_url"] = f"/pdfs/relatorio_{cid}.pdf"
+        except Exception as e:
+            log_msg(f"Aviso ao mesclar auditoria de outubro: {e}")
+
+    # Sort primarily by october leads, then today
     compiled.sort(key=lambda x: (x['set'], x['hoje']), reverse=True)
 
     tot_leads = sum(c["total"] for c in compiled)
@@ -505,8 +540,8 @@ def sync():
     avg_resp_global = round((sum(resp_clinics) / len(resp_clinics)), 1) if resp_clinics else 0.0
     pct_resp_global = round((tot_cw_resp / tot_set * 100), 1) if tot_set > 0 else 0.0
 
-    log_msg(f"CRM Planilhas: Total Base={tot_leads:,} | Set/26={tot_set:,} | Hoje={tot_hoje}")
-    log_msg(f"Chatwoot Set/26: Leads Planilha={tot_set} | Respondidos={tot_cw_resp} ({pct_resp_global}%) | Sem Resposta={tot_cw_unresp} | Alertas >24h={tot_cw_alerts} | Tempo Médio={avg_resp_global}h")
+    log_msg(f"CRM Planilhas: Total Base={tot_leads:,} | Out/26={tot_set:,} | Hoje={tot_hoje}")
+    log_msg(f"Chatwoot Out/26: Leads={tot_set} | Respondidos={tot_cw_resp} ({pct_resp_global}%) | Sem Resposta={tot_cw_unresp} | Alertas >24h={tot_cw_alerts} | Tempo Médio={avg_resp_global}h")
 
     # 3. Read current index.html template and inject new DATA
     index_path = os.path.join(REPO_DIR, "index.html")
@@ -525,10 +560,37 @@ def sync():
     now_str = datetime.datetime.now().strftime("%d/%m/%Y às %H:%M")
     html = re.sub(
         r'<div style="font-size:0.85rem;color:var\(--text-muted\);">.*?</div>',
-        f'<div style="font-size:0.85rem;color:var(--text-muted);">{now_str}</div>',
+        f'<div style="font-size:0.85rem;color:var(--text-muted);">Atualizado em {now_str} • Período: 01/10 a 18/10/2026</div>',
         html,
         count=1
     )
+
+    # Ensure period labels are Outubro
+    html = html.replace('Leads no Chatwoot (Setembro)', 'Leads no Chatwoot (01 a 18/10)')
+    html = html.replace('<span>🗓️ Setembro/26</span>', '<span>🗓️ Outubro (01 a 18/10)</span>')
+    html = html.replace("set: 'Setembro/26'", "set: 'Outubro (01 a 18/10)'")
+    html = html.replace("<span>Setembro/26</span>", "<span>Outubro (01 a 18/10)</span>")
+    html = html.replace("Top 10 Clientes por Captação em Setembro/26", "Top 10 Clientes por Captação em Outubro (01 a 18/10)")
+    html = html.replace("Leads Setembro", "Leads Outubro (01-18/10)")
+
+    # Ensure PDF links exist
+    if 'repDrawerPdfLink' not in html:
+        html = html.replace(
+            '<button class="btn-drawer-copy" onclick="copyCurrentCommercialReport()" title="Copiar relatório formatado em texto para o WhatsApp">📋 Copiar p/ WhatsApp</button>',
+            '<a id="repDrawerPdfLink" href="#" target="_blank" class="btn-drawer-copy" style="text-decoration:none;background:#2563eb;color:#ffffff;display:inline-flex;align-items:center;gap:4px;" title="Baixar relatório em PDF">📄 Baixar PDF</a>\n      <button class="btn-drawer-copy" onclick="copyCurrentCommercialReport()" title="Copiar relatório formatado em texto para o WhatsApp">📋 Copiar p/ WhatsApp</button>'
+        )
+
+    if 'repDrawerPdfLink.href' not in html:
+        html = html.replace(
+            "document.getElementById('repDrawerTitle').textContent = c.name;",
+            "document.getElementById('repDrawerTitle').textContent = c.name;\n  const pdfBtn = document.getElementById('repDrawerPdfLink'); if (pdfBtn) { pdfBtn.href = `/pdfs/relatorio_${clientId}.pdf`; }"
+        )
+
+    if 'RELATORIO-EXECUTIVO-CONSOLIDADO-OUTUBRO-2026.pdf' not in html:
+        html = html.replace(
+            '<button class="btn-global-report" onclick="openGlobalReport()">🏆 Resumo Executivo da Carteira (32 Clínicas)</button>',
+            '<button class="btn-global-report" onclick="openGlobalReport()">🏆 Resumo Executivo da Carteira (33 Clínicas)</button>\n      <a href="/pdfs/RELATORIO-EXECUTIVO-CONSOLIDADO-OUTUBRO-2026.pdf" target="_blank" class="btn-global-report" style="text-decoration:none;background:#2563eb;color:#ffffff;display:inline-flex;align-items:center;gap:6px;" title="Baixar Relatório Executivo Geral em PDF">📥 Baixar Relatório Geral (PDF)</a>'
+        )
 
     with open(index_path, "w", encoding="utf-8") as f:
         f.write(html)
@@ -537,7 +599,7 @@ def sync():
 
     # 4. Commit and Push to GitHub (auto-deploys to Vercel)
     try:
-        subprocess.run(["git", "add", "index.html", "sync_daily.py"], cwd=REPO_DIR, check=True)
+        subprocess.run(["git", "add", "index.html", "sync_daily.py", "pdfs/"], cwd=REPO_DIR, check=True)
         msg = f"chore: sync crm sheets & chatwoot ({datetime.datetime.now().strftime('%d/%m/%Y %H:%M')})"
         subprocess.run(["git", "commit", "-m", msg], cwd=REPO_DIR, check=False)
         subprocess.run(["git", "-c", "credential.helper=manager", "push", "origin", "main"], cwd=REPO_DIR, check=True)
