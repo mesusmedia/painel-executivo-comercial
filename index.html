@@ -1972,24 +1972,24 @@ th.col-period-header {
   <!-- KPIs de Funil (Visão 3) -->
   <section class="kpi-grid" id="kpiFunnelRow" style="display:none;">
     <div class="kpi-card kpi-primary">
-      <div class="kpi-label">Total Agendados Mapeados</div>
-      <div class="kpi-val">8.423</div>
-      <div class="kpi-sub">Taxa média de agendamento: 32.1%</div>
+      <div class="kpi-label" id="kpi-fn-label-agend">Total Agendados Mapeados</div>
+      <div class="kpi-val" id="kpi-fn-agend">8.423</div>
+      <div class="kpi-sub" id="kpi-fn-sub-agend">Taxa média de agendamento: 32.1%</div>
     </div>
     <div class="kpi-card kpi-warning">
-      <div class="kpi-label">Comparecimentos Confirmados</div>
-      <div class="kpi-val" style="color:#fbbf24">930</div>
-      <div class="kpi-sub">Gargalo principal: Show-up Rate 11.0%</div>
+      <div class="kpi-label" id="kpi-fn-label-comp">Comparecimentos Confirmados</div>
+      <div class="kpi-val" id="kpi-fn-comp" style="color:#fbbf24">930</div>
+      <div class="kpi-sub" id="kpi-fn-sub-comp">Gargalo principal: Show-up Rate 11.0%</div>
     </div>
     <div class="kpi-card kpi-secondary">
-      <div class="kpi-label">Vendas Fechadas (Ganhos)</div>
-      <div class="kpi-val" style="color:var(--primary)">439</div>
-      <div class="kpi-sub">Taxa pós-comparecimento: 47.2%</div>
+      <div class="kpi-label" id="kpi-fn-label-vendas">Vendas Fechadas (Ganhos)</div>
+      <div class="kpi-val" id="kpi-fn-vendas" style="color:var(--primary)">439</div>
+      <div class="kpi-sub" id="kpi-fn-sub-vendas">Taxa pós-comparecimento: 47.2%</div>
     </div>
     <div class="kpi-card kpi-accent">
-      <div class="kpi-label">Melhor Taxa de Fechamento</div>
-      <div class="kpi-val" style="color:var(--accent)">88.0%</div>
-      <div class="kpi-sub">Clínica Glow (22 vendas / 25 comp.)</div>
+      <div class="kpi-label" id="kpi-fn-label-best">Melhor Taxa de Fechamento</div>
+      <div class="kpi-val" id="kpi-fn-best" style="color:var(--accent)">88.0%</div>
+      <div class="kpi-sub" id="kpi-fn-sub-best">Clínica Glow (22 vendas / 25 comp.)</div>
     </div>
   </section>
 
@@ -5607,6 +5607,49 @@ function updateKpiCards() {
     if (valCwTime) valCwTime.textContent = `${avgTimeSet}h`;
     if (subCwTime) subCwTime.textContent = 'Média das clínicas no mês corrente';
   }
+
+  // Atualizar KPIs de Funil (Visão 3) dinamicamente com base no DATA e período ativo
+  const valFnAgend = document.getElementById('kpi-fn-agend');
+  const subFnAgend = document.getElementById('kpi-fn-sub-agend');
+  const valFnComp = document.getElementById('kpi-fn-comp');
+  const subFnComp = document.getElementById('kpi-fn-sub-comp');
+  const valFnVendas = document.getElementById('kpi-fn-vendas');
+  const subFnVendas = document.getElementById('kpi-fn-sub-vendas');
+  const valFnBest = document.getElementById('kpi-fn-best');
+  const subFnBest = document.getElementById('kpi-fn-sub-best');
+
+  if (valFnAgend) {
+    const totAgend = DATA.reduce((acc, c) => acc + (c.agendados || 0), 0);
+    const totComp = DATA.reduce((acc, c) => acc + (c.comp || 0), 0);
+    const totVendas = DATA.reduce((acc, c) => acc + (c.vendas || 0), 0);
+
+    const totLeadsPeriod = DATA.reduce((acc, c) => {
+      if (currentPeriod === 'hoje') return acc + (c.hoje || 0);
+      if (currentPeriod === 'set') return acc + (c.set || 0);
+      if (currentPeriod === 'ago') return acc + (c.ago || 0);
+      return acc + (c.total || 0);
+    }, 0);
+
+    const txAgendGlobal = totLeadsPeriod > 0 ? ((totAgend / totLeadsPeriod) * 100).toFixed(1) : '0.0';
+    const txCompGlobal = totAgend > 0 ? ((totComp / totAgend) * 100).toFixed(1) : '0.0';
+    const txVendaGlobal = totComp > 0 ? ((totVendas / totComp) * 100).toFixed(1) : '0.0';
+
+    valFnAgend.textContent = totAgend.toLocaleString('pt-BR');
+    if (subFnAgend) subFnAgend.textContent = `Taxa média de agendamento: ${txAgendGlobal}%`;
+
+    valFnComp.textContent = totComp.toLocaleString('pt-BR');
+    if (subFnComp) subFnComp.textContent = `Show-up Rate global: ${txCompGlobal}%`;
+
+    valFnVendas.textContent = totVendas.toLocaleString('pt-BR');
+    if (subFnVendas) subFnVendas.textContent = `Tx. fechamento pós-presença: ${txVendaGlobal}%`;
+
+    // Achar cliente com maior tx_venda que teve comparecimentos
+    const bestClinic = [...DATA].filter(c => (c.comp || 0) >= 5).sort((a,b) => (b.tx_venda || 0) - (a.tx_venda || 0))[0];
+    if (bestClinic && valFnBest && subFnBest) {
+      valFnBest.textContent = `${(bestClinic.tx_venda || 0).toFixed(1)}%`;
+      subFnBest.textContent = `${bestClinic.name} (${bestClinic.vendas} vendas / ${bestClinic.comp} comp.)`;
+    }
+  }
 }
 
 function switchView(view) {
@@ -5743,6 +5786,19 @@ function compareValues(a, b, colKey, dir) {
   if (typeof valA === 'string' && typeof valB === 'string') {
     const cmp = valA.localeCompare(valB, 'pt-BR', { sensitivity: 'base' });
     return dir === 'asc' ? cmp : -cmp;
+  }
+
+  // Funnel view period-aware sort for 'total' (Leads no Período) and 'tx_agend' (Taxa Agend. no Período)
+  if (activeView === 'funnel') {
+    if (colKey === 'total') {
+      valA = (currentPeriod === 'hoje') ? (a.hoje || 0) : ((currentPeriod === 'set') ? (a.set || 0) : ((currentPeriod === 'ago') ? (a.ago || 0) : (a.total || 0)));
+      valB = (currentPeriod === 'hoje') ? (b.hoje || 0) : ((currentPeriod === 'set') ? (b.set || 0) : ((currentPeriod === 'ago') ? (b.ago || 0) : (b.total || 0)));
+    } else if (colKey === 'tx_agend') {
+      const leadsA = (currentPeriod === 'hoje') ? (a.hoje || 0) : ((currentPeriod === 'set') ? (a.set || 0) : ((currentPeriod === 'ago') ? (a.ago || 0) : (a.total || 0)));
+      const leadsB = (currentPeriod === 'hoje') ? (b.hoje || 0) : ((currentPeriod === 'set') ? (b.set || 0) : ((currentPeriod === 'ago') ? (b.ago || 0) : (b.total || 0)));
+      valA = leadsA > 0 ? (a.agendados / leadsA) * 100 : (a.tx_agend || 0);
+      valB = leadsB > 0 ? (b.agendados / leadsB) * 100 : (b.tx_agend || 0);
+    }
   }
 
   // Numbers comparison (Menor pro Maior na ordem 'asc')
@@ -6135,6 +6191,12 @@ function renderTable(list) {
     }).join('');
 
   } else {
+    const periodHeaderLabel = currentPeriod === 'hoje' 
+      ? 'Leads Hoje' 
+      : (currentPeriod === 'set' 
+        ? 'Leads Outubro (01 a 18/10)' 
+        : (currentPeriod === 'ago' ? 'Leads Agosto/26' : 'Total Leads Base'));
+
     thead.innerHTML = `
       <tr>
         <th class="sticky-col-header sortable-th ${currentSort.col === 'name' ? 'active-sorted' : ''}" onclick="handleSort('name')" title="Clique para ordenar Menor → Maior">
@@ -6144,7 +6206,7 @@ function renderTable(list) {
           <div class="th-content"><span>Segmento</span> ${getSortBadgeHtml('seg')}</div>
         </th>
         <th class="sortable-th ${currentSort.col === 'total' ? 'active-sorted' : ''}" onclick="handleSort('total')" title="Clique para ordenar Menor → Maior">
-          <div class="th-content justify-end"><span>Total Leads</span> ${getSortBadgeHtml('total')}</div>
+          <div class="th-content justify-end"><span>${periodHeaderLabel}</span> ${getSortBadgeHtml('total')}</div>
         </th>
         <th class="sortable-th ${currentSort.col === 'agendados' ? 'active-sorted' : ''}" onclick="handleSort('agendados')" title="Clique para ordenar Menor → Maior">
           <div class="th-content justify-end"><span>Agendados</span> ${getSortBadgeHtml('agendados')}</div>
@@ -6169,7 +6231,18 @@ function renderTable(list) {
     tbody.innerHTML = list.map(c => {
       const segClass = c.seg === 'Saúde' ? 'seg-saude' : (c.seg === 'Odonto' ? 'seg-odonto' : 'seg-estetica');
       
-      const agendRateClass = c.tx_agend >= 40 ? 'rate-good' : (c.tx_agend >= 20 ? 'rate-mid' : 'rate-low');
+      const leadsPeriodVal = currentPeriod === 'hoje' 
+        ? (c.hoje || 0) 
+        : (currentPeriod === 'set' 
+          ? (c.set || 0) 
+          : (currentPeriod === 'ago' ? (c.ago || 0) : (c.total || 0)));
+
+      const txAgendPeriod = leadsPeriodVal > 0 
+        ? ((c.agendados / leadsPeriodVal) * 100).toFixed(1) 
+        : (c.tx_agend || 0).toFixed(1);
+
+      const agendRateNum = parseFloat(txAgendPeriod);
+      const agendRateClass = agendRateNum >= 40 ? 'rate-good' : (agendRateNum >= 20 ? 'rate-mid' : 'rate-low');
       const compRateClass = c.tx_comp >= 15 ? 'rate-good' : (c.tx_comp >= 8 ? 'rate-mid' : 'rate-low');
       const vendaRateClass = c.tx_venda >= 50 ? 'rate-good' : (c.tx_venda >= 25 ? 'rate-mid' : 'rate-low');
 
@@ -6188,9 +6261,9 @@ function renderTable(list) {
             </div>
           </td>
           <td class="${currentSort.col === 'seg' ? 'col-sorted-active' : ''}"><span class="seg-pill ${segClass}">${c.seg}</span></td>
-          <td style="text-align:right" class="${currentSort.col === 'total' ? 'col-sorted-active' : ''}"><span class="num-val">${c.total.toLocaleString('pt-BR')}</span></td>
+          <td style="text-align:right" class="${currentSort.col === 'total' ? 'col-sorted-active' : ''}"><span class="num-val">${leadsPeriodVal.toLocaleString('pt-BR')}</span></td>
           <td style="text-align:right" class="${currentSort.col === 'agendados' ? 'col-sorted-active' : ''}"><span class="num-val" style="color:var(--secondary)">${c.agendados.toLocaleString('pt-BR')}</span></td>
-          <td style="text-align:right" class="${currentSort.col === 'tx_agend' ? 'col-sorted-active' : ''}"><span class="num-rate ${agendRateClass}">${c.tx_agend}%</span></td>
+          <td style="text-align:right" class="${currentSort.col === 'tx_agend' ? 'col-sorted-active' : ''}"><span class="num-rate ${agendRateClass}">${txAgendPeriod}%</span></td>
           <td style="text-align:right" class="${currentSort.col === 'comp' ? 'col-sorted-active' : ''}"><span class="num-val" style="color:#fbbf24">${c.comp.toLocaleString('pt-BR')}</span></td>
           <td style="text-align:right" class="${currentSort.col === 'tx_comp' ? 'col-sorted-active' : ''}"><span class="num-rate ${compRateClass}">${c.tx_comp}%</span></td>
           <td style="text-align:right" class="${currentSort.col === 'vendas' ? 'col-sorted-active' : ''}"><span class="num-val" style="color:var(--primary)">${c.vendas.toLocaleString('pt-BR')}</span></td>
