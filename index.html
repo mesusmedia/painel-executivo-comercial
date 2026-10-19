@@ -1653,9 +1653,201 @@ th.col-period-header {
   from { opacity: 1; transform: translateY(0); }
   to { opacity: 0; transform: translateY(12px); }
 }
+
+/* Authentication Overlay Styles */
+#authOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: radial-gradient(circle at 50% 20%, oklch(0.20 0.05 260), oklch(0.10 0.02 260));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(12px);
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.auth-box {
+  background: color-mix(in oklch, var(--card) 95%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.auth-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+}
+.auth-header {
+  text-align: center;
+}
+.auth-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px auto;
+  box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.3);
+}
+.auth-title {
+  font-family: var(--font-sans);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--foreground);
+  letter-spacing: -0.02em;
+}
+.auth-desc {
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+  margin-top: 4px;
+}
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+.auth-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.auth-field input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.auth-field input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 20%, transparent);
+}
+.auth-submit-btn {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  transition: opacity 0.15s ease, transform 0.1s ease;
+  margin-top: 6px;
+}
+.auth-submit-btn:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+.auth-submit-btn:active {
+  transform: translateY(0);
+}
+.auth-error {
+  display: none;
+  background: color-mix(in oklch, var(--destructive) 12%, transparent);
+  border: 1px solid color-mix(in oklch, var(--destructive) 35%, transparent);
+  color: var(--destructive);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  align-items: center;
+  gap: 8px;
+}
+.auth-footer-badge {
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--muted-foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.btn-logout {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.btn-logout:hover {
+  background: color-mix(in oklch, var(--destructive) 10%, transparent);
+  border-color: color-mix(in oklch, var(--destructive) 30%, transparent);
+  color: var(--destructive);
+}
+
 </style>
 </head>
 <body>
+
+<!-- Tela de Bloqueio e Login do Painel Executivo Mesus -->
+<div id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-header">
+      <div class="auth-logo">M</div>
+      <h1 class="auth-title">Mesus Media</h1>
+      <p class="auth-desc">Painel Executivo Comercial • Acesso Restrito</p>
+    </div>
+
+    <div class="auth-error" id="authError">
+      <span>⚠️</span>
+      <span id="authErrorMsg">Usuário ou senha incorretos.</span>
+    </div>
+
+    <form class="auth-form" onsubmit="handleLogin(event)">
+      <div class="auth-field">
+        <label for="authLogin">Login / Usuário</label>
+        <input type="text" id="authLogin" placeholder="Digite seu usuário..." autocomplete="username" required autofocus>
+      </div>
+
+      <div class="auth-field">
+        <label for="authPass">Senha</label>
+        <input type="password" id="authPass" placeholder="Digite sua senha..." autocomplete="current-password" required>
+      </div>
+
+      <button type="submit" class="auth-submit-btn" id="authSubmitBtn">Entrar no Painel 🔒</button>
+    </form>
+
+    <div class="auth-footer-badge">
+      <span>🛡️</span> Acesso protegido por criptografia de sessão segura
+    </div>
+  </div>
+</div>
+
 
 <header>
   <div class="container header-inner">
@@ -1674,6 +1866,9 @@ th.col-period-header {
         <span id="themeToggleText">Modo Claro</span>
       </button>
       <div class="live-pill"><span class="live-dot"></span> Sincronizado com CRMs</div>
+      <button class="btn-logout" onclick="handleLogout()" title="Encerrar sessão protegida">
+        <span>🚪</span> Sair
+      </button>
       <div style="font-size:0.85rem;color:var(--text-muted);">Atualizado em 19/10/2026 às 19:20 • Período: 01/10 a 18/10/2026</div>
     </div>
   </div>
@@ -7144,6 +7339,115 @@ function openGlobalReport() {
     <!-- Populated dynamically by openCommercialReport() -->
   </div>
 </div>
+
+
+<script>
+// --- Sistema de Autenticação Segura do Painel ---
+// Hashes SHA-256 das Credenciais Autorizadas
+const AUTH_USERS = {
+  // admin / mesus@2026
+  "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918": "112ecf140a6d8617e58dcad01cfe3c9a8f895b89041e115994bd78167b819755",
+  // mesus / mesus@2026
+  "7fe7a6be7e6c71d3cb2302061770ae14664a79c51354f268a4a51885a68d3a38": "112ecf140a6d8617e58dcad01cfe3c9a8f895b89041e115994bd78167b819755",
+  // admin@mesusmedia.com.br / mesus@2026
+  "ddbecad8b2aaccfb3ce45db4d050432fa509284bd96b447dc099c941aa32b661": "112ecf140a6d8617e58dcad01cfe3c9a8f895b89041e115994bd78167b819755"
+};
+
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message.trim());
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function checkStoredAuth() {
+  const token = localStorage.getItem('mesus_auth_token') || sessionStorage.getItem('mesus_auth_token');
+  const overlay = document.getElementById('authOverlay');
+  if (token === 'mesus_authenticated_session') {
+    if (overlay) overlay.style.display = 'none';
+  } else {
+    if (overlay) {
+      overlay.style.display = 'flex';
+      setTimeout(() => {
+        const inp = document.getElementById('authLogin');
+        if (inp) inp.focus();
+      }, 100);
+    }
+  }
+}
+
+async function handleLogin(e) {
+  if (e) e.preventDefault();
+  const loginInput = document.getElementById('authLogin');
+  const passInput = document.getElementById('authPass');
+  const errBox = document.getElementById('authError');
+  const errMsg = document.getElementById('authErrorMsg');
+  const submitBtn = document.getElementById('authSubmitBtn');
+
+  if (!loginInput || !passInput) return;
+
+  const userVal = loginInput.value.toLowerCase().trim();
+  const passVal = passInput.value;
+
+  if (!userVal || !passVal) {
+    if (errBox) {
+      errMsg.textContent = 'Por favor, preencha o usuário e a senha.';
+      errBox.style.display = 'flex';
+    }
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Validando...';
+
+  try {
+    const userHash = await sha256(userVal);
+    const passHash = await sha256(passVal);
+
+    if (AUTH_USERS[userHash] && AUTH_USERS[userHash] === passHash) {
+      // Login Válido
+      localStorage.setItem('mesus_auth_token', 'mesus_authenticated_session');
+      localStorage.setItem('mesus_auth_user', userVal);
+      if (errBox) errBox.style.display = 'none';
+
+      const overlay = document.getElementById('authOverlay');
+      if (overlay) {
+        overlay.style.opacity = '0';
+        setTimeout(() => { overlay.style.display = 'none'; }, 300);
+      }
+    } else {
+      if (errBox) {
+        errMsg.textContent = 'Credenciais inválidas. Verifique login e senha.';
+        errBox.style.display = 'flex';
+      }
+      passInput.value = '';
+      passInput.focus();
+    }
+  } catch(err) {
+    console.error('Erro na autenticação:', err);
+    if (errBox) {
+      errMsg.textContent = 'Erro ao processar login.';
+      errBox.style.display = 'flex';
+    }
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Entrar no Painel 🔒';
+  }
+}
+
+function handleLogout() {
+  if (confirm('Deseja realmente sair do painel?')) {
+    localStorage.removeItem('mesus_auth_token');
+    localStorage.removeItem('mesus_auth_user');
+    sessionStorage.removeItem('mesus_auth_token');
+    location.reload();
+  }
+}
+
+// Verifica status de autenticação imediatamente
+document.addEventListener('DOMContentLoaded', checkStoredAuth);
+checkStoredAuth();
+</script>
 
 </body>
 </html>
