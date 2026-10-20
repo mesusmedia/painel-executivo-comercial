@@ -3515,7 +3515,10 @@ function openCommercialReport(clientId) {
   const unrespList = m.unresp_leads || [];
   const unrespHtml = unrespList.length ? `
     <div class="rep-section" style="border-color:color-mix(in oklch, var(--destructive) 40%, transparent)">
-      <div class="rep-section-title" style="color:var(--destructive)">🚨 Fila de Espera: ${m.cw_unresp} lead(s) sem retorno da equipe (${m.cw_alerts || 0} há mais de 24h)</div>
+      <div class="rep-section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--destructive)">
+        <span>🚨 Fila de Espera: ${m.cw_unresp} lead(s) sem retorno da equipe (${m.cw_alerts || 0} há mais de 24h)</span>
+        <button class="btn-copy-leads" onclick="copyClinicLeads('${clientId}')" title="Copiar lista de ${esc(c.name)} formatada para o WhatsApp da secretária">📋 Copiar lista</button>
+      </div>
       <div class="expand-table-wrap"><table class="expand-table">
         <thead><tr><th>Lead</th><th>Contato</th><th>Espera</th><th>Contexto</th><th style="text-align:right">Ação</th></tr></thead>
         <tbody>${unrespList.slice(0, 8).map(u => {
