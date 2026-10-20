@@ -1869,14 +1869,14 @@ th.col-period-header {
       <button class="btn-logout" onclick="handleLogout()" title="Encerrar sessão protegida">
         <span>🚪</span> Sair
       </button>
-      <div style="font-size:0.85rem;color:var(--text-muted);">Atualizado em 19/10/2026 às 20:20 • Período: 01/10 a 18/10/2026</div>
+      <div id="updatedAt" style="font-size:0.85rem;color:var(--text-muted);"></div>
     </div>
   </div>
 </header>
 
 <div class="routine-bar">
   <div class="container routine-inner">
-    <div>⏰ <strong>Rotina Automática:</strong> Varredura e relatório diário agendados para todo dia às <span class="routine-tag">09:00</span> via Maestri / Vercel.</div>
+    <div>⏰ <strong>Rotina Automática:</strong> Planilhas CRM e Chatwoot sincronizados <span class="routine-tag">a cada hora</span>.</div>
     <div>🔔 <strong>Alerta Operacional:</strong> Lembrete de reconexão WhatsApp às <span class="routine-tag">08:30</span>.</div>
   </div>
 </div>
@@ -1913,8 +1913,7 @@ th.col-period-header {
       <button class="nav-tab active" id="tabBtnChatwoot" onclick="switchView('chatwoot')">💬 Atendimento Comercial (Chatwoot)</button>
       <button class="nav-tab" id="tabBtnLeads" onclick="switchView('leads')">📊 Captação de Leads (Diário)</button>
       <button class="nav-tab" id="tabBtnFunnel" onclick="switchView('funnel')">🎯 Cruzamento de Funil & Agendamentos</button>
-      <button class="btn-global-report" onclick="openGlobalReport()">🏆 Resumo Executivo da Carteira (33 Clínicas)</button>
-      <a href="/pdfs/RELATORIO-EXECUTIVO-CONSOLIDADO-OUTUBRO-2026.pdf" target="_blank" class="btn-global-report" style="text-decoration:none;background:#2563eb;color:#ffffff;display:inline-flex;align-items:center;gap:6px;" title="Baixar Relatório Executivo Geral em PDF">📥 Baixar Relatório Geral (PDF)</a>
+      <button class="btn-global-report" onclick="openGlobalReport()">🏆 Resumo Executivo da Carteira</button>
     </div>
     <div style="font-size:0.8rem;color:var(--muted-foreground);">
       Mostrando: <strong id="viewSubtitle" style="color:var(--foreground)">Atendimento no Chatwoot, Respostas e Alertas</strong>
@@ -1948,24 +1947,24 @@ th.col-period-header {
   <!-- KPIs de Leads (Visão 2) -->
   <section class="kpi-grid" id="kpiLeadsRow" style="display:none;">
     <div class="kpi-card kpi-primary">
-      <div class="kpi-label">Total Leads na Base</div>
-      <div class="kpi-val">26.280</div>
-      <div class="kpi-sub">32 contas mapeadas</div>
+      <div class="kpi-label">Total de Leads na Base (planilhas)</div>
+      <div class="kpi-val" id="kpi-ld-total">0</div>
+      <div class="kpi-sub" id="kpi-ld-sub-total"></div>
     </div>
     <div class="kpi-card kpi-secondary">
-      <div class="kpi-label">Leads Outubro (01-18/10) (01 a 08/09)</div>
-      <div class="kpi-val">1.171</div>
-      <div class="kpi-sub" style="color:var(--primary)">▲ Aceleração de 18% vs Agosto</div>
+      <div class="kpi-label" id="kpi-ld-label-month">Leads no mês</div>
+      <div class="kpi-val" id="kpi-ld-month">0</div>
+      <div class="kpi-sub" id="kpi-ld-sub-month" style="color:var(--primary)"></div>
     </div>
     <div class="kpi-card kpi-warning">
-      <div class="kpi-label">Novos Leads Hoje (08/09)</div>
-      <div class="kpi-val" style="color:var(--primary)">109</div>
-      <div class="kpi-sub">Média 146 leads/dia no mês</div>
+      <div class="kpi-label" id="kpi-ld-label-hoje">Novos Leads Hoje</div>
+      <div class="kpi-val" id="kpi-ld-hoje" style="color:var(--primary)">0</div>
+      <div class="kpi-sub" id="kpi-ld-sub-hoje"></div>
     </div>
     <div class="kpi-card kpi-accent">
-      <div class="kpi-label">Contas Ativas no Mês</div>
-      <div class="kpi-val" style="color:var(--accent)">28 / 32</div>
-      <div class="kpi-sub">87.5% da carteira captando</div>
+      <div class="kpi-label">Contas com Leads no Mês</div>
+      <div class="kpi-val" id="kpi-ld-active" style="color:var(--accent)">0</div>
+      <div class="kpi-sub" id="kpi-ld-sub-active"></div>
     </div>
   </section>
 
@@ -2029,24 +2028,7 @@ th.col-period-header {
       <!-- Filtro por Período (Novo!) -->
       <div class="period-filter-section">
         <span class="period-filter-label">📅 Período:</span>
-        <div class="period-pills">
-          <button class="period-btn active" data-period="all" onclick="setPeriod('all', this)" title="Exibir todo o histórico consolidado">
-            <span>Todo o Histórico</span>
-            <span class="period-badge" id="p-badge-all">32</span>
-          </button>
-          <button class="period-btn" data-period="hoje" onclick="setPeriod('hoje', this)" title="Focar nos leads gerados hoje">
-            <span id="btn-label-hoje">🟢 Hoje</span>
-            <span class="period-badge" id="p-badge-hoje">21</span>
-          </button>
-          <button class="period-btn" data-period="set" onclick="setPeriod('set', this)" title="Focar nos leads do mês corrente (Setembro/26)">
-            <span>📊 Setembro/26</span>
-            <span class="period-badge" id="p-badge-set">28</span>
-          </button>
-          <button class="period-btn" data-period="ago" onclick="setPeriod('ago', this)" title="Focar nos leads do mês anterior (Agosto/26)">
-            <span>🗓️ Agosto/26</span>
-            <span class="period-badge" id="p-badge-ago">31</span>
-          </button>
-        </div>
+        <div class="period-pills" id="periodPills"></div>
         <label class="period-chk-wrap" title="Ocultar clientes que não geraram leads no período selecionado">
           <input type="checkbox" id="chkPeriodOnly" onchange="filterData()">
           <span>Apenas ativos no período</span>
@@ -2110,7 +2092,7 @@ th.col-period-header {
 </div>
 
 <script>
-const DATA = [
+/*DATA*/const DATA = [
   {
     "id": "C172-DrCaioFigueira",
     "name": "Dr. Caio Figueira",
@@ -2118,10 +2100,10 @@ const DATA = [
     "inbox_id": 134,
     "is_discon": false,
     "evo_status": "open",
-    "cw_leads": 296,
+    "cw_leads": 297,
     "cw_resp": 246,
-    "cw_unresp": 50,
-    "cw_pct_resp": 83.1,
+    "cw_unresp": 51,
+    "cw_pct_resp": 82.8,
     "cw_alerts": 45,
     "cw_avg_resp_h": 25.4,
     "cw_status": "Atenção",
@@ -2131,7 +2113,7 @@ const DATA = [
         "name": "Carol Silva  Nail Designer",
         "phone": "553599060337",
         "data": "01/10/2026 00:08:33",
-        "espera_h": 455.2,
+        "espera_h": 455.8,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Sou de Minas. Tenho interesse na Lipo de Papa'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/66748"
@@ -2141,7 +2123,7 @@ const DATA = [
         "name": "Vilma Santos 🫀",
         "phone": "558587776278",
         "data": "01/10/2026 00:09:31",
-        "espera_h": 455.1,
+        "espera_h": 455.8,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/66749"
@@ -2151,7 +2133,7 @@ const DATA = [
         "name": "Natalia Albuquerque Corretora de imoveis / CRECI 27040",
         "phone": "558592539278",
         "data": "01/10/2026 00:45:36",
-        "espera_h": 454.5,
+        "espera_h": 455.2,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/66757"
@@ -2161,7 +2143,7 @@ const DATA = [
         "name": "ElianaOliveira😉",
         "phone": "558589714954",
         "data": "02/10/2026 13:49:24",
-        "espera_h": 417.5,
+        "espera_h": 418.1,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/67312"
@@ -2171,7 +2153,7 @@ const DATA = [
         "name": "Miss",
         "phone": "558588800400",
         "data": "02/10/2026 14:22:30",
-        "espera_h": 416.9,
+        "espera_h": 417.6,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/67325"
@@ -2181,7 +2163,7 @@ const DATA = [
         "name": "Cirlhei miclei",
         "phone": "558587920067",
         "data": "02/10/2026 15:46:59",
-        "espera_h": 415.5,
+        "espera_h": 416.2,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/67352"
@@ -2191,7 +2173,7 @@ const DATA = [
         "name": "josi",
         "phone": "558586842939",
         "data": "03/10/2026 13:07:29",
-        "espera_h": 457.2,
+        "espera_h": 457.9,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/66718"
@@ -2201,7 +2183,7 @@ const DATA = [
         "name": "Lucia",
         "phone": "553598541472",
         "data": "05/10/2026 20:02:03",
-        "espera_h": 339.3,
+        "espera_h": 339.9,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Bom dia'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68062"
@@ -2211,7 +2193,7 @@ const DATA = [
         "name": "Conde Lily Lothus Imóveis",
         "phone": "558591141926",
         "data": "05/10/2026 22:14:09",
-        "espera_h": 337.1,
+        "espera_h": 337.7,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lipo de Papada e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68096"
@@ -2221,7 +2203,7 @@ const DATA = [
         "name": "Maria  🇧🇷@casacoqueiros",
         "phone": "558588812108",
         "data": "05/10/2026 23:52:25",
-        "espera_h": 335.4,
+        "espera_h": 336.1,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68114"
@@ -2231,7 +2213,7 @@ const DATA = [
         "name": "Graca",
         "phone": "558587571082",
         "data": "06/10/2026 09:40:08",
-        "espera_h": 325.6,
+        "espera_h": 326.3,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68164"
@@ -2241,7 +2223,7 @@ const DATA = [
         "name": "Marta",
         "phone": "558581963872",
         "data": "06/10/2026 10:34:46",
-        "espera_h": 324.7,
+        "espera_h": 325.4,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68171"
@@ -2251,7 +2233,7 @@ const DATA = [
         "name": "Vania Rodrigues",
         "phone": "558596136197",
         "data": "06/10/2026 10:38:33",
-        "espera_h": 324.7,
+        "espera_h": 325.3,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68173"
@@ -2261,7 +2243,7 @@ const DATA = [
         "name": "Lucy Lima",
         "phone": "558591227740",
         "data": "06/10/2026 11:09:08",
-        "espera_h": 324.2,
+        "espera_h": 324.8,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68194"
@@ -2271,7 +2253,7 @@ const DATA = [
         "name": "Regina Viana",
         "phone": "558597435120",
         "data": "06/10/2026 11:33:30",
-        "espera_h": 323.7,
+        "espera_h": 324.4,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68203"
@@ -2281,7 +2263,7 @@ const DATA = [
         "name": "Monique Gonzaga Moreno",
         "phone": "553598153793",
         "data": "06/10/2026 20:18:41",
-        "espera_h": 315.0,
+        "espera_h": 315.7,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Sou de Minas. Tenho interesse na Lifting Faci'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68400"
@@ -2291,7 +2273,7 @@ const DATA = [
         "name": "🧚‍♂️",
         "phone": "558898020155",
         "data": "06/10/2026 21:43:40",
-        "espera_h": 313.6,
+        "espera_h": 314.2,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68415"
@@ -2301,7 +2283,7 @@ const DATA = [
         "name": "🙃",
         "phone": "558591857110",
         "data": "07/10/2026 20:17:23",
-        "espera_h": 291.0,
+        "espera_h": 291.7,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68713"
@@ -2311,7 +2293,7 @@ const DATA = [
         "name": "Aguida Sa",
         "phone": "558599880388",
         "data": "07/10/2026 22:49:09",
-        "espera_h": 288.5,
+        "espera_h": 289.1,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68748"
@@ -2321,7 +2303,7 @@ const DATA = [
         "name": "Patricia Porto",
         "phone": "558588046879",
         "data": "07/10/2026 23:08:56",
-        "espera_h": 288.2,
+        "espera_h": 288.8,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Valores'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68753"
@@ -2331,7 +2313,7 @@ const DATA = [
         "name": "Marileide Reis 👸🏻",
         "phone": "558587750636",
         "data": "08/10/2026 00:02:07",
-        "espera_h": 287.3,
+        "espera_h": 287.9,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68757"
@@ -2341,7 +2323,7 @@ const DATA = [
         "name": "Ana Paula",
         "phone": "558594294495",
         "data": "08/10/2026 00:20:42",
-        "espera_h": 287.0,
+        "espera_h": 287.6,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68761"
@@ -2351,7 +2333,7 @@ const DATA = [
         "name": "🦋📿🍀🧿🍃✨",
         "phone": "553499895350",
         "data": "08/10/2026 01:03:35",
-        "espera_h": 286.2,
+        "espera_h": 286.9,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Sou de Minas. Tenho interesse na Lifting Faci'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68766"
@@ -2361,7 +2343,7 @@ const DATA = [
         "name": "Tania Dias",
         "phone": "558598204047",
         "data": "08/10/2026 15:38:40",
-        "espera_h": 271.7,
+        "espera_h": 272.3,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68880"
@@ -2371,7 +2353,7 @@ const DATA = [
         "name": "Marileide Reis 👸🏻",
         "phone": "558587750636",
         "data": "09/10/2026 05:24:23",
-        "espera_h": 287.3,
+        "espera_h": 287.9,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68757"
@@ -2381,7 +2363,7 @@ const DATA = [
         "name": "Eliziane",
         "phone": "558599240624",
         "data": "09/10/2026 08:40:42",
-        "espera_h": 254.6,
+        "espera_h": 255.3,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lipo de Papada e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/69027"
@@ -2391,7 +2373,7 @@ const DATA = [
         "name": "rozienemenezez",
         "phone": "558586361251",
         "data": "12/10/2026 20:45:16",
-        "espera_h": 170.5,
+        "espera_h": 171.2,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/69512"
@@ -2401,7 +2383,7 @@ const DATA = [
         "name": "aninha",
         "phone": "558888261710",
         "data": "15/10/2026 01:51:17",
-        "espera_h": 117.4,
+        "espera_h": 118.1,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70402"
@@ -2411,7 +2393,7 @@ const DATA = [
         "name": "Joia",
         "phone": "558391598181",
         "data": "16/10/2026 14:28:14",
-        "espera_h": 80.8,
+        "espera_h": 81.5,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70764"
@@ -2421,7 +2403,7 @@ const DATA = [
         "name": "Conceição",
         "phone": "558899047207",
         "data": "16/10/2026 20:55:26",
-        "espera_h": 74.4,
+        "espera_h": 75.0,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Valores,por favor!'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70839"
@@ -2431,7 +2413,7 @@ const DATA = [
         "name": "aninha",
         "phone": "558888261710",
         "data": "16/10/2026 22:47:58",
-        "espera_h": 117.4,
+        "espera_h": 118.1,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70402"
@@ -2441,7 +2423,7 @@ const DATA = [
         "name": "Leonor Brasil",
         "phone": "558596884778",
         "data": "16/10/2026 22:55:09",
-        "espera_h": 72.4,
+        "espera_h": 73.0,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Qual ó preço'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70859"
@@ -2451,7 +2433,7 @@ const DATA = [
         "name": "Patrícia Porpino",
         "phone": "558393448787",
         "data": "16/10/2026 22:55:48",
-        "espera_h": 72.4,
+        "espera_h": 73.0,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70860"
@@ -2461,7 +2443,7 @@ const DATA = [
         "name": "Das Neves ❤️",
         "phone": "558598170204",
         "data": "16/10/2026 23:58:18",
-        "espera_h": 71.3,
+        "espera_h": 72.0,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70866"
@@ -2471,7 +2453,7 @@ const DATA = [
         "name": "Amanda Barata",
         "phone": "558582144807",
         "data": "17/10/2026 02:41:49",
-        "espera_h": 68.6,
+        "espera_h": 69.3,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70879"
@@ -2481,7 +2463,7 @@ const DATA = [
         "name": "Irisleda Maria🌻🌻🌻🌻",
         "phone": "558592181339",
         "data": "17/10/2026 10:29:43",
-        "espera_h": 60.8,
+        "espera_h": 61.5,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70901"
@@ -2491,7 +2473,7 @@ const DATA = [
         "name": "Eneida Lustosa 🌹",
         "phone": "558588051290",
         "data": "17/10/2026 12:48:12",
-        "espera_h": 58.5,
+        "espera_h": 59.2,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70916"
@@ -2501,7 +2483,7 @@ const DATA = [
         "name": "sassacorreiadeoliveira",
         "phone": "558586496277",
         "data": "17/10/2026 14:59:26",
-        "espera_h": 56.3,
+        "espera_h": 57.0,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70934"
@@ -2511,7 +2493,7 @@ const DATA = [
         "name": "Wagna Rabelo",
         "phone": "558599715936",
         "data": "17/10/2026 17:00:14",
-        "espera_h": 54.3,
+        "espera_h": 55.0,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70954"
@@ -2521,7 +2503,7 @@ const DATA = [
         "name": "Lead sem nome",
         "phone": "553182830437",
         "data": "17/10/2026 22:20:20",
-        "espera_h": 49.0,
+        "espera_h": 49.6,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Sou de Minas. Tenho interesse na Lifting Faci'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70988"
@@ -2531,7 +2513,7 @@ const DATA = [
         "name": "Raimunda 🪷🌹",
         "phone": "558588460191",
         "data": "17/10/2026 22:58:17",
-        "espera_h": 48.3,
+        "espera_h": 49.0,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70993"
@@ -2541,7 +2523,7 @@ const DATA = [
         "name": "Paulinha",
         "phone": "558587350101",
         "data": "18/10/2026 12:12:40",
-        "espera_h": 35.1,
+        "espera_h": 35.8,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71017"
@@ -2551,7 +2533,7 @@ const DATA = [
         "name": "💀🫡",
         "phone": "558589347662",
         "data": "18/10/2026 14:00:41",
-        "espera_h": 33.3,
+        "espera_h": 34.0,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71025"
@@ -2561,7 +2543,7 @@ const DATA = [
         "name": "Graça",
         "phone": "558586141598",
         "data": "18/10/2026 18:28:16",
-        "espera_h": 28.8,
+        "espera_h": 29.5,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Qual a média de preço  dessa cirurgia?'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71052"
@@ -2571,7 +2553,7 @@ const DATA = [
         "name": "Jaqueline Monteiro",
         "phone": "558591195974",
         "data": "18/10/2026 19:34:25",
-        "espera_h": 27.7,
+        "espera_h": 28.4,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Esta mensagem foi apagada'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71066"
@@ -2581,7 +2563,7 @@ const DATA = [
         "name": "Neuza Auad",
         "phone": "553588779119",
         "data": "19/10/2026 20:08:55",
-        "espera_h": 3.2,
+        "espera_h": 3.8,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Sou de Minas. Tenho interesse na Lifting Faci'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71305"
@@ -2591,7 +2573,7 @@ const DATA = [
         "name": "Soneide",
         "phone": "558881721747",
         "data": "19/10/2026 20:21:24",
-        "espera_h": 2.9,
+        "espera_h": 3.6,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71313"
@@ -2601,7 +2583,7 @@ const DATA = [
         "name": "Orgete",
         "phone": "558587547279",
         "data": "19/10/2026 20:50:23",
-        "espera_h": 2.5,
+        "espera_h": 3.1,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71317"
@@ -2611,7 +2593,7 @@ const DATA = [
         "name": "Jéssica",
         "phone": "553588526547",
         "data": "19/10/2026 20:53:34",
-        "espera_h": 2.4,
+        "espera_h": 3.1,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Sou de Minas. Tenho interesse na Lifting Faci'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71318"
@@ -2621,16 +2603,26 @@ const DATA = [
         "name": "Lisi",
         "phone": "553584127065",
         "data": "19/10/2026 21:55:46",
-        "espera_h": 1.4,
+        "espera_h": 2.0,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Sou de Minas. Tenho interesse na Lifting Faci'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71332"
+      },
+      {
+        "id": 71349,
+        "name": "Denise",
+        "phone": "558587203870",
+        "data": "19/10/2026 23:19:46",
+        "espera_h": 0.6,
+        "is_alert": false,
+        "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71349"
       }
     ],
-    "hoje_cw_leads": 9,
+    "hoje_cw_leads": 10,
     "hoje_cw_resp": 4,
-    "hoje_cw_unresp": 5,
-    "hoje_cw_pct_resp": 44.4,
+    "hoje_cw_unresp": 6,
+    "hoje_cw_pct_resp": 40.0,
     "hoje_cw_alerts": 0,
     "hoje_cw_avg_resp_h": 41.3,
     "hoje_cw_status": "Gargalo",
@@ -2640,7 +2632,7 @@ const DATA = [
         "name": "Neuza Auad",
         "phone": "553588779119",
         "data": "19/10/2026 20:08:55",
-        "espera_h": 3.2,
+        "espera_h": 3.8,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Sou de Minas. Tenho interesse na Lifting Faci'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71305"
@@ -2650,7 +2642,7 @@ const DATA = [
         "name": "Soneide",
         "phone": "558881721747",
         "data": "19/10/2026 20:21:24",
-        "espera_h": 2.9,
+        "espera_h": 3.6,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71313"
@@ -2660,7 +2652,7 @@ const DATA = [
         "name": "Orgete",
         "phone": "558587547279",
         "data": "19/10/2026 20:50:23",
-        "espera_h": 2.5,
+        "espera_h": 3.1,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Blefaroplastia e gostaria '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71317"
@@ -2670,7 +2662,7 @@ const DATA = [
         "name": "Jéssica",
         "phone": "553588526547",
         "data": "19/10/2026 20:53:34",
-        "espera_h": 2.4,
+        "espera_h": 3.1,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Sou de Minas. Tenho interesse na Lifting Faci'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71318"
@@ -2680,16 +2672,26 @@ const DATA = [
         "name": "Lisi",
         "phone": "553584127065",
         "data": "19/10/2026 21:55:46",
-        "espera_h": 1.4,
+        "espera_h": 2.0,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Sou de Minas. Tenho interesse na Lifting Faci'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71332"
+      },
+      {
+        "id": 71349,
+        "name": "Denise",
+        "phone": "558587203870",
+        "data": "19/10/2026 23:19:46",
+        "espera_h": 0.6,
+        "is_alert": false,
+        "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lifting Facial e gostaria '",
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71349"
       }
     ],
-    "total": 1100,
-    "set": 296,
+    "total": 1101,
+    "set": 297,
     "ago": 488,
-    "hoje": 9,
+    "hoje": 10,
     "ult": "19/10/2026",
     "status": "alta",
     "statusText": "🟢 Alta Tração",
@@ -2698,8 +2700,7 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C172-DrCaioFigueira.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C123-DrRafaelRocha",
@@ -2721,7 +2722,7 @@ const DATA = [
         "name": "Jandyra Xavier",
         "phone": "5513991738222",
         "data": "06/10/2026 17:23:31",
-        "espera_h": 317.9,
+        "espera_h": 318.6,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Obrigada'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68344"
@@ -2731,7 +2732,7 @@ const DATA = [
         "name": "Ceiça",
         "phone": "5513974219289",
         "data": "06/10/2026 21:45:39",
-        "espera_h": 313.6,
+        "espera_h": 314.2,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Esta mensagem foi apagada'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68417"
@@ -2741,7 +2742,7 @@ const DATA = [
         "name": "Lidia",
         "phone": "5517992245310",
         "data": "09/10/2026 12:12:22",
-        "espera_h": 251.1,
+        "espera_h": 251.8,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Esta mensagem foi apagada'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/69054"
@@ -2751,7 +2752,7 @@ const DATA = [
         "name": "Fran",
         "phone": "5513997709324",
         "data": "09/10/2026 15:53:09",
-        "espera_h": 247.4,
+        "espera_h": 248.1,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Esta mensagem foi apagada'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/69124"
@@ -2761,7 +2762,7 @@ const DATA = [
         "name": "Luciana",
         "phone": "5511961316024",
         "data": "10/10/2026 12:30:22",
-        "espera_h": 226.8,
+        "espera_h": 227.5,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Bom dia o dr atende em santos  gostaria de saber v'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/69254"
@@ -2771,7 +2772,7 @@ const DATA = [
         "name": "Maria Socorro",
         "phone": "5513988735537",
         "data": "11/10/2026 03:49:55",
-        "espera_h": 211.5,
+        "espera_h": 212.1,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Sou de Santos e tenho interesse na Lipo de pa'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/69346"
@@ -2781,7 +2782,7 @@ const DATA = [
         "name": "Selma",
         "phone": "5513981246445",
         "data": "12/10/2026 22:59:15",
-        "espera_h": 168.3,
+        "espera_h": 169.0,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Não quero'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/69527"
@@ -2791,7 +2792,7 @@ const DATA = [
         "name": "Luzia Maria",
         "phone": "5511977490051",
         "data": "13/10/2026 10:28:33",
-        "espera_h": 156.8,
+        "espera_h": 157.5,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Esta mensagem foi apagada'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/69555"
@@ -2801,7 +2802,7 @@ const DATA = [
         "name": "Maria Cândida",
         "phone": "5513991540920",
         "data": "13/10/2026 12:38:15",
-        "espera_h": 154.7,
+        "espera_h": 155.3,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Quero agendar uma avaliação! **Dr. Rafael Rocha - '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/69584"
@@ -2811,7 +2812,7 @@ const DATA = [
         "name": "🌶🍀",
         "phone": "5513981632196",
         "data": "14/10/2026 11:02:32",
-        "espera_h": 132.3,
+        "espera_h": 132.9,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse na Lipo de Papadae queria mai'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/69897"
@@ -2821,7 +2822,7 @@ const DATA = [
         "name": "Edna Santos 👵🏻",
         "phone": "5513997703658",
         "data": "14/10/2026 11:47:11",
-        "espera_h": 131.5,
+        "espera_h": 132.2,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Quero agendar uma avaliação! **Dr. Rafael Rocha - '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/69909"
@@ -2831,7 +2832,7 @@ const DATA = [
         "name": "Dalva Oliveira",
         "phone": "5513981840374",
         "data": "14/10/2026 12:22:25",
-        "espera_h": 131.0,
+        "espera_h": 131.6,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Quero agendar uma avaliação! **Dr. Rafael Rocha - '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/69921"
@@ -2857,173 +2858,82 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C123-DrRafaelRocha.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C174-EsteticFaceItapetininga",
     "name": "Estetic Face Itapetininga",
     "seg": "Estética",
     "inbox_id": 139,
-    "is_discon": false,
+    "is_discon": true,
     "evo_status": "close",
-    "cw_leads": 192,
-    "cw_resp": 162,
-    "cw_unresp": 30,
-    "cw_pct_resp": 84.4,
-    "cw_alerts": 30,
-    "cw_avg_resp_h": 5.9,
-    "cw_status": "Atenção",
+    "cw_leads": 183,
+    "cw_resp": 177,
+    "cw_unresp": 6,
+    "cw_pct_resp": 96.7,
+    "cw_alerts": 6,
+    "cw_avg_resp_h": 5.4,
+    "cw_status": "Desconectado",
     "unresp_leads": [
       {
-        "id": null,
-        "name": "Karen Grecco",
-        "phone": "5515991754660",
-        "data": "01/10/2026 13:05:25",
-        "espera_h": 429.4,
-        "is_alert": true,
-        "contexto": "Sem conversa no Chatwoot",
-        "link": "https://wa.me/5515991754660"
-      },
-      {
-        "id": null,
+        "id": 67099,
         "name": "Lead sem nome",
         "phone": "130262163808377",
         "data": "01/10/2026 19:45:13",
-        "espera_h": 429.4,
+        "espera_h": 436.2,
         "is_alert": true,
-        "contexto": "Sem conversa no Chatwoot",
-        "link": "https://wa.me/130262163808377"
-      },
-      {
-        "id": null,
-        "name": "Rosana Araujo",
-        "phone": "5515997092181",
-        "data": "01/10/2026 20:19:31",
-        "espera_h": 429.4,
-        "is_alert": true,
-        "contexto": "Sem conversa no Chatwoot",
-        "link": "https://wa.me/5515997092181"
-      },
-      {
-        "id": null,
-        "name": "Karina",
-        "phone": "5515991908330",
-        "data": "01/10/2026 20:30:28",
-        "espera_h": 429.4,
-        "is_alert": true,
-        "contexto": "Sem conversa no Chatwoot",
-        "link": "https://wa.me/5515991908330"
-      },
-      {
-        "id": null,
-        "name": "Fatima",
-        "phone": "5515996725024",
-        "data": "01/10/2026 23:30:58",
-        "espera_h": 429.4,
-        "is_alert": true,
-        "contexto": "Sem conversa no Chatwoot",
-        "link": "https://wa.me/5515996725024"
-      },
-      {
-        "id": null,
-        "name": "Áurea Meira",
-        "phone": "5515997693515",
-        "data": "01/10/2026 23:55:08",
-        "espera_h": 429.4,
-        "is_alert": true,
-        "contexto": "Sem conversa no Chatwoot",
-        "link": "https://wa.me/5515997693515"
-      },
-      {
-        "id": null,
-        "name": "Vera",
-        "phone": "5515998588838",
-        "data": "02/10/2026 00:00:20",
-        "espera_h": 405.4,
-        "is_alert": true,
-        "contexto": "Sem conversa no Chatwoot",
-        "link": "https://wa.me/5515998588838"
-      },
-      {
-        "id": null,
-        "name": "Cantora Léa Camargo🎤",
-        "phone": "5515997066887",
-        "data": "02/10/2026 02:32:08",
-        "espera_h": 405.4,
-        "is_alert": true,
-        "contexto": "Sem conversa no Chatwoot",
-        "link": "https://wa.me/5515997066887"
-      },
-      {
-        "id": null,
-        "name": "Rosinha🌺",
-        "phone": "5515991854046",
-        "data": "02/10/2026 12:30:11",
-        "espera_h": 405.4,
-        "is_alert": true,
-        "contexto": "Sem conversa no Chatwoot",
-        "link": "https://wa.me/5515991854046"
-      },
-      {
-        "id": null,
-        "name": "Monnia $$$💞🫰🏻",
-        "phone": "5511989663435",
-        "data": "03/10/2026 05:44:56",
-        "espera_h": 381.4,
-        "is_alert": true,
-        "contexto": "Sem conversa no Chatwoot",
-        "link": "https://wa.me/5511989663435"
-      },
-      {
-        "id": null,
-        "name": "Maria Marçal",
-        "phone": "5519995645905",
-        "data": "03/10/2026 09:43:10",
-        "espera_h": 381.4,
-        "is_alert": true,
-        "contexto": "Sem conversa no Chatwoot",
-        "link": "https://wa.me/5519995645905"
-      },
-      {
-        "id": null,
-        "name": "Leh Gomes 🥰😘",
-        "phone": "5515998305231",
-        "data": "03/10/2026 12:09:19",
-        "espera_h": 381.4,
-        "is_alert": true,
-        "contexto": "Sem conversa no Chatwoot",
-        "link": "https://wa.me/5515998305231"
-      },
-      {
-        "id": null,
-        "name": "Dr Joseane",
-        "phone": "5515996037818",
-        "data": "03/10/2026 12:36:59",
-        "espera_h": 381.4,
-        "is_alert": true,
-        "contexto": "Sem conversa no Chatwoot",
-        "link": "https://wa.me/5515996037818"
-      },
-      {
-        "id": null,
-        "name": "Lidce",
-        "phone": "5511996562810",
-        "data": "03/10/2026 14:19:30",
-        "espera_h": 381.4,
-        "is_alert": true,
-        "contexto": "Sem conversa no Chatwoot",
-        "link": "https://wa.me/5511996562810"
+        "contexto": "Nunca respondido pela equipe: 'Olá! Gostaria de aproveitar as condições especiais'",
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/67099"
       },
       {
         "id": null,
         "name": "Lead sem nome",
         "phone": "—",
         "data": "03/10/2026 14:29:18",
-        "espera_h": 381.4,
+        "espera_h": 393.0,
         "is_alert": true,
-        "contexto": "Sem conversa no Chatwoot",
+        "contexto": "Sem conversa criada no Chatwoot",
         "link": ""
+      },
+      {
+        "id": null,
+        "name": "Cléo Martins",
+        "phone": "5515998559628",
+        "data": "15/10/2026 20:44:52",
+        "espera_h": 105.0,
+        "is_alert": true,
+        "contexto": "Sem conversa criada no Chatwoot",
+        "link": "https://wa.me/5515998559628"
+      },
+      {
+        "id": null,
+        "name": "Val",
+        "phone": "5515996631300",
+        "data": "16/10/2026 13:51:07",
+        "espera_h": 81.0,
+        "is_alert": true,
+        "contexto": "Sem conversa criada no Chatwoot",
+        "link": "https://wa.me/5515996631300"
+      },
+      {
+        "id": null,
+        "name": "Dri Franci",
+        "phone": "5515998254199",
+        "data": "16/10/2026 13:51:42",
+        "espera_h": 81.0,
+        "is_alert": true,
+        "contexto": "Sem conversa criada no Chatwoot",
+        "link": "https://wa.me/5515998254199"
+      },
+      {
+        "id": null,
+        "name": "Maximus Hair",
+        "phone": "5515998389211",
+        "data": "16/10/2026 14:49:04",
+        "espera_h": 81.0,
+        "is_alert": true,
+        "contexto": "Sem conversa criada no Chatwoot",
+        "link": "https://wa.me/5515998389211"
       }
     ],
     "hoje_cw_leads": 0,
@@ -3034,20 +2944,19 @@ const DATA = [
     "hoje_cw_avg_resp_h": 0.0,
     "hoje_cw_status": "Desconectado",
     "hoje_unresp_leads": [],
-    "total": 59,
-    "set": 192,
-    "ago": 59,
+    "total": 707,
+    "set": 183,
+    "ago": 373,
     "hoje": 0,
-    "ult": "29/09/2026",
-    "status": "alta",
-    "statusText": "🟢 Alta Tração",
-    "agendados": 6,
-    "tx_agend": 3.1,
-    "comp": 1,
-    "tx_comp": 16.7,
-    "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C174-EsteticFaceItapetininga.pdf"
+    "ult": "16/10/2026",
+    "status": "descon",
+    "statusText": "🔴 WhatsApp Off",
+    "agendados": 32,
+    "tx_agend": 17.5,
+    "comp": 16,
+    "tx_comp": 50.0,
+    "vendas": 4,
+    "tx_venda": 25.0
   },
   {
     "id": "C123-OrgulhodeSorrirPeruibe",
@@ -3056,47 +2965,116 @@ const DATA = [
     "inbox_id": 115,
     "is_discon": false,
     "evo_status": "open",
-    "cw_leads": 143,
-    "cw_resp": 142,
-    "cw_unresp": 1,
-    "cw_pct_resp": 99.3,
-    "cw_alerts": 1,
+    "cw_leads": 146,
+    "cw_resp": 138,
+    "cw_unresp": 8,
+    "cw_pct_resp": 94.5,
+    "cw_alerts": 8,
     "cw_avg_resp_h": 0.5,
     "cw_status": "Saudável",
     "unresp_leads": [
       {
         "id": null,
+        "name": "marciahelenamochi",
+        "phone": "—",
+        "data": "01/10/2026 08:30:34",
+        "espera_h": 441.0,
+        "is_alert": true,
+        "contexto": "Sem conversa criada no Chatwoot",
+        "link": ""
+      },
+      {
+        "id": null,
+        "name": "Márcio Goddard",
+        "phone": "—",
+        "data": "02/10/2026 12:40:25",
+        "espera_h": 417.0,
+        "is_alert": true,
+        "contexto": "Sem conversa criada no Chatwoot",
+        "link": ""
+      },
+      {
+        "id": null,
+        "name": "🦋",
+        "phone": "—",
+        "data": "05/10/2026 04:28:56",
+        "espera_h": 345.0,
+        "is_alert": true,
+        "contexto": "Sem conversa criada no Chatwoot",
+        "link": ""
+      },
+      {
+        "id": null,
+        "name": "I",
+        "phone": "—",
+        "data": "07/10/2026 04:36:58",
+        "espera_h": 297.0,
+        "is_alert": true,
+        "contexto": "Sem conversa criada no Chatwoot",
+        "link": ""
+      },
+      {
+        "id": null,
+        "name": "🙌🏽🙏🏽",
+        "phone": "—",
+        "data": "08/10/2026 22:52:33",
+        "espera_h": 273.0,
+        "is_alert": true,
+        "contexto": "Sem conversa criada no Chatwoot",
+        "link": ""
+      },
+      {
+        "id": null,
+        "name": "Dri",
+        "phone": "—",
+        "data": "10/10/2026 17:30:09",
+        "espera_h": 225.0,
+        "is_alert": true,
+        "contexto": "Sem conversa criada no Chatwoot",
+        "link": ""
+      },
+      {
+        "id": null,
+        "name": "🥰",
+        "phone": "—",
+        "data": "13/10/2026 12:48:11",
+        "espera_h": 153.0,
+        "is_alert": true,
+        "contexto": "Sem conversa criada no Chatwoot",
+        "link": ""
+      },
+      {
+        "id": null,
         "name": "❤️🍷🔥💎♋",
         "phone": "—",
         "data": "17/10/2026 04:59:52",
-        "espera_h": 56.3,
+        "espera_h": 57.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": ""
       }
     ],
-    "hoje_cw_leads": 4,
-    "hoje_cw_resp": 4,
+    "hoje_cw_leads": 7,
+    "hoje_cw_resp": 7,
     "hoje_cw_unresp": 0,
     "hoje_cw_pct_resp": 100.0,
     "hoje_cw_alerts": 0,
-    "hoje_cw_avg_resp_h": 0.2,
+    "hoje_cw_avg_resp_h": 1.5,
     "hoje_cw_status": "Saudável",
     "hoje_unresp_leads": [],
-    "total": 2019,
-    "set": 143,
+    "total": 2022,
+    "set": 146,
     "ago": 246,
-    "hoje": 4,
+    "hoje": 7,
     "ult": "19/10/2026",
     "status": "alta",
     "statusText": "🟢 Alta Tração",
     "agendados": 13,
-    "tx_agend": 9.1,
+    "tx_agend": 8.9,
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C123-OrgulhodeSorrirPeruibe.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C123-OrgulhoSaoVicente",
@@ -3105,12 +3083,12 @@ const DATA = [
     "inbox_id": 116,
     "is_discon": false,
     "evo_status": "open",
-    "cw_leads": 137,
-    "cw_resp": 62,
+    "cw_leads": 138,
+    "cw_resp": 63,
     "cw_unresp": 75,
-    "cw_pct_resp": 45.3,
+    "cw_pct_resp": 45.7,
     "cw_alerts": 72,
-    "cw_avg_resp_h": 3.6,
+    "cw_avg_resp_h": 3.5,
     "cw_status": "Gargalo",
     "unresp_leads": [
       {
@@ -3118,7 +3096,7 @@ const DATA = [
         "name": "Ari Vargas",
         "phone": "5513988215136",
         "data": "01/10/2026 00:02:57",
-        "espera_h": 440.3,
+        "espera_h": 441.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513988215136"
@@ -3128,7 +3106,7 @@ const DATA = [
         "name": "Lili Nanda 🚑🚨",
         "phone": "5513974215813",
         "data": "01/10/2026 01:15:44",
-        "espera_h": 440.3,
+        "espera_h": 441.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513974215813"
@@ -3138,7 +3116,7 @@ const DATA = [
         "name": "Pri",
         "phone": "5513991923177",
         "data": "01/10/2026 01:36:05",
-        "espera_h": 440.3,
+        "espera_h": 441.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991923177"
@@ -3148,7 +3126,7 @@ const DATA = [
         "name": "Verônica",
         "phone": "5513988094020",
         "data": "01/10/2026 08:57:20",
-        "espera_h": 440.3,
+        "espera_h": 441.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513988094020"
@@ -3158,7 +3136,7 @@ const DATA = [
         "name": "Lead sem nome",
         "phone": "5513991849706",
         "data": "01/10/2026 11:09:17",
-        "espera_h": 440.3,
+        "espera_h": 441.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991849706"
@@ -3168,7 +3146,7 @@ const DATA = [
         "name": "Gratidao13 🙌🏾",
         "phone": "5513981982680",
         "data": "01/10/2026 16:07:49",
-        "espera_h": 440.3,
+        "espera_h": 441.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513981982680"
@@ -3178,7 +3156,7 @@ const DATA = [
         "name": "Maiara",
         "phone": "5513981628124",
         "data": "01/10/2026 16:25:48",
-        "espera_h": 440.3,
+        "espera_h": 441.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513981628124"
@@ -3188,7 +3166,7 @@ const DATA = [
         "name": "DANIELA FADINHA",
         "phone": "5513981340272",
         "data": "01/10/2026 19:43:07",
-        "espera_h": 440.3,
+        "espera_h": 441.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513981340272"
@@ -3198,7 +3176,7 @@ const DATA = [
         "name": "Verônica",
         "phone": "5513988094020",
         "data": "01/10/2026 20:19:02",
-        "espera_h": 440.3,
+        "espera_h": 441.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513988094020"
@@ -3208,7 +3186,7 @@ const DATA = [
         "name": "Ribas",
         "phone": "5513982075691",
         "data": "01/10/2026 21:11:38",
-        "espera_h": 440.3,
+        "espera_h": 441.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513982075691"
@@ -3218,7 +3196,7 @@ const DATA = [
         "name": "013 promissor 👑",
         "phone": "5513974279273",
         "data": "01/10/2026 23:40:19",
-        "espera_h": 440.3,
+        "espera_h": 441.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513974279273"
@@ -3228,7 +3206,7 @@ const DATA = [
         "name": "Viviane🦉",
         "phone": "5513974214104",
         "data": "02/10/2026 01:39:33",
-        "espera_h": 416.3,
+        "espera_h": 417.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513974214104"
@@ -3238,7 +3216,7 @@ const DATA = [
         "name": "🌕♈💟",
         "phone": "5513997627685",
         "data": "02/10/2026 02:12:05",
-        "espera_h": 416.3,
+        "espera_h": 417.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513997627685"
@@ -3248,7 +3226,7 @@ const DATA = [
         "name": "💋ElzaPS!!🍷",
         "phone": "5513992139151",
         "data": "02/10/2026 02:15:44",
-        "espera_h": 416.3,
+        "espera_h": 417.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513992139151"
@@ -3258,7 +3236,7 @@ const DATA = [
         "name": "Alexsandro 👨‍👩‍👧",
         "phone": "5513981601067",
         "data": "02/10/2026 03:08:18",
-        "espera_h": 416.3,
+        "espera_h": 417.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513981601067"
@@ -3268,7 +3246,7 @@ const DATA = [
         "name": "🦋",
         "phone": "5513996251787",
         "data": "02/10/2026 09:41:26",
-        "espera_h": 416.3,
+        "espera_h": 417.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513996251787"
@@ -3278,7 +3256,7 @@ const DATA = [
         "name": "Lúcio Oliveira",
         "phone": "5513988836950",
         "data": "02/10/2026 15:35:36",
-        "espera_h": 416.3,
+        "espera_h": 417.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513988836950"
@@ -3288,7 +3266,7 @@ const DATA = [
         "name": "Regina😘",
         "phone": "5513991283873",
         "data": "02/10/2026 18:50:28",
-        "espera_h": 416.3,
+        "espera_h": 417.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991283873"
@@ -3298,7 +3276,7 @@ const DATA = [
         "name": "Sasaaaaaá👸🏻❤️‍🔥🌹💋💄",
         "phone": "5513981075464",
         "data": "02/10/2026 13:02:50",
-        "espera_h": 416.3,
+        "espera_h": 417.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513981075464"
@@ -3308,7 +3286,7 @@ const DATA = [
         "name": "Valéria 🥰",
         "phone": "5513974132889",
         "data": "03/10/2026 08:58:12",
-        "espera_h": 392.3,
+        "espera_h": 393.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513974132889"
@@ -3318,7 +3296,7 @@ const DATA = [
         "name": "Ariane",
         "phone": "5513991136905",
         "data": "03/10/2026 12:08:36",
-        "espera_h": 392.3,
+        "espera_h": 393.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991136905"
@@ -3328,7 +3306,7 @@ const DATA = [
         "name": "Rose",
         "phone": "5513996562709",
         "data": "03/10/2026 12:10:13",
-        "espera_h": 392.3,
+        "espera_h": 393.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513996562709"
@@ -3338,7 +3316,7 @@ const DATA = [
         "name": "Edilza",
         "phone": "5513991260972",
         "data": "03/10/2026 18:34:40",
-        "espera_h": 392.3,
+        "espera_h": 393.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991260972"
@@ -3348,7 +3326,7 @@ const DATA = [
         "name": "gabriela lourenco",
         "phone": "5513981779834",
         "data": "03/10/2026 22:50:22",
-        "espera_h": 392.3,
+        "espera_h": 393.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513981779834"
@@ -3358,7 +3336,7 @@ const DATA = [
         "name": "Regiane",
         "phone": "5513974186099",
         "data": "04/10/2026 13:23:13",
-        "espera_h": 368.3,
+        "espera_h": 369.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513974186099"
@@ -3368,7 +3346,7 @@ const DATA = [
         "name": "Grego",
         "phone": "5513991944588",
         "data": "04/10/2026 20:45:28",
-        "espera_h": 368.3,
+        "espera_h": 369.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991944588"
@@ -3378,7 +3356,7 @@ const DATA = [
         "name": "dg contrucoes85",
         "phone": "5513991270530",
         "data": "05/10/2026 02:37:14",
-        "espera_h": 344.3,
+        "espera_h": 345.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991270530"
@@ -3388,7 +3366,7 @@ const DATA = [
         "name": "Lead sem nome",
         "phone": "5513991276885",
         "data": "05/10/2026 18:10:19",
-        "espera_h": 344.3,
+        "espera_h": 345.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991276885"
@@ -3398,7 +3376,7 @@ const DATA = [
         "name": "Ellen Produções 👷🏻‍♀️",
         "phone": "5511912445880",
         "data": "05/10/2026 19:40:36",
-        "espera_h": 344.3,
+        "espera_h": 345.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5511912445880"
@@ -3408,7 +3386,7 @@ const DATA = [
         "name": "Gabi",
         "phone": "5513988616650",
         "data": "05/10/2026 19:55:23",
-        "espera_h": 344.3,
+        "espera_h": 345.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513988616650"
@@ -3418,7 +3396,7 @@ const DATA = [
         "name": "Villarinho",
         "phone": "5516992107318",
         "data": "06/10/2026 01:04:11",
-        "espera_h": 320.3,
+        "espera_h": 321.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5516992107318"
@@ -3428,7 +3406,7 @@ const DATA = [
         "name": "leão  gostoso",
         "phone": "5521984313734",
         "data": "06/10/2026 05:01:21",
-        "espera_h": 320.3,
+        "espera_h": 321.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5521984313734"
@@ -3438,7 +3416,7 @@ const DATA = [
         "name": "Vanessa Costa",
         "phone": "5513997429427",
         "data": "06/10/2026 06:07:14",
-        "espera_h": 320.3,
+        "espera_h": 321.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513997429427"
@@ -3448,7 +3426,7 @@ const DATA = [
         "name": "Guilherme Alvarez",
         "phone": "5513991153958",
         "data": "06/10/2026 11:21:34",
-        "espera_h": 320.3,
+        "espera_h": 321.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991153958"
@@ -3458,7 +3436,7 @@ const DATA = [
         "name": "Maria Lucia",
         "phone": "5513991554734",
         "data": "06/10/2026 14:21:26",
-        "espera_h": 320.3,
+        "espera_h": 321.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991554734"
@@ -3468,7 +3446,7 @@ const DATA = [
         "name": "Fátima ☺️",
         "phone": "5513996210473",
         "data": "06/10/2026 23:12:07",
-        "espera_h": 320.3,
+        "espera_h": 321.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513996210473"
@@ -3478,7 +3456,7 @@ const DATA = [
         "name": "taii",
         "phone": "5513996575983",
         "data": "06/10/2026 23:53:42",
-        "espera_h": 320.3,
+        "espera_h": 321.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513996575983"
@@ -3488,7 +3466,7 @@ const DATA = [
         "name": "Zi",
         "phone": "5513997001378",
         "data": "07/10/2026 00:59:12",
-        "espera_h": 296.3,
+        "espera_h": 297.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513997001378"
@@ -3498,7 +3476,7 @@ const DATA = [
         "name": "NeusiellyNascimento",
         "phone": "5513997450253",
         "data": "07/10/2026 02:11:40",
-        "espera_h": 296.3,
+        "espera_h": 297.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513997450253"
@@ -3508,7 +3486,7 @@ const DATA = [
         "name": "Karla ❤️",
         "phone": "5513981865643",
         "data": "07/10/2026 03:06:21",
-        "espera_h": 296.3,
+        "espera_h": 297.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513981865643"
@@ -3518,7 +3496,7 @@ const DATA = [
         "name": "❤️",
         "phone": "5513997077503",
         "data": "07/10/2026 07:01:50",
-        "espera_h": 296.3,
+        "espera_h": 297.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513997077503"
@@ -3528,7 +3506,7 @@ const DATA = [
         "name": "Luciana Correa Novaes",
         "phone": "5513978156746",
         "data": "07/10/2026 10:09:08",
-        "espera_h": 296.3,
+        "espera_h": 297.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513978156746"
@@ -3538,7 +3516,7 @@ const DATA = [
         "name": "Kimberly Cordeiro",
         "phone": "5513988244908",
         "data": "07/10/2026 10:46:32",
-        "espera_h": 296.3,
+        "espera_h": 297.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513988244908"
@@ -3548,7 +3526,7 @@ const DATA = [
         "name": "Jackelline Aparecida",
         "phone": "5513982206850",
         "data": "07/10/2026 11:50:56",
-        "espera_h": 296.3,
+        "espera_h": 297.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513982206850"
@@ -3558,7 +3536,7 @@ const DATA = [
         "name": "BOMBA",
         "phone": "5511950304669",
         "data": "07/10/2026 12:08:13",
-        "espera_h": 296.3,
+        "espera_h": 297.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5511950304669"
@@ -3568,7 +3546,7 @@ const DATA = [
         "name": "Eliza",
         "phone": "5513991942629",
         "data": "07/10/2026 18:56:31",
-        "espera_h": 296.3,
+        "espera_h": 297.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991942629"
@@ -3578,7 +3556,7 @@ const DATA = [
         "name": "Rosangela Carlos",
         "phone": "5513997768598",
         "data": "08/10/2026 02:51:22",
-        "espera_h": 272.3,
+        "espera_h": 273.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513997768598"
@@ -3588,7 +3566,7 @@ const DATA = [
         "name": "Valdeci",
         "phone": "5511970180502",
         "data": "08/10/2026 14:53:59",
-        "espera_h": 272.3,
+        "espera_h": 273.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5511970180502"
@@ -3598,7 +3576,7 @@ const DATA = [
         "name": "LENIR FERREIRA",
         "phone": "5513991650770",
         "data": "09/10/2026 01:49:31",
-        "espera_h": 248.3,
+        "espera_h": 249.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991650770"
@@ -3608,7 +3586,7 @@ const DATA = [
         "name": "Gilvan Virginio",
         "phone": "557599443441",
         "data": "09/10/2026 09:21:53",
-        "espera_h": 248.3,
+        "espera_h": 249.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/557599443441"
@@ -3618,7 +3596,7 @@ const DATA = [
         "name": "Vanusa",
         "phone": "5513981185878",
         "data": "09/10/2026 10:47:35",
-        "espera_h": 248.3,
+        "espera_h": 249.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513981185878"
@@ -3628,7 +3606,7 @@ const DATA = [
         "name": "Karliene ⚖️⚕️🌾🙌🍎🍒",
         "phone": "5513998062791",
         "data": "09/10/2026 11:56:15",
-        "espera_h": 248.3,
+        "espera_h": 249.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513998062791"
@@ -3638,7 +3616,7 @@ const DATA = [
         "name": "Amanda Caroline",
         "phone": "5513996049621",
         "data": "09/10/2026 14:15:13",
-        "espera_h": 248.3,
+        "espera_h": 249.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513996049621"
@@ -3648,7 +3626,7 @@ const DATA = [
         "name": "Stefany😻",
         "phone": "5513991230510",
         "data": "09/10/2026 18:09:08",
-        "espera_h": 248.3,
+        "espera_h": 249.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991230510"
@@ -3658,7 +3636,7 @@ const DATA = [
         "name": "Paola Palacio",
         "phone": "5513988172201",
         "data": "09/10/2026 20:48:30",
-        "espera_h": 248.3,
+        "espera_h": 249.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513988172201"
@@ -3668,7 +3646,7 @@ const DATA = [
         "name": "Letícia Pinheiro 🌻",
         "phone": "5513996634467",
         "data": "09/10/2026 20:52:48",
-        "espera_h": 248.3,
+        "espera_h": 249.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513996634467"
@@ -3678,7 +3656,7 @@ const DATA = [
         "name": "Barama Açaí",
         "phone": "5513991077207",
         "data": "10/10/2026 01:07:04",
-        "espera_h": 224.3,
+        "espera_h": 225.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991077207"
@@ -3688,7 +3666,7 @@ const DATA = [
         "name": "Carlos Santana",
         "phone": "5513988810847",
         "data": "10/10/2026 02:59:07",
-        "espera_h": 224.3,
+        "espera_h": 225.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513988810847"
@@ -3698,7 +3676,7 @@ const DATA = [
         "name": "Valdirene Maia",
         "phone": "5513996677657",
         "data": "10/10/2026 03:37:34",
-        "espera_h": 224.3,
+        "espera_h": 225.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513996677657"
@@ -3708,7 +3686,7 @@ const DATA = [
         "name": "Leidi Mendes",
         "phone": "5513974138628",
         "data": "10/10/2026 09:15:41",
-        "espera_h": 224.3,
+        "espera_h": 225.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513974138628"
@@ -3718,7 +3696,7 @@ const DATA = [
         "name": "Pri ✨",
         "phone": "5513988191380",
         "data": "10/10/2026 13:08:35",
-        "espera_h": 224.3,
+        "espera_h": 225.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513988191380"
@@ -3728,7 +3706,7 @@ const DATA = [
         "name": "Wanderlei Santos",
         "phone": "5513991699317",
         "data": "10/10/2026 20:49:17",
-        "espera_h": 224.3,
+        "espera_h": 225.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991699317"
@@ -3738,7 +3716,7 @@ const DATA = [
         "name": "Admilson Souza",
         "phone": "5513991930742",
         "data": "11/10/2026 19:29:55",
-        "espera_h": 200.3,
+        "espera_h": 201.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991930742"
@@ -3748,7 +3726,7 @@ const DATA = [
         "name": "Josy 🫰",
         "phone": "5513997263014",
         "data": "11/10/2026 19:59:55",
-        "espera_h": 200.3,
+        "espera_h": 201.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513997263014"
@@ -3758,7 +3736,7 @@ const DATA = [
         "name": "Bruna Moyano",
         "phone": "5513974128143",
         "data": "11/10/2026 20:04:08",
-        "espera_h": 200.3,
+        "espera_h": 201.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513974128143"
@@ -3768,7 +3746,7 @@ const DATA = [
         "name": "Célia Vitorino",
         "phone": "5513997221760",
         "data": "12/10/2026 02:10:13",
-        "espera_h": 176.3,
+        "espera_h": 177.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513997221760"
@@ -3778,7 +3756,7 @@ const DATA = [
         "name": "Wanderson",
         "phone": "5513988622697",
         "data": "12/10/2026 16:17:21",
-        "espera_h": 176.3,
+        "espera_h": 177.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513988622697"
@@ -3788,7 +3766,7 @@ const DATA = [
         "name": "Luiz Henrique",
         "phone": "5513991037410",
         "data": "13/10/2026 12:51:05",
-        "espera_h": 152.3,
+        "espera_h": 153.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991037410"
@@ -3798,7 +3776,7 @@ const DATA = [
         "name": "Kiko",
         "phone": "5513978027117",
         "data": "13/10/2026 13:50:10",
-        "espera_h": 152.3,
+        "espera_h": 153.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513978027117"
@@ -3808,7 +3786,7 @@ const DATA = [
         "name": "Liliane Vieira",
         "phone": "5513991412594",
         "data": "13/10/2026 14:15:22",
-        "espera_h": 152.3,
+        "espera_h": 153.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991412594"
@@ -3818,7 +3796,7 @@ const DATA = [
         "name": "🌻🧿 Cláudia Ferreira",
         "phone": "5513996682701",
         "data": "13/10/2026 17:10:40",
-        "espera_h": 152.3,
+        "espera_h": 153.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513996682701"
@@ -3828,7 +3806,7 @@ const DATA = [
         "name": "Dodo",
         "phone": "5513988692058",
         "data": "15/10/2026 16:12:17",
-        "espera_h": 104.3,
+        "espera_h": 105.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513988692058"
@@ -3838,7 +3816,7 @@ const DATA = [
         "name": "Maycon Ferreira",
         "phone": "5513997471439",
         "data": "19/10/2026 21:04:22",
-        "espera_h": 2.2,
+        "espera_h": 2.9,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71319"
@@ -3848,7 +3826,7 @@ const DATA = [
         "name": "Nay ♥️",
         "phone": "553587089984",
         "data": "19/10/2026 21:48:21",
-        "espera_h": 1.5,
+        "espera_h": 2.1,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse em agendar uma consulta com m'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71327"
@@ -3858,18 +3836,18 @@ const DATA = [
         "name": "❤️",
         "phone": "5513982163133",
         "data": "19/10/2026 21:54:09",
-        "espera_h": 1.4,
+        "espera_h": 2.0,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'odontoprev'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71331"
       }
     ],
-    "hoje_cw_leads": 16,
-    "hoje_cw_resp": 13,
+    "hoje_cw_leads": 17,
+    "hoje_cw_resp": 14,
     "hoje_cw_unresp": 3,
-    "hoje_cw_pct_resp": 81.2,
+    "hoje_cw_pct_resp": 82.4,
     "hoje_cw_alerts": 0,
-    "hoje_cw_avg_resp_h": 0.8,
+    "hoje_cw_avg_resp_h": 0.7,
     "hoje_cw_status": "Atenção",
     "hoje_unresp_leads": [
       {
@@ -3877,7 +3855,7 @@ const DATA = [
         "name": "Maycon Ferreira",
         "phone": "5513997471439",
         "data": "19/10/2026 21:04:22",
-        "espera_h": 2.2,
+        "espera_h": 2.9,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71319"
@@ -3887,7 +3865,7 @@ const DATA = [
         "name": "Nay ♥️",
         "phone": "553587089984",
         "data": "19/10/2026 21:48:21",
-        "espera_h": 1.5,
+        "espera_h": 2.1,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse em agendar uma consulta com m'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71327"
@@ -3897,16 +3875,16 @@ const DATA = [
         "name": "❤️",
         "phone": "5513982163133",
         "data": "19/10/2026 21:54:09",
-        "espera_h": 1.4,
+        "espera_h": 2.0,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'odontoprev'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71331"
       }
     ],
-    "total": 2989,
-    "set": 137,
+    "total": 2990,
+    "set": 138,
     "ago": 212,
-    "hoje": 16,
+    "hoje": 17,
     "ult": "19/10/2026",
     "status": "alta",
     "statusText": "🟢 Alta Tração",
@@ -3915,8 +3893,7 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C123-OrgulhoSaoVicente.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C123-OrgulhodeSorrirSantos",
@@ -3938,7 +3915,7 @@ const DATA = [
         "name": "Sandrelle",
         "phone": "5513981750350",
         "data": "19/10/2026 22:55:07",
-        "espera_h": 0.4,
+        "espera_h": 1.1,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse em agendar uma consulta com m'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71344"
@@ -3957,7 +3934,7 @@ const DATA = [
         "name": "Sandrelle",
         "phone": "5513981750350",
         "data": "19/10/2026 22:55:07",
-        "espera_h": 0.4,
+        "espera_h": 1.1,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse em agendar uma consulta com m'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71344"
@@ -3975,8 +3952,7 @@ const DATA = [
     "comp": 2,
     "tx_comp": 50.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C123-OrgulhodeSorrirSantos.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C149-ClinicaGGlow",
@@ -3985,10 +3961,10 @@ const DATA = [
     "inbox_id": 82,
     "is_discon": false,
     "evo_status": "open",
-    "cw_leads": 126,
+    "cw_leads": 127,
     "cw_resp": 124,
-    "cw_unresp": 2,
-    "cw_pct_resp": 98.4,
+    "cw_unresp": 3,
+    "cw_pct_resp": 97.6,
     "cw_alerts": 2,
     "cw_avg_resp_h": 7.5,
     "cw_status": "Saudável",
@@ -3998,7 +3974,7 @@ const DATA = [
         "name": "Patrícia Naigles 🧪💉🩺⚗️💉💉💉💉",
         "phone": "555184557620",
         "data": "08/10/2026 01:07:34",
-        "espera_h": 272.3,
+        "espera_h": 273.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/555184557620"
@@ -4008,24 +3984,45 @@ const DATA = [
         "name": "Vanessa Gonçalves",
         "phone": "555399761277",
         "data": "14/10/2026 13:24:33",
-        "espera_h": 129.9,
+        "espera_h": 130.6,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Vcs trabalham com PRP'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/69978"
+      },
+      {
+        "id": 71363,
+        "name": "Manuela Catafesta",
+        "phone": "555197396061",
+        "data": "19/10/2026 23:56:52",
+        "espera_h": 0.1,
+        "is_alert": false,
+        "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse no Protocolo Capilar e queria'",
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71363"
       }
     ],
-    "hoje_cw_leads": 4,
+    "hoje_cw_leads": 5,
     "hoje_cw_resp": 4,
-    "hoje_cw_unresp": 0,
-    "hoje_cw_pct_resp": 100.0,
+    "hoje_cw_unresp": 1,
+    "hoje_cw_pct_resp": 80.0,
     "hoje_cw_alerts": 0,
     "hoje_cw_avg_resp_h": 8.5,
-    "hoje_cw_status": "Saudável",
-    "hoje_unresp_leads": [],
-    "total": 1467,
-    "set": 126,
+    "hoje_cw_status": "Atenção",
+    "hoje_unresp_leads": [
+      {
+        "id": 71363,
+        "name": "Manuela Catafesta",
+        "phone": "555197396061",
+        "data": "19/10/2026 23:56:52",
+        "espera_h": 0.1,
+        "is_alert": false,
+        "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse no Protocolo Capilar e queria'",
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71363"
+      }
+    ],
+    "total": 1468,
+    "set": 127,
     "ago": 166,
-    "hoje": 4,
+    "hoje": 5,
     "ult": "19/10/2026",
     "status": "alta",
     "statusText": "🟢 Alta Tração",
@@ -4034,8 +4031,7 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C149-ClinicaGGlow.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C150-Lumia",
@@ -4072,8 +4068,7 @@ const DATA = [
     "comp": 1,
     "tx_comp": 8.3,
     "vendas": 3,
-    "tx_venda": 300.0,
-    "pdf_url": "/pdfs/relatorio_C150-Lumia.pdf"
+    "tx_venda": 300.0
   },
   {
     "id": "C135-DraMichelleSantos",
@@ -4082,10 +4077,10 @@ const DATA = [
     "inbox_id": 25,
     "is_discon": false,
     "evo_status": "open",
-    "cw_leads": 95,
+    "cw_leads": 96,
     "cw_resp": 90,
-    "cw_unresp": 5,
-    "cw_pct_resp": 94.7,
+    "cw_unresp": 6,
+    "cw_pct_resp": 93.8,
     "cw_alerts": 2,
     "cw_avg_resp_h": 9.8,
     "cw_status": "Saudável",
@@ -4095,7 +4090,7 @@ const DATA = [
         "name": "Lead sem nome",
         "phone": "274740602237035",
         "data": "02/10/2026 08:13:24",
-        "espera_h": 4065.5,
+        "espera_h": 4066.2,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse e queria mais informações, po'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/29137"
@@ -4105,7 +4100,7 @@ const DATA = [
         "name": "Hellen Rodrigues Nutri",
         "phone": "553193287458",
         "data": "06/10/2026 20:37:33",
-        "espera_h": 314.7,
+        "espera_h": 315.4,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse e queria mais informações, po'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68405"
@@ -4115,7 +4110,7 @@ const DATA = [
         "name": "Fatty Maffort Beauty",
         "phone": "553175808851",
         "data": "19/10/2026 19:54:54",
-        "espera_h": 3.4,
+        "espera_h": 4.1,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71303"
@@ -4125,7 +4120,7 @@ const DATA = [
         "name": "Camila Chitarra",
         "phone": "553188218510",
         "data": "19/10/2026 21:09:28",
-        "espera_h": 2.2,
+        "espera_h": 2.8,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71321"
@@ -4135,16 +4130,26 @@ const DATA = [
         "name": "Claudia",
         "phone": "553192449613",
         "data": "19/10/2026 21:50:56",
-        "espera_h": 1.5,
+        "espera_h": 2.2,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse e queria mais informações, po'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71328"
+      },
+      {
+        "id": 71350,
+        "name": "Iris Ladislau",
+        "phone": "558594401766",
+        "data": "19/10/2026 23:21:31",
+        "espera_h": 0.6,
+        "is_alert": false,
+        "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse e queria mais informações, po'",
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71350"
       }
     ],
-    "hoje_cw_leads": 8,
+    "hoje_cw_leads": 9,
     "hoje_cw_resp": 5,
-    "hoje_cw_unresp": 3,
-    "hoje_cw_pct_resp": 62.5,
+    "hoje_cw_unresp": 4,
+    "hoje_cw_pct_resp": 55.6,
     "hoje_cw_alerts": 0,
     "hoje_cw_avg_resp_h": 2.4,
     "hoje_cw_status": "Gargalo",
@@ -4154,7 +4159,7 @@ const DATA = [
         "name": "Fatty Maffort Beauty",
         "phone": "553175808851",
         "data": "19/10/2026 19:54:54",
-        "espera_h": 3.4,
+        "espera_h": 4.1,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71303"
@@ -4164,7 +4169,7 @@ const DATA = [
         "name": "Camila Chitarra",
         "phone": "553188218510",
         "data": "19/10/2026 21:09:28",
-        "espera_h": 2.2,
+        "espera_h": 2.8,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71321"
@@ -4174,16 +4179,26 @@ const DATA = [
         "name": "Claudia",
         "phone": "553192449613",
         "data": "19/10/2026 21:50:56",
-        "espera_h": 1.5,
+        "espera_h": 2.2,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse e queria mais informações, po'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71328"
+      },
+      {
+        "id": 71350,
+        "name": "Iris Ladislau",
+        "phone": "558594401766",
+        "data": "19/10/2026 23:21:31",
+        "espera_h": 0.6,
+        "is_alert": false,
+        "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse e queria mais informações, po'",
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71350"
       }
     ],
-    "total": 1334,
-    "set": 95,
+    "total": 1335,
+    "set": 96,
     "ago": 46,
-    "hoje": 8,
+    "hoje": 9,
     "ult": "19/10/2026",
     "status": "alta",
     "statusText": "🟢 Alta Tração",
@@ -4192,8 +4207,7 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C135-DraMichelleSantos.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C163-AcessoSaudeCIC",
@@ -4215,7 +4229,7 @@ const DATA = [
         "name": "Jonatas Molinett",
         "phone": "554288716714",
         "data": "10/10/2026 07:42:27",
-        "espera_h": 231.6,
+        "espera_h": 232.3,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá!Tenho interesse no clareamento dental, quero g'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/69233"
@@ -4241,30 +4255,29 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C163-AcessoSaudeCIC.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C158-VictorianoFaces",
     "name": "Victoriano Faces",
     "seg": "Estética",
     "inbox_id": 124,
-    "is_discon": false,
-    "evo_status": "open",
+    "is_discon": true,
+    "evo_status": "close",
     "cw_leads": 80,
     "cw_resp": 72,
     "cw_unresp": 8,
     "cw_pct_resp": 90.0,
     "cw_alerts": 8,
     "cw_avg_resp_h": 11.9,
-    "cw_status": "Saudável",
+    "cw_status": "Desconectado",
     "unresp_leads": [
       {
         "id": 67494,
         "name": "Jackson",
         "phone": "557184049226",
         "data": "03/10/2026 09:22:41",
-        "espera_h": 397.9,
+        "espera_h": 398.6,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse em realizar minha cirurgia od'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/67494"
@@ -4274,7 +4287,7 @@ const DATA = [
         "name": "Joelma",
         "phone": "557187571699",
         "data": "03/10/2026 22:46:18",
-        "espera_h": 384.5,
+        "espera_h": 385.2,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse em realizar minha cirurgia od'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/67685"
@@ -4284,7 +4297,7 @@ const DATA = [
         "name": "Moisés Estrela",
         "phone": "557191970974",
         "data": "06/10/2026 22:55:58",
-        "espera_h": 312.4,
+        "espera_h": 313.0,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse em realizar minha cirurgia od'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68429"
@@ -4294,7 +4307,7 @@ const DATA = [
         "name": "Gêêh ❤️😇",
         "phone": "557192659342",
         "data": "07/10/2026 11:58:27",
-        "espera_h": 299.3,
+        "espera_h": 300.0,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Bom dia! **Converse conosco** Faça sua cirurgia od'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68505"
@@ -4304,7 +4317,7 @@ const DATA = [
         "name": "Ana Perola",
         "phone": "557181495504",
         "data": "07/10/2026 18:23:26",
-        "espera_h": 292.9,
+        "espera_h": 293.6,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse em realizar minha cirurgia od'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68674"
@@ -4314,7 +4327,7 @@ const DATA = [
         "name": "Vanda",
         "phone": "557191471124",
         "data": "07/10/2026 23:35:39",
-        "espera_h": 287.7,
+        "espera_h": 288.4,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Foi errado **Converse conosco** Papada, rosto sem '",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68754"
@@ -4324,7 +4337,7 @@ const DATA = [
         "name": "Ary- Hadassa",
         "phone": "557188837160",
         "data": "08/10/2026 18:30:36",
-        "espera_h": 268.8,
+        "espera_h": 269.5,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá! Tenho interesse em realizar minha cirurgia od'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68941"
@@ -4334,7 +4347,7 @@ const DATA = [
         "name": "JOSEMARIO",
         "phone": "557188214769",
         "data": "08/10/2026 20:05:14",
-        "espera_h": 267.2,
+        "espera_h": 267.9,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Onde fica essa clínica vcs atende pelo Bradesco od'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68968"
@@ -4346,22 +4359,21 @@ const DATA = [
     "hoje_cw_pct_resp": 0.0,
     "hoje_cw_alerts": 0,
     "hoje_cw_avg_resp_h": 0.0,
-    "hoje_cw_status": "Sem Entrada",
+    "hoje_cw_status": "Desconectado",
     "hoje_unresp_leads": [],
     "total": 556,
     "set": 80,
     "ago": 191,
     "hoje": 0,
     "ult": "14/10/2026",
-    "status": "alta",
-    "statusText": "🟢 Alta Tração",
+    "status": "descon",
+    "statusText": "🔴 WhatsApp Off",
     "agendados": 0,
     "tx_agend": 0.0,
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C158-VictorianoFaces.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C169-DrKeeynerCorrea",
@@ -4383,7 +4395,7 @@ const DATA = [
         "name": "anadasilva2107",
         "phone": "5514998581844",
         "data": "04/10/2026 12:42:00",
-        "espera_h": 370.6,
+        "espera_h": 371.3,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá, tenho interesse e gostaria de agendar a minha'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/67730"
@@ -4393,7 +4405,7 @@ const DATA = [
         "name": "Alethéa🌹",
         "phone": "5514998553552",
         "data": "15/10/2026 16:44:26",
-        "espera_h": 102.6,
+        "espera_h": 103.2,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Desculpa foi errado **Fale conosco** Mas a maior m'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70569"
@@ -4403,7 +4415,7 @@ const DATA = [
         "name": "Regina❣️",
         "phone": "5514996326619",
         "data": "17/10/2026 13:33:53",
-        "espera_h": 57.7,
+        "espera_h": 58.4,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Olá, tenho interesse e gostaria de agendar a minha'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70923"
@@ -4413,7 +4425,7 @@ const DATA = [
         "name": "Adenir Militao",
         "phone": "554399227838",
         "data": "19/10/2026 16:31:26",
-        "espera_h": 6.8,
+        "espera_h": 7.4,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Esta mensagem foi apagada'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71249"
@@ -4423,7 +4435,7 @@ const DATA = [
         "name": "Angelita",
         "phone": "5514997373845",
         "data": "19/10/2026 16:52:54",
-        "espera_h": 6.4,
+        "espera_h": 7.1,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Oiii Boa tarde  Tenho muita vontade de fazer a lip'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71256"
@@ -4442,7 +4454,7 @@ const DATA = [
         "name": "Adenir Militao",
         "phone": "554399227838",
         "data": "19/10/2026 16:31:26",
-        "espera_h": 6.8,
+        "espera_h": 7.4,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Esta mensagem foi apagada'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71249"
@@ -4452,7 +4464,7 @@ const DATA = [
         "name": "Angelita",
         "phone": "5514997373845",
         "data": "19/10/2026 16:52:54",
-        "espera_h": 6.4,
+        "espera_h": 7.1,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Oiii Boa tarde  Tenho muita vontade de fazer a lip'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71256"
@@ -4470,8 +4482,7 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C169-DrKeeynerCorrea.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C180-DrNathanNunes",
@@ -4508,8 +4519,7 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C180-DrNathanNunes.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C63-DrRaphaelMoreira",
@@ -4531,7 +4541,7 @@ const DATA = [
         "name": "Diego",
         "phone": "553197144630",
         "data": "01/10/2026 23:16:16",
-        "espera_h": 432.1,
+        "espera_h": 432.7,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Esta mensagem foi apagada'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/67182"
@@ -4557,8 +4567,7 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C63-DrRaphaelMoreira.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C175-VivazOdontologia",
@@ -4580,7 +4589,7 @@ const DATA = [
         "name": "Fábio Bruno - Mercado Livre de Energia",
         "phone": "556692145052",
         "data": "07/10/2026 19:48:50",
-        "espera_h": 291.5,
+        "espera_h": 292.2,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Você precisa de ajuda pra reduzir o custo da sua c'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68705"
@@ -4606,8 +4615,7 @@ const DATA = [
     "comp": 2,
     "tx_comp": 66.7,
     "vendas": 1,
-    "tx_venda": 50.0,
-    "pdf_url": "/pdfs/relatorio_C175-VivazOdontologia.pdf"
+    "tx_venda": 50.0
   },
   {
     "id": "C52-DrLucasPitao",
@@ -4629,7 +4637,7 @@ const DATA = [
         "name": "Joel",
         "phone": "556798241342",
         "data": "08/10/2026 16:48:03",
-        "espera_h": 270.5,
+        "espera_h": 271.2,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/68919"
@@ -4655,8 +4663,7 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C52-DrLucasPitao.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C140-EspacoBottega",
@@ -4665,20 +4672,20 @@ const DATA = [
     "inbox_id": 100,
     "is_discon": false,
     "evo_status": "open",
-    "cw_leads": 26,
+    "cw_leads": 27,
     "cw_resp": 24,
-    "cw_unresp": 2,
-    "cw_pct_resp": 92.3,
+    "cw_unresp": 3,
+    "cw_pct_resp": 88.9,
     "cw_alerts": 1,
     "cw_avg_resp_h": 7.2,
-    "cw_status": "Saudável",
+    "cw_status": "Atenção",
     "unresp_leads": [
       {
         "id": 70140,
         "name": "Lead sem nome",
         "phone": "210277471625379",
         "data": "14/10/2026 14:30:51",
-        "espera_h": 128.8,
+        "espera_h": 129.5,
         "is_alert": true,
         "contexto": "Nunca respondido pela equipe: 'Sim'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/70140"
@@ -4688,16 +4695,26 @@ const DATA = [
         "name": "noemiterezinhamaia",
         "phone": "555192784456",
         "data": "19/10/2026 21:41:10",
-        "espera_h": 1.6,
+        "espera_h": 2.3,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Tenho interesse no diagnóstico completo, quero gar'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71325"
+      },
+      {
+        "id": 71357,
+        "name": "Gabrielle",
+        "phone": "555191155885",
+        "data": "19/10/2026 23:43:34",
+        "espera_h": 0.3,
+        "is_alert": false,
+        "contexto": "Nunca respondido pela equipe: 'Tenho interesse no diagnóstico completo, quero gar'",
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71357"
       }
     ],
-    "hoje_cw_leads": 2,
+    "hoje_cw_leads": 3,
     "hoje_cw_resp": 1,
-    "hoje_cw_unresp": 1,
-    "hoje_cw_pct_resp": 50.0,
+    "hoje_cw_unresp": 2,
+    "hoje_cw_pct_resp": 33.3,
     "hoje_cw_alerts": 0,
     "hoje_cw_avg_resp_h": 0.9,
     "hoje_cw_status": "Gargalo",
@@ -4707,16 +4724,26 @@ const DATA = [
         "name": "noemiterezinhamaia",
         "phone": "555192784456",
         "data": "19/10/2026 21:41:10",
-        "espera_h": 1.6,
+        "espera_h": 2.3,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Tenho interesse no diagnóstico completo, quero gar'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71325"
+      },
+      {
+        "id": 71357,
+        "name": "Gabrielle",
+        "phone": "555191155885",
+        "data": "19/10/2026 23:43:34",
+        "espera_h": 0.3,
+        "is_alert": false,
+        "contexto": "Nunca respondido pela equipe: 'Tenho interesse no diagnóstico completo, quero gar'",
+        "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71357"
       }
     ],
-    "total": 628,
-    "set": 26,
+    "total": 629,
+    "set": 27,
     "ago": 10,
-    "hoje": 2,
+    "hoje": 3,
     "ult": "19/10/2026",
     "status": "alta",
     "statusText": "🟢 Alta Tração",
@@ -4725,8 +4752,7 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C140-EspacoBottega.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C171-DraStefaniRezende",
@@ -4763,8 +4789,7 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C171-DraStefaniRezende.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C157-DraCristianeTiburtino",
@@ -4786,7 +4811,7 @@ const DATA = [
         "name": "Diana Macena",
         "phone": "558391183703",
         "data": "19/10/2026 22:20:29",
-        "espera_h": 1.0,
+        "espera_h": 1.7,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá vim pelo site Hepato e gostaria de agendar meu'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71335"
@@ -4805,7 +4830,7 @@ const DATA = [
         "name": "Diana Macena",
         "phone": "558391183703",
         "data": "19/10/2026 22:20:29",
-        "espera_h": 1.0,
+        "espera_h": 1.7,
         "is_alert": false,
         "contexto": "Nunca respondido pela equipe: 'Olá vim pelo site Hepato e gostaria de agendar meu'",
         "link": "https://apps-chatwoot.r0ym2n.easypanel.host/app/accounts/1/conversations/71335"
@@ -4823,8 +4848,7 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C157-DraCristianeTiburtino.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C170-DraMariaEduarda",
@@ -4846,7 +4870,7 @@ const DATA = [
         "name": "Raysa Nara",
         "phone": "558888456327",
         "data": "02/10/2026 02:53:29",
-        "espera_h": 416.3,
+        "espera_h": 417.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/558888456327"
@@ -4856,7 +4880,7 @@ const DATA = [
         "name": "MJjoias💎💍👑😉",
         "phone": "5588921003821",
         "data": "02/10/2026 04:22:33",
-        "espera_h": 416.3,
+        "espera_h": 417.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5588921003821"
@@ -4866,7 +4890,7 @@ const DATA = [
         "name": "Ana 🍃",
         "phone": "558888434987",
         "data": "02/10/2026 15:48:33",
-        "espera_h": 416.3,
+        "espera_h": 417.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/558888434987"
@@ -4876,7 +4900,7 @@ const DATA = [
         "name": "Mateus",
         "phone": "558899098646",
         "data": "03/10/2026 13:30:14",
-        "espera_h": 392.3,
+        "espera_h": 393.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/558899098646"
@@ -4886,7 +4910,7 @@ const DATA = [
         "name": "Cicero",
         "phone": "558888118793",
         "data": "03/10/2026 23:16:10",
-        "espera_h": 392.3,
+        "espera_h": 393.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/558888118793"
@@ -4896,7 +4920,7 @@ const DATA = [
         "name": "Iran Fernandes",
         "phone": "558896363209",
         "data": "05/10/2026 15:20:29",
-        "espera_h": 344.3,
+        "espera_h": 345.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/558896363209"
@@ -4906,7 +4930,7 @@ const DATA = [
         "name": "Gilva",
         "phone": "558796506260",
         "data": "06/10/2026 10:29:07",
-        "espera_h": 320.3,
+        "espera_h": 321.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/558796506260"
@@ -4916,7 +4940,7 @@ const DATA = [
         "name": "Mayra Justino",
         "phone": "558888002625",
         "data": "06/10/2026 16:20:20",
-        "espera_h": 320.3,
+        "espera_h": 321.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/558888002625"
@@ -4926,7 +4950,7 @@ const DATA = [
         "name": "Katakana-シセラ",
         "phone": "558898079817",
         "data": "07/10/2026 23:22:21",
-        "espera_h": 296.3,
+        "espera_h": 297.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/558898079817"
@@ -4936,7 +4960,7 @@ const DATA = [
         "name": "menino do sítio",
         "phone": "5584921865009",
         "data": "08/10/2026 03:30:22",
-        "espera_h": 272.3,
+        "espera_h": 273.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5584921865009"
@@ -4946,7 +4970,7 @@ const DATA = [
         "name": "Luana Silva",
         "phone": "558781091693",
         "data": "09/10/2026 12:21:09",
-        "espera_h": 248.3,
+        "espera_h": 249.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/558781091693"
@@ -4956,7 +4980,7 @@ const DATA = [
         "name": "Dja❤️‍🔥🫰🏻",
         "phone": "558491681810",
         "data": "12/10/2026 00:20:32",
-        "espera_h": 176.3,
+        "espera_h": 177.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/558491681810"
@@ -4966,7 +4990,7 @@ const DATA = [
         "name": "Família Bença D Senhor",
         "phone": "553497361348",
         "data": "13/10/2026 21:03:22",
-        "espera_h": 152.3,
+        "espera_h": 153.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/553497361348"
@@ -4976,7 +5000,7 @@ const DATA = [
         "name": "Paizinho ☺️",
         "phone": "558791254131",
         "data": "13/10/2026 21:04:22",
-        "espera_h": 152.3,
+        "espera_h": 153.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/558791254131"
@@ -4986,7 +5010,7 @@ const DATA = [
         "name": "Natália",
         "phone": "558788774905",
         "data": "14/10/2026 03:15:01",
-        "espera_h": 128.3,
+        "espera_h": 129.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/558788774905"
@@ -4996,7 +5020,7 @@ const DATA = [
         "name": "Antonia Maria",
         "phone": "558788660195",
         "data": "14/10/2026 19:15:34",
-        "espera_h": 128.3,
+        "espera_h": 129.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/558788660195"
@@ -5022,30 +5046,29 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C170-DraMariaEduarda.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C173-OdontoPrime",
     "name": "Odonto Prime",
     "seg": "Odonto",
     "inbox_id": 138,
-    "is_discon": false,
-    "evo_status": "open",
+    "is_discon": true,
+    "evo_status": "close",
     "cw_leads": 16,
     "cw_resp": 0,
     "cw_unresp": 16,
     "cw_pct_resp": 0.0,
     "cw_alerts": 16,
     "cw_avg_resp_h": 0.0,
-    "cw_status": "Gargalo",
+    "cw_status": "Desconectado",
     "unresp_leads": [
       {
         "id": null,
         "name": "Carina ✌️😘",
         "phone": "5511966222044",
         "data": "01/10/2026 15:14:08",
-        "espera_h": 440.3,
+        "espera_h": 441.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5511966222044"
@@ -5055,7 +5078,7 @@ const DATA = [
         "name": "Douglas 😎",
         "phone": "557592210751",
         "data": "01/10/2026 15:19:53",
-        "espera_h": 440.3,
+        "espera_h": 441.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/557592210751"
@@ -5065,7 +5088,7 @@ const DATA = [
         "name": "🙌🏼",
         "phone": "5513996925493",
         "data": "01/10/2026 16:19:31",
-        "espera_h": 440.3,
+        "espera_h": 441.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513996925493"
@@ -5075,7 +5098,7 @@ const DATA = [
         "name": "Viver A Vida",
         "phone": "5513991385436",
         "data": "02/10/2026 03:47:13",
-        "espera_h": 416.3,
+        "espera_h": 417.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991385436"
@@ -5085,7 +5108,7 @@ const DATA = [
         "name": "Anna💋",
         "phone": "5513991279597",
         "data": "03/10/2026 02:16:39",
-        "espera_h": 392.3,
+        "espera_h": 393.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513991279597"
@@ -5095,7 +5118,7 @@ const DATA = [
         "name": "Cyntia 🌹",
         "phone": "5511978876969",
         "data": "03/10/2026 13:04:22",
-        "espera_h": 392.3,
+        "espera_h": 393.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5511978876969"
@@ -5105,7 +5128,7 @@ const DATA = [
         "name": "Mario Alves",
         "phone": "5513955387086",
         "data": "03/10/2026 18:41:51",
-        "espera_h": 392.3,
+        "espera_h": 393.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513955387086"
@@ -5115,7 +5138,7 @@ const DATA = [
         "name": "Manoela carmo De souza",
         "phone": "5513997488482",
         "data": "04/10/2026 18:37:52",
-        "espera_h": 368.3,
+        "espera_h": 369.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513997488482"
@@ -5125,7 +5148,7 @@ const DATA = [
         "name": "Marques Motos",
         "phone": "5513997561683",
         "data": "04/10/2026 23:43:19",
-        "espera_h": 368.3,
+        "espera_h": 369.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513997561683"
@@ -5135,7 +5158,7 @@ const DATA = [
         "name": "Flavia",
         "phone": "5513992116948",
         "data": "05/10/2026 01:11:22",
-        "espera_h": 344.3,
+        "espera_h": 345.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513992116948"
@@ -5145,7 +5168,7 @@ const DATA = [
         "name": "Madai Ramos",
         "phone": "5511995885433",
         "data": "05/10/2026 13:49:07",
-        "espera_h": 344.3,
+        "espera_h": 345.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5511995885433"
@@ -5155,7 +5178,7 @@ const DATA = [
         "name": "Sara Soares",
         "phone": "5513996841366",
         "data": "06/10/2026 03:05:38",
-        "espera_h": 320.3,
+        "espera_h": 321.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513996841366"
@@ -5165,7 +5188,7 @@ const DATA = [
         "name": "🏹",
         "phone": "5511966733274",
         "data": "06/10/2026 12:54:15",
-        "espera_h": 320.3,
+        "espera_h": 321.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5511966733274"
@@ -5175,7 +5198,7 @@ const DATA = [
         "name": "Gui Psicóloga🌹",
         "phone": "5511996948373",
         "data": "06/10/2026 17:24:13",
-        "espera_h": 320.3,
+        "espera_h": 321.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5511996948373"
@@ -5185,7 +5208,7 @@ const DATA = [
         "name": "Gustavo",
         "phone": "5513978009565",
         "data": "06/10/2026 21:52:40",
-        "espera_h": 320.3,
+        "espera_h": 321.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5513978009565"
@@ -5195,7 +5218,7 @@ const DATA = [
         "name": "🏹",
         "phone": "5511966733274",
         "data": "07/10/2026 00:14:11",
-        "espera_h": 296.3,
+        "espera_h": 297.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/5511966733274"
@@ -5207,22 +5230,21 @@ const DATA = [
     "hoje_cw_pct_resp": 0.0,
     "hoje_cw_alerts": 0,
     "hoje_cw_avg_resp_h": 0.0,
-    "hoje_cw_status": "Sem Entrada",
+    "hoje_cw_status": "Desconectado",
     "hoje_unresp_leads": [],
     "total": 158,
     "set": 16,
     "ago": 73,
     "hoje": 0,
     "ult": "07/10/2026",
-    "status": "alta",
-    "statusText": "🟢 Alta Tração",
+    "status": "descon",
+    "statusText": "🔴 WhatsApp Off",
     "agendados": 0,
     "tx_agend": 0.0,
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C173-OdontoPrime.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C155-ClinicaElodonto",
@@ -5259,8 +5281,7 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C155-ClinicaElodonto.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C167-AvanteOdontologiaBH",
@@ -5282,7 +5303,7 @@ const DATA = [
         "name": "Lucas Medeiros",
         "phone": "558396369993",
         "data": "01/10/2026 02:37:48",
-        "espera_h": 440.3,
+        "espera_h": 441.0,
         "is_alert": true,
         "contexto": "Sem conversa criada no Chatwoot",
         "link": "https://wa.me/558396369993"
@@ -5308,15 +5329,14 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C167-AvanteOdontologiaBH.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C162-DrBrunoAraujo",
     "name": "Dr. Bruno Araújo",
     "seg": "Saúde",
     "inbox_id": 103,
-    "is_discon": false,
+    "is_discon": true,
     "evo_status": "close",
     "cw_leads": 0,
     "cw_resp": 0,
@@ -5324,7 +5344,7 @@ const DATA = [
     "cw_pct_resp": 0.0,
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.0,
-    "cw_status": "Sem Entrada",
+    "cw_status": "Desconectado",
     "unresp_leads": [],
     "hoje_cw_leads": 0,
     "hoje_cw_resp": 0,
@@ -5339,22 +5359,21 @@ const DATA = [
     "ago": 258,
     "hoje": 0,
     "ult": "22/09/2026",
-    "status": "pausado",
-    "statusText": "⚪ Sem Leads",
+    "status": "descon",
+    "statusText": "🔴 WhatsApp Off",
     "agendados": 0,
     "tx_agend": 0.0,
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C162-DrBrunoAraujo.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C124-DraAnnaHOF",
     "name": "Dra. Anna HOF",
     "seg": "Saúde",
     "inbox_id": 77,
-    "is_discon": false,
+    "is_discon": true,
     "evo_status": "connecting",
     "cw_leads": 0,
     "cw_resp": 0,
@@ -5362,7 +5381,7 @@ const DATA = [
     "cw_pct_resp": 0.0,
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.0,
-    "cw_status": "Sem Entrada",
+    "cw_status": "Desconectado",
     "unresp_leads": [],
     "hoje_cw_leads": 0,
     "hoje_cw_resp": 0,
@@ -5377,15 +5396,14 @@ const DATA = [
     "ago": 60,
     "hoje": 0,
     "ult": "20/09/2026",
-    "status": "pausado",
-    "statusText": "⚪ Sem Leads",
+    "status": "descon",
+    "statusText": "🔴 WhatsApp Off",
     "agendados": 0,
     "tx_agend": 0.0,
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C124-DraAnnaHOF.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C166-Lucasmallmann",
@@ -5422,15 +5440,14 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C166-Lucasmallmann.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C136-IntegrareOdontologia",
     "name": "Integrar Odontologia",
     "seg": "Odonto",
     "inbox_id": 119,
-    "is_discon": false,
+    "is_discon": true,
     "evo_status": "close",
     "cw_leads": 0,
     "cw_resp": 0,
@@ -5438,7 +5455,7 @@ const DATA = [
     "cw_pct_resp": 0.0,
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.0,
-    "cw_status": "Sem Entrada",
+    "cw_status": "Desconectado",
     "unresp_leads": [],
     "hoje_cw_leads": 0,
     "hoje_cw_resp": 0,
@@ -5453,22 +5470,21 @@ const DATA = [
     "ago": 0,
     "hoje": 0,
     "ult": "27/08/2026",
-    "status": "pausado",
-    "statusText": "⚪ Sem Leads",
+    "status": "descon",
+    "statusText": "🔴 WhatsApp Off",
     "agendados": 0,
     "tx_agend": 0.0,
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C136-IntegrareOdontologia.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "EsteticaLosAngelesLeads",
     "name": "Estética Los Angeles",
     "seg": "Estética",
     "inbox_id": 108,
-    "is_discon": false,
+    "is_discon": true,
     "evo_status": "close",
     "cw_leads": 0,
     "cw_resp": 0,
@@ -5476,7 +5492,7 @@ const DATA = [
     "cw_pct_resp": 0.0,
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.0,
-    "cw_status": "Sem Entrada",
+    "cw_status": "Desconectado",
     "unresp_leads": [],
     "hoje_cw_leads": 0,
     "hoje_cw_resp": 0,
@@ -5491,22 +5507,21 @@ const DATA = [
     "ago": 0,
     "hoje": 0,
     "ult": "19/08/2026",
-    "status": "pausado",
-    "statusText": "⚪ Sem Leads",
+    "status": "descon",
+    "statusText": "🔴 WhatsApp Off",
     "agendados": 0,
     "tx_agend": 0.0,
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_EsteticaLosAngelesLeads.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C86-DrWilliamHenrique",
     "name": "Dr. William Henrique",
     "seg": "Saúde",
     "inbox_id": 125,
-    "is_discon": false,
+    "is_discon": true,
     "evo_status": "close",
     "cw_leads": 0,
     "cw_resp": 0,
@@ -5514,7 +5529,7 @@ const DATA = [
     "cw_pct_resp": 0.0,
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.0,
-    "cw_status": "Sem Entrada",
+    "cw_status": "Desconectado",
     "unresp_leads": [],
     "hoje_cw_leads": 0,
     "hoje_cw_resp": 0,
@@ -5529,15 +5544,14 @@ const DATA = [
     "ago": 0,
     "hoje": 0,
     "ult": "03/08/2026",
-    "status": "pausado",
-    "statusText": "⚪ Sem Leads",
+    "status": "descon",
+    "statusText": "🔴 WhatsApp Off",
     "agendados": 0,
     "tx_agend": 0.0,
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C86-DrWilliamHenrique.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C168-DraMichelleAlves",
@@ -5574,8 +5588,7 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C168-DraMichelleAlves.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C164-DraLea",
@@ -5612,8 +5625,7 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C164-DraLea.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C167-AvanteOdontologiaSL",
@@ -5650,15 +5662,14 @@ const DATA = [
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C167-AvanteOdontologiaSL.pdf"
+    "tx_venda": 0.0
   },
   {
     "id": "C141-VictorRios",
     "name": "Victor Rios",
     "seg": "Saúde",
     "inbox_id": 112,
-    "is_discon": false,
+    "is_discon": true,
     "evo_status": "close",
     "cw_leads": 0,
     "cw_resp": 0,
@@ -5666,7 +5677,7 @@ const DATA = [
     "cw_pct_resp": 0.0,
     "cw_alerts": 0,
     "cw_avg_resp_h": 0.0,
-    "cw_status": "Sem Entrada",
+    "cw_status": "Desconectado",
     "unresp_leads": [],
     "hoje_cw_leads": 0,
     "hoje_cw_resp": 0,
@@ -5681,21 +5692,62 @@ const DATA = [
     "ago": 10,
     "hoje": 0,
     "ult": "10/09/2026",
-    "status": "pausado",
-    "statusText": "⚪ Sem Leads",
+    "status": "descon",
+    "statusText": "🔴 WhatsApp Off",
     "agendados": 0,
     "tx_agend": 0.0,
     "comp": 0,
     "tx_comp": 0.0,
     "vendas": 0,
-    "tx_venda": 0.0,
-    "pdf_url": "/pdfs/relatorio_C141-VictorRios.pdf"
+    "tx_venda": 0.0
   }
-];
+];/*END*/
+/*META*/const META = {"months":[],"today":"","updated":""};/*END*/
+/*ANALYSIS*/const ANALYSIS = {};/*END*/
+
+const EMPTY = {leads:0,agendados:0,tx_agend:0,comp:0,tx_comp:0,vendas:0,tx_venda:0,aberto:0,cw_leads:0,cw_resp:0,cw_unresp:0,cw_pct_resp:0,cw_alerts:0,cw_avg_resp_h:0,cw_status:'Sem Entrada',unresp_leads:[]};
+const FLAT = Object.keys(EMPTY).filter(k => k !== 'leads');
+let currentMonth = (META.months[0] || {}).k;
+const monthInfo = k => META.months.find(x => x.k === k) || {};
+const monthLabel = k => monthInfo(k).label || k || '';
+function prevMonthKey(k) { const i = META.months.findIndex(x => x.k === k); return i >= 0 && META.months[i + 1] ? META.months[i + 1].k : null; }
+function periodText() {
+  if (currentPeriod === 'hoje') return 'Hoje';
+  if (currentPeriod === 'all') return 'Todo o histórico';
+  return `${monthLabel(currentMonth)} (${monthInfo(currentMonth).range || ''})`;
+}
+// Projeta o período escolhido nos campos planos que o restante da tela já lê
+function applyPeriod() {
+  const key = currentPeriod === 'hoje' ? 'hoje' : (currentPeriod === 'all' ? 'all' : currentMonth);
+  const pk = prevMonthKey(currentMonth);
+  DATA.forEach(c => {
+    const P = c.P || {}, p = P[key] || EMPTY, m = P[currentMonth] || EMPTY, h = P.hoje || EMPTY, a = (pk && P[pk]) || EMPTY;
+    c.set = m.leads; c.ago = a.leads; c.hoje = h.leads;
+    c.lp = key === 'all' ? c.total : (p.leads || 0);
+    FLAT.forEach(f => { c[f] = p[f] !== undefined ? p[f] : EMPTY[f]; });
+    c.hoje_cw_resp = h.cw_resp; c.hoje_cw_unresp = h.cw_unresp; c.hoje_cw_pct_resp = h.cw_pct_resp;
+    c.hoje_cw_alerts = h.cw_alerts; c.hoje_cw_avg_resp_h = h.cw_avg_resp_h; c.hoje_cw_status = h.cw_status;
+    c.hoje_unresp_leads = h.unresp_leads || [];
+  });
+}
+function renderPeriodButtons() {
+  const el = document.getElementById('periodPills');
+  if (!el) return;
+  const nz = f => DATA.filter(c => f(c) > 0).length;
+  const todayStr = META.today ? new Date(META.today + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '';
+  const btn = (act, onclick, label, badge, title) => `<button class="period-btn ${act ? 'active' : ''}" onclick="${onclick}" title="${title}"><span>${label}</span><span class="period-badge">${badge}</span></button>`;
+  let html = '';
+  META.months.filter(x => !x.hidden).forEach((m, i) => {
+    html += btn(currentPeriod === 'set' && currentMonth === m.k, `setPeriod('set', null, '${m.k}')`, `${i === 0 ? '📊' : '🗓️'} ${m.label}${i === 0 ? ' (atual)' : ''}`, nz(c => (c.P[m.k] || EMPTY).leads), `Leads de ${m.label} (${m.range})`);
+  });
+  html += btn(currentPeriod === 'hoje', "setPeriod('hoje')", `🟢 Hoje (${todayStr})`, nz(c => (c.P.hoje || EMPTY).leads), 'Leads gerados hoje');
+  html += btn(currentPeriod === 'all', "setPeriod('all')", 'Todo o Histórico', DATA.length, 'Todo o histórico das planilhas (atendimento: últimos 2 meses)');
+  el.innerHTML = html;
+}
 
 let activeView = 'chatwoot';
 let currentFilter = 'all';
-let currentPeriod = 'all';
+let currentPeriod = 'set';
 // Sorting state: col key and direction ('asc' = menor pro maior, 'desc' = maior pro menor)
 let currentSort = { col: null, dir: 'asc' };
 
@@ -5747,10 +5799,10 @@ function updateKpiCards() {
     const totAlertsHoje = DATA.reduce((acc, c) => acc + (c.hoje_cw_alerts || 0), 0);
     const pctRespHoje = totLeadsHoje > 0 ? ((totRespHoje / totLeadsHoje) * 100).toFixed(1) : '0.0';
     
-    const timesHoje = DATA.map(c => c.hoje_cw_avg_resp_h).filter(t => t > 0);
-    const avgTimeHoje = timesHoje.length > 0 ? (timesHoje.reduce((a, b) => a + b, 0) / timesHoje.length).toFixed(1) : '0.0';
+    const wHoje = DATA.reduce((a, c) => a + (c.hoje_cw_avg_resp_h > 0 ? c.hoje_cw_resp || 0 : 0), 0);
+    const avgTimeHoje = wHoje > 0 ? (DATA.reduce((a, c) => a + (c.hoje_cw_avg_resp_h > 0 ? c.hoje_cw_avg_resp_h * (c.hoje_cw_resp || 0) : 0), 0) / wHoje).toFixed(1) : '0.0';
 
-    if (lblCwLeads) lblCwLeads.textContent = 'Leads no Chatwoot (Hoje)';
+    if (lblCwLeads) lblCwLeads.textContent = 'Leads da planilha (Hoje)';
     if (valCwLeads) valCwLeads.textContent = totLeadsHoje;
     if (subCwLeads) subCwLeads.textContent = `${DATA.filter(c => (c.hoje || 0) > 0).length} clínicas com leads hoje`;
 
@@ -5772,12 +5824,12 @@ function updateKpiCards() {
     const totAlertsSet = DATA.reduce((acc, c) => acc + (c.cw_alerts || 0), 0);
     const pctRespSet = totLeadsSet > 0 ? ((totRespSet / totLeadsSet) * 100).toFixed(1) : '0.0';
 
-    const timesSet = DATA.map(c => c.cw_avg_resp_h).filter(t => t > 0);
-    const avgTimeSet = timesSet.length > 0 ? (timesSet.reduce((a, b) => a + b, 0) / timesSet.length).toFixed(1) : '0.0';
+    const wSet = DATA.reduce((a, c) => a + (c.cw_avg_resp_h > 0 ? c.cw_resp || 0 : 0), 0);
+    const avgTimeSet = wSet > 0 ? (DATA.reduce((a, c) => a + (c.cw_avg_resp_h > 0 ? c.cw_avg_resp_h * (c.cw_resp || 0) : 0), 0) / wSet).toFixed(1) : '0.0';
 
-    if (lblCwLeads) lblCwLeads.textContent = 'Leads no Chatwoot (01 a 18/10)';
+    if (lblCwLeads) lblCwLeads.textContent = `Leads da planilha com atendimento (${periodText()})`;
     if (valCwLeads) valCwLeads.textContent = totLeadsSet;
-    if (subCwLeads) subCwLeads.textContent = `${DATA.length} caixas de entrada auditadas`;
+    if (subCwLeads) subCwLeads.textContent = `${DATA.filter(c => (c.cw_leads || 0) > 0).length} clínicas com leads no período`;
 
     if (lblCwResp) lblCwResp.textContent = 'Leads Respondidos pela Equipe';
     if (valCwResp) valCwResp.textContent = totRespSet;
@@ -5789,7 +5841,26 @@ function updateKpiCards() {
 
     if (lblCwTime) lblCwTime.textContent = 'Tempo Médio de 1ª Resposta';
     if (valCwTime) valCwTime.textContent = `${avgTimeSet}h`;
-    if (subCwTime) subCwTime.textContent = 'Média das clínicas no mês corrente';
+    if (subCwTime) subCwTime.textContent = 'Média ponderada pelos leads respondidos';
+  }
+
+  // KPIs da visão de leads (somam o mês escolhido, o dia e a base)
+  const setT = id => document.getElementById(id);
+  if (setT('kpi-ld-total')) {
+    const mSum = DATA.reduce((a, c) => a + (c.set || 0), 0), aSum = DATA.reduce((a, c) => a + (c.ago || 0), 0);
+    const hSum = DATA.reduce((a, c) => a + (c.hoje || 0), 0), pk = prevMonthKey(currentMonth);
+    const days = Math.max(1, new Date(META.today + 'T12:00:00').getDate());
+    setT('kpi-ld-total').textContent = DATA.reduce((a, c) => a + (c.total || 0), 0).toLocaleString('pt-BR');
+    setT('kpi-ld-sub-total').textContent = `${DATA.length} contas mapeadas`;
+    setT('kpi-ld-label-month').textContent = `Leads ${monthLabel(currentMonth)} (${monthInfo(currentMonth).range || ''})`;
+    setT('kpi-ld-month').textContent = mSum.toLocaleString('pt-BR');
+    setT('kpi-ld-sub-month').textContent = pk ? `${aSum.toLocaleString('pt-BR')} em ${monthLabel(pk)}` : '';
+    setT('kpi-ld-label-hoje').textContent = `Novos Leads Hoje (${new Date(META.today + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })})`;
+    setT('kpi-ld-hoje').textContent = hSum.toLocaleString('pt-BR');
+    setT('kpi-ld-sub-hoje').textContent = currentMonth === (META.months[0] || {}).k ? `Média de ${(mSum / days).toFixed(1)} leads/dia no mês` : '';
+    const act = DATA.filter(c => (c.set || 0) > 0).length;
+    setT('kpi-ld-active').textContent = `${act} / ${DATA.length}`;
+    setT('kpi-ld-sub-active').textContent = `${DATA.length ? (act / DATA.length * 100).toFixed(1) : 0}% da carteira captando`;
   }
 
   // Atualizar KPIs de Funil (Visão 3) dinamicamente com base no DATA e período ativo
@@ -5807,12 +5878,7 @@ function updateKpiCards() {
     const totComp = DATA.reduce((acc, c) => acc + (c.comp || 0), 0);
     const totVendas = DATA.reduce((acc, c) => acc + (c.vendas || 0), 0);
 
-    const totLeadsPeriod = DATA.reduce((acc, c) => {
-      if (currentPeriod === 'hoje') return acc + (c.hoje || 0);
-      if (currentPeriod === 'set') return acc + (c.set || 0);
-      if (currentPeriod === 'ago') return acc + (c.ago || 0);
-      return acc + (c.total || 0);
-    }, 0);
+    const totLeadsPeriod = DATA.reduce((acc, c) => acc + (c.lp || 0), 0);
 
     const txAgendGlobal = totLeadsPeriod > 0 ? ((totAgend / totLeadsPeriod) * 100).toFixed(1) : '0.0';
     const txCompGlobal = totAgend > 0 ? ((totComp / totAgend) * 100).toFixed(1) : '0.0';
@@ -5871,25 +5937,23 @@ function updateLeadsChartTitle() {
   const titleElem = document.getElementById('mainChartTitle');
   if (!titleElem || activeView !== 'leads') return;
   if (currentPeriod === 'hoje') {
-    titleElem.textContent = '🟢 Top 10 Clientes por Captação Hoje (08/09)';
+    titleElem.textContent = '🟢 Top 10 Clientes por Captação Hoje';
   } else if (currentPeriod === 'set') {
-    titleElem.textContent = '🏆 Top 10 Clientes por Captação em Outubro (01 a 18/10)';
+    titleElem.textContent = `🏆 Top 10 Clientes por Captação em ${periodText()}`;
   } else if (currentPeriod === 'ago') {
-    titleElem.textContent = '🗓️ Top 10 Clientes por Captação em Agosto/26';
+    titleElem.textContent = `🗓️ Top 10 Clientes por Captação em ${periodText()}`;
   } else {
     titleElem.textContent = '🏆 Top 10 Clientes por Volume Total Acumulado';
   }
 }
 
 // Period Filter Handler
-function setPeriod(period, btn) {
+function setPeriod(period, btn, month) {
   currentPeriod = period;
-  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  
-  if (activeView === 'leads') {
-    updateLeadsChartTitle();
-  }
+  if (month) currentMonth = month;
+  applyPeriod();
+  renderPeriodButtons();
+  if (activeView === 'leads') updateLeadsChartTitle();
   updateKpiCards();
   updateCharts();
   filterData();
@@ -6011,7 +6075,7 @@ function filterData() {
         if (currentFilter === 'saudavel' && st !== 'Saudável') return false;
         if (currentFilter === 'atencao' && !(st === 'Atenção' || st === 'Gargalo')) return false;
         if (currentFilter === 'descon' && st !== 'Desconectado') return false;
-        if (currentFilter === 'pausado' && st !== 'Sem Entrada') return false;
+        if (currentFilter === 'pausado' && !(st === 'Sem Entrada' || st === 'Sem Chatwoot')) return false;
       } else {
         if (currentFilter === 'alta' && c.status !== 'alta') return false;
         if (currentFilter === 'mod' && c.status !== 'mod') return false;
@@ -6084,8 +6148,8 @@ function getColumnLabel(key) {
     hoje_cw_avg_resp_h: 'Tempo 1ª Resp. Hoje',
     status: 'Status Entrada',
     hoje: 'Leads Hoje',
-    set: 'Outubro (01 a 18/10)',
-    ago: 'Agosto/26',
+    set: monthLabel(currentMonth),
+    ago: monthLabel(prevMonthKey(currentMonth)) || 'Mês anterior',
     total: 'Total Base',
     ult: 'Último Lead',
     agendados: 'Agendados',
@@ -6162,6 +6226,7 @@ function renderTable(list) {
       else if (statusVal === 'Gargalo') { saudeClass = 'status-gargalo'; saudeText = '🔴 Gargalo'; }
       else if (statusVal === 'Desconectado') { saudeClass = 'status-descon'; saudeText = '🔴 WhatsApp Off'; }
       else if (statusVal === 'Sem Entrada') { saudeClass = 'status-pausado'; saudeText = '⚪ Sem Entrada'; }
+      else if (statusVal === 'Sem Chatwoot') { saudeClass = 'status-pausado'; saudeText = '⚪ Sem Chatwoot'; }
 
       const respRateClass = pctVal >= 90 ? 'rate-good' : (pctVal >= 75 ? 'rate-mid' : 'rate-low');
       const alertHtml = alertsVal > 0 
@@ -6200,7 +6265,7 @@ function renderTable(list) {
             <div class="expand-card">
               <div class="expand-header">
                 <div class="expand-title">
-                  <span>🚨 Leads sem resposta ${isHoje ? 'de hoje' : 'em setembro'} em <strong>${c.name}</strong> (${leadsList.length})</span>
+                  <span>🚨 Leads sem resposta ${isHoje ? 'de hoje' : `em ${monthLabel(currentMonth)}`} em <strong>${c.name}</strong> (${leadsList.length})</span>
                   <span class="expand-sub">— Repasse para o analista ou secretária verificar e responder</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
@@ -6321,10 +6386,10 @@ function renderTable(list) {
           <div class="th-content justify-end"><span>Leads Hoje</span> ${getSortBadgeHtml('hoje')}</div>
         </th>
         <th class="sortable-th ${currentSort.col === 'set' ? 'active-sorted' : ''} ${currentPeriod === 'set' ? 'col-period-header' : ''}" onclick="handleSort('set')" title="Clique para ordenar Menor → Maior">
-          <div class="th-content justify-end"><span>Outubro (01 a 18/10)</span> ${getSortBadgeHtml('set')}</div>
+          <div class="th-content justify-end"><span>${monthLabel(currentMonth)}</span> ${getSortBadgeHtml('set')}</div>
         </th>
         <th class="sortable-th ${currentSort.col === 'ago' ? 'active-sorted' : ''} ${currentPeriod === 'ago' ? 'col-period-header' : ''}" onclick="handleSort('ago')" title="Clique para ordenar Menor → Maior">
-          <div class="th-content justify-end"><span>Agosto/26</span> ${getSortBadgeHtml('ago')}</div>
+          <div class="th-content justify-end"><span>${monthLabel(prevMonthKey(currentMonth)) || 'Mês anterior'}</span> ${getSortBadgeHtml('ago')}</div>
         </th>
         <th class="sortable-th ${currentSort.col === 'total' ? 'active-sorted' : ''}" onclick="handleSort('total')" title="Clique para ordenar Menor → Maior">
           <div class="th-content justify-end"><span>Total Base</span> ${getSortBadgeHtml('total')}</div>
@@ -6375,11 +6440,7 @@ function renderTable(list) {
     }).join('');
 
   } else {
-    const periodHeaderLabel = currentPeriod === 'hoje' 
-      ? 'Leads Hoje' 
-      : (currentPeriod === 'set' 
-        ? 'Leads Outubro (01 a 18/10)' 
-        : (currentPeriod === 'ago' ? 'Leads Agosto/26' : 'Total Leads Base'));
+    const periodHeaderLabel = currentPeriod === 'hoje' ? 'Leads Hoje' : (currentPeriod === 'all' ? 'Total Leads Base' : `Leads ${monthLabel(currentMonth)}`);
 
     thead.innerHTML = `
       <tr>
@@ -6389,8 +6450,8 @@ function renderTable(list) {
         <th class="sortable-th ${currentSort.col === 'seg' ? 'active-sorted' : ''}" onclick="handleSort('seg')" title="Clique para ordenar Menor → Maior">
           <div class="th-content"><span>Segmento</span> ${getSortBadgeHtml('seg')}</div>
         </th>
-        <th class="sortable-th ${currentSort.col === 'total' ? 'active-sorted' : ''}" onclick="handleSort('total')" title="Clique para ordenar Menor → Maior">
-          <div class="th-content justify-end"><span>${periodHeaderLabel}</span> ${getSortBadgeHtml('total')}</div>
+        <th class="sortable-th ${currentSort.col === 'lp' ? 'active-sorted' : ''}" onclick="handleSort('lp')" title="Clique para ordenar Menor → Maior">
+          <div class="th-content justify-end"><span>${periodHeaderLabel}</span> ${getSortBadgeHtml('lp')}</div>
         </th>
         <th class="sortable-th ${currentSort.col === 'agendados' ? 'active-sorted' : ''}" onclick="handleSort('agendados')" title="Clique para ordenar Menor → Maior">
           <div class="th-content justify-end"><span>Agendados</span> ${getSortBadgeHtml('agendados')}</div>
@@ -6415,15 +6476,9 @@ function renderTable(list) {
     tbody.innerHTML = list.map(c => {
       const segClass = c.seg === 'Saúde' ? 'seg-saude' : (c.seg === 'Odonto' ? 'seg-odonto' : 'seg-estetica');
       
-      const leadsPeriodVal = currentPeriod === 'hoje' 
-        ? (c.hoje || 0) 
-        : (currentPeriod === 'set' 
-          ? (c.set || 0) 
-          : (currentPeriod === 'ago' ? (c.ago || 0) : (c.total || 0)));
+      const leadsPeriodVal = c.lp || 0;
 
-      const txAgendPeriod = leadsPeriodVal > 0 
-        ? ((c.agendados / leadsPeriodVal) * 100).toFixed(1) 
-        : (c.tx_agend || 0).toFixed(1);
+      const txAgendPeriod = (c.tx_agend || 0).toFixed(1);
 
       const agendRateNum = parseFloat(txAgendPeriod);
       const agendRateClass = agendRateNum >= 40 ? 'rate-good' : (agendRateNum >= 20 ? 'rate-mid' : 'rate-low');
@@ -6445,7 +6500,7 @@ function renderTable(list) {
             </div>
           </td>
           <td class="${currentSort.col === 'seg' ? 'col-sorted-active' : ''}"><span class="seg-pill ${segClass}">${c.seg}</span></td>
-          <td style="text-align:right" class="${currentSort.col === 'total' ? 'col-sorted-active' : ''}"><span class="num-val">${leadsPeriodVal.toLocaleString('pt-BR')}</span></td>
+          <td style="text-align:right" class="${currentSort.col === 'lp' ? 'col-sorted-active' : ''}"><span class="num-val">${leadsPeriodVal.toLocaleString('pt-BR')}</span></td>
           <td style="text-align:right" class="${currentSort.col === 'agendados' ? 'col-sorted-active' : ''}"><span class="num-val" style="color:var(--secondary)">${c.agendados.toLocaleString('pt-BR')}</span></td>
           <td style="text-align:right" class="${currentSort.col === 'tx_agend' ? 'col-sorted-active' : ''}"><span class="num-rate ${agendRateClass}">${txAgendPeriod}%</span></td>
           <td style="text-align:right" class="${currentSort.col === 'comp' ? 'col-sorted-active' : ''}"><span class="num-val" style="color:#fbbf24">${c.comp.toLocaleString('pt-BR')}</span></td>
@@ -6482,7 +6537,7 @@ function toggleExpandLeads(clientId, btn) {
 // ==========================================
 
 function formatClinicWhatsAppText(client, leadsList, isHoje) {
-  const periodLabel = isHoje ? 'Hoje' : 'Setembro/26';
+  const periodLabel = isHoje ? 'Hoje' : periodText();
   const now = new Date();
   const dateStr = now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -6531,7 +6586,7 @@ function formatSingleLeadWhatsAppText(client, lead) {
 }
 
 function formatAllClinicsWhatsAppText(items, isHoje) {
-  const periodLabel = isHoje ? 'Hoje' : 'Setembro/26';
+  const periodLabel = isHoje ? 'Hoje' : periodText();
   const now = new Date();
   const dateStr = now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -6770,13 +6825,13 @@ function updateCharts() {
 
   } else if (activeView === 'leads') {
     let leadMetric = 'set';
-    let leadLabel = 'Leads Outubro (01-18/10)/26';
+    let leadLabel = `Leads ${monthLabel(currentMonth)}`;
     if (currentPeriod === 'hoje') {
       leadMetric = 'hoje';
       leadLabel = 'Leads Hoje';
     } else if (currentPeriod === 'ago') {
       leadMetric = 'ago';
-      leadLabel = 'Leads Agosto/26';
+      leadLabel = 'Leads';
     } else if (currentPeriod === 'all') {
       leadMetric = 'total';
       leadLabel = 'Leads Total';
@@ -7009,6 +7064,10 @@ window.onclick = function(event) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+  const ua = document.getElementById('updatedAt');
+  if (ua) ua.textContent = `Atualizado em ${META.updated} • ${periodText()}`;
+  applyPeriod();
+  renderPeriodButtons();
   updateThemeButton();
   renderAlertCards();
   updatePeriodCounts();
@@ -7018,280 +7077,93 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
-// Dicionário de Informações Comerciais das Clínicas
+// Resumo comercial por cliente: números ao vivo (DATA) + análise assinada (ANALYSIS)
 // ==========================================
-const CLIENT_INFO = {
-  "C123-DrRafaelRocha": { ticket: 11881.81, fat: 0.0, proc: "Lipo de Papada & HOF", atendente: "Marcela", doc: "Dr. Rafael Rocha" },
-  "C172-DrCaioFigueira": { ticket: 4500.0, fat: 0.0, proc: "Lifting Facial & Blefaroplastia", atendente: "Secretária", doc: "Dr. Caio Figueira" },
-  "C123-OrgulhodeSorrirPeruibe": { ticket: 3139.28, fat: 0.0, proc: "Implantes & Odonto Geral", atendente: "Recepção", doc: "Dra. Equipe Peruíbe" },
-  "C123-OrgulhoSaoVicente": { ticket: 2500.0, fat: 0.0, proc: "Implantes & Próteses", atendente: "Recepção", doc: "Equipe São Vicente" },
-  "C123-OrgulhodeSorrirSantos": { ticket: 2800.0, fat: 0.0, proc: "Implantes & Reabilitação", atendente: "Recepção", doc: "Equipe Santos" },
-  "C170-DraMariaEduarda": { ticket: 3500.0, fat: 0.0, proc: "Cirurgias Orais & Implantes", atendente: "Recepção", doc: "Dra. Maria Eduarda" },
-  "C52-DrLucasPitao": { ticket: 4200.0, fat: 0.0, proc: "Implantes Dentários Premium", atendente: "Liliane", doc: "Dr. Lucas Pitão" },
-  "C149-ClinicaGGlow": { ticket: 1200.0, fat: 0.0, proc: "Estética Facial Avançada", atendente: "Secretária", doc: "Equipe G Glow" },
-  "C150-Lumia": { ticket: 1500.0, fat: 0.0, proc: "Estética Facial & Corporal", atendente: "Recepção", doc: "Equipe Lumia" },
-  "C124-DraAnnaHOF": { ticket: 3200.0, fat: 0.0, proc: "Harmonização Orofacial (HOF)", atendente: "Recepção", doc: "Dra. Anna" },
-  "C155-ClinicaElodonto": { ticket: 2200.0, fat: 0.0, proc: "Odontologia & Ortodontia", atendente: "Recepção", doc: "Equipe Elodonto" },
-  "C163-AcessoSaudeCIC": { ticket: 850.0, fat: 0.0, proc: "Consultas & Exames Populares", atendente: "Recepção", doc: "Equipe CIC" },
-  "C158-VictorianoFaces": { ticket: 2800.0, fat: 0.0, proc: "Estética & Harmonização Facial", atendente: "Recepção", doc: "Dr. Victoriano" },
-  "C169-DrKeeynerCorrea": { ticket: 3500.0, fat: 0.0, proc: "Cirurgia Plástica & Estética", atendente: "Recepção", doc: "Dr. Keeyner Correa" },
-  "C171-DraStefaniRezende": { ticket: 2500.0, fat: 0.0, proc: "Odontologia Estética & Lentes", atendente: "Recepção", doc: "Dra. Stefani Rezende" },
-  "C173-OdontoPrime": { ticket: 2000.0, fat: 0.0, proc: "Implantes & Clínica Geral", atendente: "Recepção", doc: "Equipe Odonto Prime" },
-  "C63-DrRaphaelMoreira": { ticket: 3000.0, fat: 0.0, proc: "Saúde Integrada & Estética", atendente: "Recepção", doc: "Dr. Raphael Moreira" },
-  "C166-Lucasmallmann": { ticket: 2200.0, fat: 0.0, proc: "Saúde & Performance Médica", atendente: "Recepção", doc: "Lucas Mallmann" },
-  "C135-DraMichelleSantos": { ticket: 2500.0, fat: 0.0, proc: "Odontologia Especializada", atendente: "Recepção", doc: "Dra. Michelle Santos" },
-  "C175-VivazOdontologia": { ticket: 2100.0, fat: 0.0, proc: "Odontologia Multidisciplinar", atendente: "Recepção", doc: "Equipe Vivaz" },
-  "C157-DraCristianeTiburtino": { ticket: 1800.0, fat: 0.0, proc: "Saúde Integrativa & Estética", atendente: "Recepção", doc: "Dra. Cristiane" },
-  "C140-EspacoBottega": { ticket: 1500.0, fat: 0.0, proc: "Estética Facial & Corporal", atendente: "Recepção", doc: "Equipe Bottega" },
-  "C141-VictorRios": { ticket: 2000.0, fat: 0.0, proc: "Saúde & Bem-Estar", atendente: "Recepção", doc: "Victor Rios" },
-  "C167-AvanteOdontologiaBH": { ticket: 2500.0, fat: 0.0, proc: "Odontologia Especializada BH", atendente: "Recepção", doc: "Equipe Avante BH" },
-  "C167-AvanteOdontologiaSL": { ticket: 2500.0, fat: 0.0, proc: "Odontologia Especializada SL", atendente: "Recepção", doc: "Equipe Avante SL" },
-  "C162-DrBrunoAraujo": { ticket: 4500.0, fat: 0.0, proc: "Blefaroplastia & Lipo de Papada", atendente: "Recepção", doc: "Dr. Bruno Araújo" },
-  "C174-EsteticFaceItapetininga": { ticket: 1500.0, fat: 0.0, proc: "Harmonização & Estética Facial", atendente: "Recepção", doc: "Equipe Itapetininga" }
-};
-
 let currentReportClientId = null;
 
-// Geração de Diagnóstico e Plano de Ação 100% Personalizado e Fidedigno por Cliente
-function buildClientAnalysis(c, info) {
-  const fatVal = (c.vendas || 0) * (info.ticket || 2000.0);
-  const leads = c.set || 0;
-  const agend = c.agendados || 0;
-  const comp = c.comp || 0;
-  const vendas = c.vendas || 0;
-  const tmrH = c.cw_avg_resp_h || 0;
-  const unresp = c.cw_unresp || 0;
-  const alerts = c.cw_alerts || 0;
-  const pctResp = c.cw_pct_resp || 0;
-  const isDiscon = c.is_discon || c.status === 'descon';
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+const fmtPct = n => (n || 0).toFixed(1).replace('.', ',') + '%';
 
-  // 1. Diagnóstico de SLA / Velocidade de 1ª Resposta
-  let diagSLA = "";
-  if (isDiscon) {
-    diagSLA = "🔴 Instância do WhatsApp desconectada na Evolution API. Atendimento 100% paralisado pelo sistema.";
-  } else if (leads === 0) {
-    diagSLA = "⚪ Sem entrada de leads em setembro. Canal sem movimentação ativa no período.";
-  } else if (tmrH > 24) {
-    diagSLA = `🚨 TMR Gravíssimo (${tmrH}h de espera). O lead aguarda mais de um dia para a 1ª resposta, gerando perda massiva de conversão para a concorrência.`;
-  } else if (tmrH > 2) {
-    diagSLA = `⚠️ TMR Crítico (${tmrH}h de espera). Tempo de resposta acima da janela de ouro (15 min), desengajando leads quentes do tráfego.`;
-  } else if (tmrH > 0.5) {
-    diagSLA = `⏱️ TMR Moderado (~${Math.round(tmrH * 60)} min). Aceitável, mas com oportunidade de calibração para a meta Mesus de até 15 minutos.`;
-  } else {
-    diagSLA = `🌟 TMR Excelente (~${Math.round(tmrH * 60)} min). Primeiro contato ágil e dentro do padrão de alta performance comercial.`;
-  }
+// Mês exibido no resumo: o selecionado (ou o atual quando o filtro é Hoje / Histórico)
+function reportMonth() { return currentPeriod === 'set' ? currentMonth : (META.months[0] || {}).k; }
 
-  // 2. Diagnóstico de Governança de CRM vs. Tráfego
-  let diagCRM = "";
-  if (leads > 20 && agend === 0) {
-    diagCRM = `🚨 Apagão de Governança no CRM: Foram gerados ${leads} leads qualificados em setembro, mas a equipe da recepção (${info.atendente}) registrou ZERO agendamentos na planilha. Os agendamentos estão ocorrendo de forma invisível no WhatsApp sem alimentação de dados e sem controle de ROI.`;
-  } else if (agend > 0 && vendas > 0) {
-    diagCRM = `🌟 Funil Comercial Ativo e Validado: A operação registrou ${agend} agendamentos (${c.tx_agend}% dos leads), ${comp} comparecimentos e ${vendas} vendas fechadas na clínica, gerando faturamento apurado de R$ ${fatVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}.`;
-  } else if (agend > 0 && comp > 0 && vendas === 0) {
-    diagCRM = `⚠️ Gargalo no Fechamento em Mesa: ${comp} pacientes compareceram presencialmente à clínica (${c.tx_comp}% dos agendados), porém nenhuma venda foi registrada na coluna Ganhou do CRM. Alinhar com o profissional a conversão de orçamentos e atualização do CRM.`;
-  } else if (agend > 0 && comp === 0) {
-    diagCRM = `⚠️ Quebra Crítica de Comparecimento (No-Show 100%): A equipe agendou ${agend} pacientes, mas nenhum comparecimento foi confirmado na clínica. Falha severa no processo de ancoragem e confirmação da consulta.`;
-  } else if (leads > 0 && agend === 0) {
-    diagCRM = `🟡 Baixa Amostragem: Apenas ${leads} leads recebidos no mês. Volume inicial em fase de aquecimento de tráfego, sem agendamentos computados no CRM.`;
-  } else {
-    diagCRM = "⚪ Sem histórico de movimentação comercial no período selecionado.";
-  }
-
-  // 3. Diagnóstico de Condução e Conversão no WhatsApp
-  let diagScript = "";
-  if (isDiscon) {
-    diagScript = "🔴 Canal inativo por desconexão técnica no aparelho. Impossível avaliar condução ativa de scripts.";
-  } else if (pctResp >= 85 && agend === 0 && leads > 20) {
-    diagScript = `⚠️ Atendente 'Passadora de Informação': A taxa de resposta é alta (${pctResp}%), mas a conversão em agendamento é nula (0%). A atendente apenas responde dúvidas pontuais e valores sem aplicar script de qualificação e sem ofertar 2 opções fechadas de horário (Duplo Agendamento).`;
-  } else if (pctResp < 75 && leads > 10) {
-    diagScript = `🚨 Furo no Topo do Funil: Apenas ${pctResp}% dos leads foram respondidos pela equipe comercial. Mais de um quarto dos contatos pagos foi abandonado sem primeiro contato.`;
-  } else if (c.tx_agend >= 10) {
-    diagScript = `✅ Condução Ativa Eficiente: Taxa de conversão de leads em agendamentos de ${c.tx_agend}% (dentro do benchmark Mesus >= 10-15%). Script de abordagem sendo bem executado.`;
-  } else if (leads > 0 && agend > 0) {
-    diagScript = `🟡 Conversão em Agendamento Moderada (${c.tx_agend}%): A equipe agenda, mas ainda perde leads no meio do funil por perguntas abertas de disponibilidade em vez de direcionamento fechado.`;
-  } else {
-    diagScript = "⚪ Volume insuficiente de leads para diagnóstico de condução de script.";
-  }
-
-  // 4. Diagnóstico de Fila de Espera
-  let diagFila = "";
-  if (alerts > 0) {
-    diagFila = `🚨 Fila Crítica com Risco de Churn: ${alerts} leads aguardam há mais de 24 horas sem resposta da clínica no Chatwoot. Esses contatos já estão na zona de descarte e precisam de resgate imediato.`;
-  } else if (unresp > 0) {
-    diagFila = `⏱️ Fila Sob Controle: ${unresp} leads aguardando retorno, todos dentro da janela recente (< 24h).`;
-  } else if (leads > 0) {
-    diagFila = "✅ Fila de Espera Zerada: Todos os leads do mês foram respondidos e triados pela equipe.";
-  } else {
-    diagFila = "⚪ Fila sem contatos pendentes.";
-  }
-
-  // 5. Plano de Ação Estratégico Sob Medida (Sem repetição)
-  const planoList = [];
-  if (isDiscon) {
-    planoList.push("Reconexão Imediata: Acessar a Evolution API (evo.mesusmedia.com.br/manager) e escanear o QR Code para reativar o canal.");
-  }
-  if (alerts > 0) {
-    planoList.push(`Resgate Emergencial de Fila: Acionar imediatamente os ${alerts} leads com espera superior a 24h com script de quebra de objeção e resgate empático.`);
-  } else if (unresp > 0) {
-    planoList.push(`Zerar Fila do Dia: Responder os ${unresp} contatos pendentes antes do encerramento do expediente comercial.`);
-  }
-  if (leads > 20 && agend === 0) {
-    planoList.push(`Auditoria Reversa no Chatwoot: Revisar as conversas de setembro para identificar os agendamentos já realizados e transcrevê-los para o Google Sheets.`);
-    planoList.push(`Rotina Compulsória de CRM às 18h: Cobrança diária da equipe (${info.atendente}) para atualização obrigatória das colunas Agendou, Compareceu e Ganhou.`);
-  } else if (agend > 0 && comp === 0) {
-    planoList.push(`Implantação da Cadência de Confirmação: Aplicar a régua de 4 momentos (agendamento, D-1, manhã do dia e 2h antes) para quebrar o no-show de 100%.`);
-  } else if (agend > 0 && comp > 0 && vendas === 0) {
-    planoList.push(`Alinhamento de Orçamentos em Mesa: Revisar os ${comp} pacientes avaliados com o médico/avaliador e aplicar régua de follow-up pós-consulta.`);
-  } else if (agend > 0 && vendas > 0) {
-    planoList.push(`Otimização de Conversão e No-Show: Reforçar a confirmação dos agendamentos pendentes e escalar verba nos criativos que geraram as ${vendas} vendas.`);
-  }
-  if (tmrH > 2 && !isDiscon) {
-    planoList.push(`Trava de SLA (< 15 min): Reestruturar turnos da atendente nos horários de maior fluxo (11h-14h e 17h-19h) para reduzir o tempo médio de resposta de ${tmrH}h.`);
-  }
-  if (agend === 0 && leads > 10 && !isDiscon) {
-    planoList.push("Treinamento de Duplo Agendamento: Proibir perguntas abertas ('quando você prefere?') e ofertar sempre 2 opções fechadas de data/turno.");
-  }
-  if (planoList.length < 3) {
-    planoList.push("Rotina Diária de CRM às 18h: Manter a planilha 100% atualizada diariamente ao final do dia.");
-  }
-
-  return {
-    diagSLA,
-    diagCRM,
-    diagScript,
-    diagFila,
-    planoList: [...new Set(planoList)].slice(0, 4),
-    fatVal
-  };
+function reportNumbers(c) {
+  const k = reportMonth(), m = (c.P || {})[k] || EMPTY;
+  return { k, label: `${monthLabel(k)} (${monthInfo(k).range || ''})`, m };
 }
 
 function openCommercialReport(clientId) {
   const c = DATA.find(x => x.id === clientId);
   if (!c) return;
   currentReportClientId = clientId;
-
-  const info = CLIENT_INFO[clientId] || { ticket: 2000.0, fat: 0.0, proc: "Tratamentos Especializados", atendente: "Recepção", doc: c.name };
-  const analysis = buildClientAnalysis(c, info);
+  const { k, label, m } = reportNumbers(c);
+  const an = ANALYSIS[clientId];
 
   document.getElementById('repDrawerTitle').textContent = c.name;
-  const pdfBtn = document.getElementById('repDrawerPdfLink'); if (pdfBtn) { pdfBtn.href = `/pdfs/relatorio_${clientId}.pdf`; }
   document.getElementById('repDrawerId').textContent = c.id;
-  document.getElementById('repDrawerSub').textContent = `Procedimento: ${info.proc} | Atendente: ${info.atendente}`;
-  
+  document.getElementById('repDrawerSub').textContent = `Período: ${label}`;
+  const pdfBtn = document.getElementById('repDrawerPdfLink');
+  if (pdfBtn) {
+    if (c.pdf_url) { pdfBtn.href = c.pdf_url; pdfBtn.style.display = 'inline-flex'; pdfBtn.title = an ? `Relatório com posição em ${an.posicao}` : 'Baixar relatório em PDF'; }
+    else { pdfBtn.style.display = 'none'; }
+  }
+
   const badgeEl = document.getElementById('repDrawerBadge');
   badgeEl.textContent = c.seg;
   badgeEl.className = 'report-drawer-badge ' + (c.seg === 'Saúde' ? 'seg-saude' : (c.seg === 'Odonto' ? 'seg-odonto' : 'seg-estetica'));
 
-  const saudeEl = document.getElementById('repDrawerSaude');
-  let sText = '🟢 Saudável';
-  let sClass = 'status-saudavel';
-  if (c.cw_status === 'Atenção') { sText = '🟡 Atenção'; sClass = 'status-atencao'; }
-  else if (c.cw_status === 'Gargalo') { sText = '🔴 Gargalo'; sClass = 'status-gargalo'; }
-  else if (c.cw_status === 'Desconectado' || c.is_discon) { sText = '🔴 WhatsApp Off'; sClass = 'status-descon'; }
-  else if (c.cw_status === 'Sem Entrada') { sText = '⚪ Sem Entrada'; sClass = 'status-pausado'; }
-  saudeEl.innerHTML = `<span class="status-badge ${sClass}">${sText}</span>`;
+  let sText = '🟢 Saudável', sClass = 'status-saudavel';
+  const st = m.cw_status || 'Sem Entrada';
+  if (st === 'Atenção') { sText = '🟡 Atenção'; sClass = 'status-atencao'; }
+  else if (st === 'Gargalo') { sText = '🔴 Gargalo'; sClass = 'status-gargalo'; }
+  else if (st === 'Desconectado' || c.is_discon) { sText = '🔴 WhatsApp Off'; sClass = 'status-descon'; }
+  else if (st === 'Sem Entrada') { sText = '⚪ Sem Entrada'; sClass = 'status-pausado'; }
+  else if (st === 'Sem Chatwoot') { sText = '⚪ Sem Chatwoot'; sClass = 'status-pausado'; }
+  document.getElementById('repDrawerSaude').innerHTML = `<span class="status-badge ${sClass}">${sText}</span>`;
 
-  const unrespList = c.unresp_leads || [];
-  let unrespRowsHtml = "";
-  if (unrespList.length > 0) {
-    unrespRowsHtml = `
-      <div class="rep-section" style="border-color:color-mix(in oklch, var(--destructive) 40%, transparent)">
-        <div class="rep-section-title" style="color:var(--destructive)">🚨 Fila de Espera: ${unrespList.length} leads aguardando retorno (${c.cw_alerts || 0} críticos > 24h)</div>
-        <div class="expand-table-wrap">
-          <table class="expand-table">
-            <thead>
-              <tr>
-                <th>Lead</th>
-                <th>Contato</th>
-                <th>Espera</th>
-                <th>Contexto</th>
-                <th style="text-align:right">Ação</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${unrespList.slice(0, 8).map(u => {
-                const cp = (u.phone || '').replace(/\D/g, '');
-                return `
-                  <tr>
-                    <td><strong>${u.name}</strong></td>
-                    <td><a href="https://wa.me/${cp}" target="_blank" class="lead-phone-link">💬 ${u.phone}</a></td>
-                    <td><span style="font-weight:700;color:${u.is_alert ? 'var(--destructive)' : '#fbbf24'}">${u.espera_h}h ${u.is_alert ? '⚠️' : ''}</span></td>
-                    <td style="font-size:0.75rem;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${u.contexto || ''}">${u.contexto || 'Aguardando retorno'}</td>
-                    <td style="text-align:right"><a href="${u.link}" target="_blank" class="btn-open-cw" style="padding:3px 8px;font-size:0.7rem">↗️ Chatwoot</a></td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>
-        ${unrespList.length > 8 ? `<p style="font-size:0.75rem;color:var(--muted-foreground);margin-top:8px;"><em>... e mais ${unrespList.length - 8} leads na fila de espera.</em></p>` : ''}
-      </div>
-    `;
+  const unrespList = m.unresp_leads || [];
+  const unrespHtml = unrespList.length ? `
+    <div class="rep-section" style="border-color:color-mix(in oklch, var(--destructive) 40%, transparent)">
+      <div class="rep-section-title" style="color:var(--destructive)">🚨 Fila de Espera: ${m.cw_unresp} lead(s) sem retorno da equipe (${m.cw_alerts || 0} há mais de 24h)</div>
+      <div class="expand-table-wrap"><table class="expand-table">
+        <thead><tr><th>Lead</th><th>Contato</th><th>Espera</th><th>Contexto</th><th style="text-align:right">Ação</th></tr></thead>
+        <tbody>${unrespList.slice(0, 8).map(u => {
+          const cp = (u.phone || '').replace(/\D/g, '');
+          return `<tr><td><strong>${esc(u.name)}</strong></td>
+            <td>${cp ? `<a href="https://wa.me/${cp}" target="_blank" class="lead-phone-link">💬 ${esc(u.phone)}</a>` : '—'}</td>
+            <td><span style="font-weight:700;color:${u.is_alert ? 'var(--destructive)' : '#fbbf24'}">${u.espera_h}h ${u.is_alert ? '⚠️' : ''}</span></td>
+            <td style="font-size:0.75rem;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(u.contexto)}">${esc(u.contexto)}</td>
+            <td style="text-align:right">${u.link ? `<a href="${u.link}" target="_blank" class="btn-open-cw" style="padding:3px 8px;font-size:0.7rem">↗️ Abrir</a>` : ''}</td></tr>`;
+        }).join('')}</tbody></table></div>
+      ${unrespList.length > 8 ? `<p style="font-size:0.75rem;color:var(--muted-foreground);margin-top:8px;"><em>... e mais ${unrespList.length - 8} na fila.</em></p>` : ''}
+    </div>` : '';
+
+  let analysisHtml;
+  if (an && an.disponivel) {
+    const note = an.mes !== k ? `<p style="font-size:0.75rem;color:var(--muted-foreground);margin:0 0 8px;">Análise referente a ${esc(an.periodo)}; o filtro atual é outro mês.</p>` : `<p style="font-size:0.75rem;color:var(--muted-foreground);margin:0 0 8px;">Análise das conversas dos leads de ${esc(an.periodo)} (posição em ${esc(an.posicao)}).</p>`;
+    analysisHtml = `
+      <div class="rep-section"><div class="rep-section-title">📉 Observações Gerais</div>${note}
+        <ul class="rep-list">${an.obs.map(o => `<li>${esc(o)}</li>`).join('')}</ul></div>
+      <div class="rep-section"><div class="rep-section-title">✅ Plano de Ação</div>
+        <ol class="rep-list">${an.plano.map(p => `<li>${esc(p)}</li>`).join('')}</ol></div>`;
+  } else {
+    analysisHtml = `<div class="rep-section"><div class="rep-section-title">📉 Análise comercial</div>
+      <p style="margin:0;color:var(--muted-foreground)">${esc(an ? an.motivo : 'Análise ainda não realizada para este cliente.')}</p></div>`;
   }
 
-  const bodyEl = document.getElementById('repDrawerBody');
-  bodyEl.innerHTML = `
-    <!-- Macro KPIs -->
+  const box = (lbl, val, sub, color) => `<div class="rep-kpi-box"><div class="rep-kpi-label">${lbl}</div><div class="rep-kpi-val" style="color:${color}">${val}</div><div class="rep-kpi-sub">${sub}</div></div>`;
+  document.getElementById('repDrawerBody').innerHTML = `
     <div class="rep-kpi-grid">
-      <div class="rep-kpi-box">
-        <div class="rep-kpi-label">Leads Outubro (01-18/10)</div>
-        <div class="rep-kpi-val" style="color:var(--primary)">${c.set || 0}</div>
-        <div class="rep-kpi-sub">Total Base: ${c.total || 0}</div>
-      </div>
-      <div class="rep-kpi-box">
-        <div class="rep-kpi-label">Respondidos</div>
-        <div class="rep-kpi-val" style="color:var(--primary)">${c.cw_resp || 0}</div>
-        <div class="rep-kpi-sub">${c.cw_pct_resp || 0}% de cobertura</div>
-      </div>
-      <div class="rep-kpi-box">
-        <div class="rep-kpi-label">Fila / Sem Resposta</div>
-        <div class="rep-kpi-val" style="color:#fbbf24">${c.cw_unresp || 0}</div>
-        <div class="rep-kpi-sub">${c.cw_alerts || 0} críticos > 24h</div>
-      </div>
-      <div class="rep-kpi-box">
-        <div class="rep-kpi-label">TMR 1º Contato</div>
-        <div class="rep-kpi-val" style="color:var(--accent)">${c.cw_avg_resp_h || 0}h</div>
-        <div class="rep-kpi-sub">~${Math.round((c.cw_avg_resp_h || 0)*60)} minutos</div>
-      </div>
-      <div class="rep-kpi-box">
-        <div class="rep-kpi-label">Agendamentos</div>
-        <div class="rep-kpi-val" style="color:var(--secondary)">${c.agendados || 0}</div>
-        <div class="rep-kpi-sub">${c.tx_agend || 0}% conversão</div>
-      </div>
-      <div class="rep-kpi-box">
-        <div class="rep-kpi-label">Vendas / Fechamentos</div>
-        <div class="rep-kpi-val" style="color:var(--primary)">${c.vendas || 0}</div>
-        <div class="rep-kpi-sub">Taxa mesa: ${c.tx_venda || 0}%</div>
-      </div>
-      <div class="rep-kpi-box" style="grid-column: span 2;">
-        <div class="rep-kpi-label">Faturamento Comprovado / Apurado</div>
-        <div class="rep-kpi-val" style="color:var(--primary)">R$ ${analysis.fatVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-        <div class="rep-kpi-sub">Ticket Médio de Referência: R$ ${info.ticket.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-      </div>
+      ${box('Leads', m.leads || 0, `Base total: ${(c.total || 0).toLocaleString('pt-BR')}`, 'var(--primary)')}
+      ${box('Respondidos pela equipe', m.cw_resp || 0, `${fmtPct(m.cw_pct_resp)} dos leads`, 'var(--primary)')}
+      ${box('Tempo médio 1ª resposta', m.cw_avg_resp_h ? m.cw_avg_resp_h + 'h' : '—', `${m.cw_unresp || 0} sem retorno`, 'var(--accent)')}
+      ${box('Agendamentos', m.agendados || 0, `${fmtPct(m.tx_agend)} dos leads`, 'var(--secondary)')}
+      ${box('Comparecimentos', m.comp || 0, `${fmtPct(m.tx_comp)} dos agendados`, '#fbbf24')}
+      ${box('Vendas', m.vendas || 0, `${fmtPct(m.tx_venda)} dos comparecimentos`, 'var(--primary)')}
+      ${m.aberto ? box('Orçamentos em aberto', m.aberto, 'registrados na planilha', 'var(--muted-foreground)') : ''}
     </div>
-
-    <!-- Fila de Leads -->
-    ${unrespRowsHtml}
-
-    <!-- Diagnóstico Operacional Sob Medida -->
-    <div class="rep-section">
-      <div class="rep-section-title">🚨 Diagnóstico Operacional & Gargalos de Vendas</div>
-      <ol class="rep-list">
-        <li><strong>Velocidade de 1ª Resposta (SLA):</strong> ${analysis.diagSLA}</li>
-        <li><strong>Governança e Preenchimento de CRM:</strong> ${analysis.diagCRM}</li>
-        <li><strong>Scripts & Condução Comercial:</strong> ${analysis.diagScript}</li>
-        <li><strong>Gestão de Fila & Retenção:</strong> ${analysis.diagFila}</li>
-      </ol>
-    </div>
-
-    <!-- Plano de Ação Estratégico Sob Medida -->
-    <div class="rep-section">
-      <div class="rep-section-title">🚀 Plano de Ação Estratégico (Metas Imediatas)</div>
-      <ol class="rep-list">
-        ${analysis.planoList.map((p, idx) => `<li><strong>Meta ${idx + 1}:</strong> ${p}</li>`).join('')}
-      </ol>
-    </div>
-  `;
+    ${unrespHtml}
+    ${analysisHtml}`;
 
   document.getElementById('reportDrawerOverlay').classList.add('active');
   document.getElementById('reportDrawer').classList.add('active');
@@ -7305,128 +7177,64 @@ function closeCommercialReport() {
 }
 
 function copyCurrentCommercialReport() {
-  if (!currentReportClientId) return;
   const c = DATA.find(x => x.id === currentReportClientId);
   if (!c) return;
-  const info = CLIENT_INFO[currentReportClientId] || { ticket: 2000.0, fat: 0.0, proc: "Tratamentos Especializados", atendente: "Recepção" };
-  const analysis = buildClientAnalysis(c, info);
-  const nowFormatted = new Date().toLocaleDateString('pt-BR');
-
-  const text = `📊 *Relatório Comercial & Auditoria Executiva | ${c.name} (${c.id})*
-Período: 01/09/2026 a ${nowFormatted} | Segmento: ${c.seg} | Atendente: ${info.atendente}
-
-📈 *Funil Comercial Consolidado:*
-• Total de Leads Recebidos (Setembro): ${c.set || 0} (Base Total: ${c.total || 0})
-• Leads Atendidos / Respondidos: ${c.cw_resp || 0} (${c.cw_pct_resp || 0}%)
-• Sem Resposta da Equipe: ${c.cw_unresp || 0} (${c.cw_alerts || 0} críticos > 24h)
-• TMR Médio 1º Contato: ${c.cw_avg_resp_h || 0}h (~${Math.round((c.cw_avg_resp_h || 0)*60)} min)
-• Agendamentos Realizados: ${c.agendados || 0} (${c.tx_agend || 0}% sobre leads)
-• Comparecimentos Registrados: ${c.comp || 0}
-• Vendas Fechadas (Ganhou): ${c.vendas || 0}
-• Faturamento Comprovado / Apurado: R$ ${analysis.fatVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
-
-🚨 *Diagnóstico de Atendimento & Funil:*
-1. Velocidade de 1ª Resposta (SLA): ${analysis.diagSLA}
-2. Governança CRM: ${analysis.diagCRM}
-3. Condução & Scripts: ${analysis.diagScript}
-4. Gestão de Fila: ${analysis.diagFila}
-
-🚀 *Plano de Ação Estratégico:*
-${analysis.planoList.map((p, idx) => `${idx + 1}. ${p}`).join('\n')}`;
-
-  copyTextToClipboard(text);
-  showToast(`Relatório de ${c.name} copiado com sucesso! Pronto para colar no WhatsApp.`);
+  const { label, m } = reportNumbers(c);
+  const an = ANALYSIS[c.id];
+  let t = `📊 *Relatório Comercial | ${c.name}*\n${label}\n\n` +
+    `👥 Leads: ${m.leads || 0}\n📞 Agendamentos: ${m.agendados || 0} (${fmtPct(m.tx_agend)} dos leads)\n` +
+    `🏥 Comparecimentos: ${m.comp || 0} (${fmtPct(m.tx_comp)} dos agendados)\n💰 Vendas: ${m.vendas || 0} (${fmtPct(m.tx_venda)} dos comparecimentos)\n`;
+  if (m.aberto) t += `📄 Orçamentos em aberto: ${m.aberto}\n`;
+  if (an && an.disponivel) {
+    t += `\n📉 *Observações Gerais*\n${an.obs.map(o => `• ${o}`).join('\n')}\n\n✅ *Plano de ação*\n${an.plano.map((p, i) => `${i + 1}. ${p}`).join('\n')}`;
+  } else {
+    t += `\n📉 *Observações Gerais*\n• ${an ? an.motivo : 'Análise ainda não realizada para este cliente.'}`;
+  }
+  copyTextToClipboard(t);
+  showToast(`Relatório de ${c.name} copiado. Pronto para colar no WhatsApp.`);
 }
 
+// Resumo executivo da carteira: tudo calculado dos mesmos números da tabela
 function openGlobalReport() {
-  const totLeads = DATA.reduce((s, c) => s + (c.set || 0), 0);
-  const totBase = DATA.reduce((s, c) => s + (c.total || 0), 0);
-  const totResp = DATA.reduce((s, c) => s + (c.cw_resp || 0), 0);
-  const totUnresp = DATA.reduce((s, c) => s + (c.cw_unresp || 0), 0);
-  const totAlerts = DATA.reduce((s, c) => s + (c.cw_alerts || 0), 0);
-  const totAgend = DATA.reduce((s, c) => s + (c.agendados || 0), 0);
-  const totVendas = DATA.reduce((s, c) => s + (c.vendas || 0), 0);
-  
-  let totFat = 0;
-  DATA.forEach(c => {
-    const info = CLIENT_INFO[c.id] || { ticket: 2000.0, fat: 0.0 };
-    totFat += info.fat > 0 ? info.fat : ((c.vendas || 0) * info.ticket);
-  });
+  const k = reportMonth(), label = `${monthLabel(k)} (${monthInfo(k).range || ''})`;
+  const rows = DATA.map(c => ({ c, m: (c.P || {})[k] || EMPTY }));
+  const sum = f => rows.reduce((a, r) => a + (r.m[f] || 0), 0);
+  const L = sum('leads'), AG = sum('agendados'), CP = sum('comp'), VD = sum('vendas');
+  const RESP = sum('cw_resp'), CWL = sum('cw_leads'), UN = sum('cw_unresp'), AL = sum('cw_alerts');
+  const pc = (a, b) => b ? fmtPct(a / b * 100) : '—';
+  const names = (list, fmt) => list.length ? list.map(fmt).join('; ') : 'nenhum';
+  const best = rows.filter(r => r.m.leads >= 20 && r.m.agendados > 0).sort((a, b) => b.m.tx_agend - a.m.tx_agend).slice(0, 5);
+  const semReg = rows.filter(r => r.m.leads >= 30 && r.m.agendados === 0).sort((a, b) => b.m.leads - a.m.leads);
+  const off = DATA.filter(c => c.is_discon);
+  const semLeads = rows.filter(r => r.m.leads === 0 && !r.c.is_discon);
 
-  const pctGlobal = totLeads > 0 ? Math.round((totResp / totLeads) * 1000) / 10 : 0;
-
-  document.getElementById('repDrawerTitle').textContent = "Consolidado Geral da Carteira (32 Clínicas)";
-  document.getElementById('repDrawerId').textContent = "PORTFÓLIO TOTAL";
-  document.getElementById('repDrawerSub').textContent = "Auditoria Comercial Mesus Media — Setembro/2026";
-  
+  document.getElementById('repDrawerTitle').textContent = `Resumo Executivo da Carteira (${DATA.length} clientes)`;
+  document.getElementById('repDrawerId').textContent = 'PORTFÓLIO';
+  document.getElementById('repDrawerSub').textContent = `Período: ${label}`;
+  const pdfBtn = document.getElementById('repDrawerPdfLink'); if (pdfBtn) pdfBtn.style.display = 'none';
+  currentReportClientId = null;
   const badgeEl = document.getElementById('repDrawerBadge');
-  badgeEl.textContent = "Visão Executiva";
-  badgeEl.className = "report-drawer-badge seg-saude";
+  badgeEl.textContent = 'Visão Executiva'; badgeEl.className = 'report-drawer-badge seg-saude';
+  document.getElementById('repDrawerSaude').innerHTML = '';
 
-  document.getElementById('repDrawerSaude').innerHTML = `<span class="status-badge status-saudavel">32 Operações Mapeadas</span>`;
-
-  const bodyEl = document.getElementById('repDrawerBody');
-  bodyEl.innerHTML = `
+  const box = (lbl, val, sub, color) => `<div class="rep-kpi-box"><div class="rep-kpi-label">${lbl}</div><div class="rep-kpi-val" style="color:${color}">${val}</div><div class="rep-kpi-sub">${sub}</div></div>`;
+  document.getElementById('repDrawerBody').innerHTML = `
     <div class="rep-kpi-grid">
-      <div class="rep-kpi-box">
-        <div class="rep-kpi-label">Total Leads Outubro (01-18/10)</div>
-        <div class="rep-kpi-val" style="color:var(--primary)">${totLeads.toLocaleString('pt-BR')}</div>
-        <div class="rep-kpi-sub">Base Total: ${totBase.toLocaleString('pt-BR')}</div>
-      </div>
-      <div class="rep-kpi-box">
-        <div class="rep-kpi-label">Total Respondidos</div>
-        <div class="rep-kpi-val" style="color:var(--primary)">${totResp.toLocaleString('pt-BR')}</div>
-        <div class="rep-kpi-sub">${pctGlobal}% de cobertura global</div>
-      </div>
-      <div class="rep-kpi-box">
-        <div class="rep-kpi-label">Fila de Espera / Sem Contato</div>
-        <div class="rep-kpi-val" style="color:#fbbf24">${totUnresp.toLocaleString('pt-BR')}</div>
-        <div class="rep-kpi-sub">${totAlerts} em alerta crítico > 24h</div>
-      </div>
-      <div class="rep-kpi-box">
-        <div class="rep-kpi-label">TMR Médio da Carteira</div>
-        <div class="rep-kpi-val" style="color:var(--accent)">9.0h</div>
-        <div class="rep-kpi-sub">Gargalo noturno e fins de semana</div>
-      </div>
-      <div class="rep-kpi-box">
-        <div class="rep-kpi-label">Agendamentos Mapeados</div>
-        <div class="rep-kpi-val" style="color:var(--secondary)">${totAgend.toLocaleString('pt-BR')}</div>
-        <div class="rep-kpi-sub">Volume acumulado de agenda</div>
-      </div>
-      <div class="rep-kpi-box">
-        <div class="rep-kpi-label">Vendas Fechadas (Ganhou)</div>
-        <div class="rep-kpi-val" style="color:var(--primary)">${totVendas.toLocaleString('pt-BR')}</div>
-        <div class="rep-kpi-sub">Contratos fechados em mesa</div>
-      </div>
-      <div class="rep-kpi-box" style="grid-column: span 2;">
-        <div class="rep-kpi-label">Faturamento Comprovado / Apurado</div>
-        <div class="rep-kpi-val" style="color:var(--primary)">R$ ${totFat.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-        <div class="rep-kpi-sub">Volume financeiro auditado e mapeado nas clínicas</div>
-      </div>
+      ${box('Leads', L.toLocaleString('pt-BR'), `${rows.filter(r => r.m.leads > 0).length} clientes com leads`, 'var(--primary)')}
+      ${box('Respondidos pela equipe', RESP.toLocaleString('pt-BR'), `${pc(RESP, CWL)} dos leads com atendimento medido`, 'var(--primary)')}
+      ${box('Sem retorno', UN.toLocaleString('pt-BR'), `${AL} há mais de 24h`, '#fbbf24')}
+      ${box('Agendamentos', AG.toLocaleString('pt-BR'), `${pc(AG, L)} dos leads`, 'var(--secondary)')}
+      ${box('Comparecimentos', CP.toLocaleString('pt-BR'), `${pc(CP, AG)} dos agendados`, '#fbbf24')}
+      ${box('Vendas', VD.toLocaleString('pt-BR'), `${pc(VD, CP)} dos comparecimentos`, 'var(--primary)')}
     </div>
-
-    <div class="rep-section">
-      <div class="rep-section-title">🏥 Top 5 Operações em Destaque</div>
+    <div class="rep-section"><div class="rep-section-title">🏥 Maiores taxas de agendamento (mín. 20 leads)</div>
+      <ul class="rep-list">${best.map(r => `<li><strong>${esc(r.c.name)}:</strong> ${fmtPct(r.m.tx_agend)} (${r.m.agendados} de ${r.m.leads} leads)</li>`).join('') || '<li>Nenhum cliente com agendamento registrado.</li>'}</ul></div>
+    <div class="rep-section"><div class="rep-section-title">🚨 Pontos de atenção</div>
       <ul class="rep-list">
-        <li><strong>Dr. Rafael Rocha:</strong> R$ 130.700,00 faturados (100% conversão dos comparecidos auditados).</li>
-        <li><strong>Orgulho de Sorrir Peruíbe:</strong> R$ 43.950,00 faturados com TMR exemplar de 0.8h (48 min).</li>
-        <li><strong>Orgulho São Vicente:</strong> R$ 95.000,00 faturamento estimado com 38 vendas.</li>
-        <li><strong>Victoriano Faces:</strong> Atendimento mais rápido de toda a carteira com TMR de 0.1h (6 minutos).</li>
-        <li><strong>Dr. Caio Figueira:</strong> 19 agendados confirmados e 17 em negociação ativa de alto ticket.</li>
-      </ul>
-    </div>
-
-    <div class="rep-section">
-      <div class="rep-section-title">🚨 Diretrizes de Gestão Imediatas</div>
-      <ol class="rep-list">
-        <li><strong>Zerar os ${totUnresp} leads parados:</strong> Força-tarefa imediata com as secretárias para resgatar os contatos pendentes.</li>
-        <li><strong>Instalação de Triagem Noturna:</strong> Automatizar acolhimento fora do horário comercial para proteger o ROI do tráfego.</li>
-        <li><strong>Duplo Agendamento Obrigatório:</strong> Padronização do script em toda a carteira.</li>
-        <li><strong>Governança de CRM às 18h:</strong> Eliminar o descompasso entre WhatsApp e planilhas.</li>
-      </ol>
-    </div>
-  `;
-
+        <li><strong>Sem agendamento registrado (30+ leads):</strong> ${names(semReg, r => `${esc(r.c.name)} (${r.m.leads})`)}.</li>
+        <li><strong>WhatsApp desconectado:</strong> ${names(off, c => esc(c.name))}.</li>
+        <li><strong>Sem leads no período:</strong> ${names(semLeads, r => esc(r.c.name))}.</li>
+      </ul></div>`;
   document.getElementById('reportDrawerOverlay').classList.add('active');
   document.getElementById('reportDrawer').classList.add('active');
 }

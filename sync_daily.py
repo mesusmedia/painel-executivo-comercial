@@ -1,611 +1,303 @@
-import os
-import sys
-import json
-import re
+"""Sincroniza o painel: planilha CRM (fonte dos leads) + Chatwoot (só conversas dos leads da planilha).
+
+Regras (ver metrics.py): lead = telefone único da planilha; taxas ag/leads, comp/ag, vendas/comp.
+Agendamentos = marcados na planilha + confirmados na conversa (verified.json, gerado pela análise comercial).
+Cache local de features por conversa (cache/) evita rebaixar mensagens que não mudaram.
+"""
+import concurrent.futures as cf
 import datetime
+import json
+import os
+import re
 import subprocess
-from concurrent.futures import ThreadPoolExecutor
+import sys
+import time
+
 import requests
 
-if sys.stdout is not None and hasattr(sys.stdout, 'reconfigure'):
-    sys.stdout.reconfigure(encoding='utf-8')
+import extract_cw as X
+import metrics as M
+from clients import CLIENTS
 
-REPO_DIR = r"C:\Users\oluca\painel-executivo-comercial"
-ENV_PATH = os.path.join(REPO_DIR, ".env")
+if sys.stdout is not None and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
+REPO_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(REPO_DIR, "sync_daily.log")
+CACHE_DIR = os.path.join(REPO_DIR, "cache")
+VERIFIED_PATH = os.path.join(REPO_DIR, "verified.json")
+ANALYSIS_PATH = os.path.join(REPO_DIR, "analysis.json")
+os.makedirs(CACHE_DIR, exist_ok=True)
+
+MESES = ["", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro",
+         "Novembro", "Dezembro"]
+
 
 def log_msg(msg):
-    ts = datetime.datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
-    line = f"{ts} {msg}"
-    if sys.stdout is not None:
-        try:
-            print(line, flush=True)
-        except Exception:
-            pass
+    line = f"[{datetime.datetime.now():%Y-%m-%d %H:%M:%S}] {msg}"
+    try:
+        print(line, flush=True)
+    except Exception:
+        pass
     try:
         with open(LOG_FILE, "a", encoding="utf-8") as f:
             f.write(line + "\n")
     except Exception:
         pass
 
-# 1. Load Environment Variables safely from local .env
-env = {}
-if os.path.exists(ENV_PATH):
-    with open(ENV_PATH, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line and "=" in line and not line.startswith("#"):
-                k, v = line.split("=", 1)
-                env[k.strip().lstrip('\ufeff')] = v.strip()
 
-CHATWOOT_BASE = env.get("CHATWOOT_BASE", "https://apps-chatwoot.r0ym2n.easypanel.host")
-HEADERS_CW = {
-    "access-token": env.get("CHATWOOT_ACCESS_TOKEN", ""),
-    "client": env.get("CHATWOOT_CLIENT", ""),
-    "uid": env.get("CHATWOOT_UID", ""),
-    "token-type": env.get("CHATWOOT_TOKEN_TYPE", "Bearer")
-}
-
-EVOLUTION_BASE = env.get("EVOLUTION_BASE", "https://evo.mesusmedia.com.br")
-EVOLUTION_API_KEY = env.get("EVOLUTION_API_KEY", "0417bf43b0a8969bd6685bcb49d783df")
-
-# Query Evolution API to map live instance connection statuses
-evo_live_status = {}
+# --- Evolution: status de conexão do WhatsApp ---------------------------------------------------
+evo_live = {}
 try:
-    r_evo = requests.get(f"{EVOLUTION_BASE}/instance/fetchInstances", headers={"apikey": EVOLUTION_API_KEY}, timeout=8)
-    if r_evo.status_code == 200:
-        for inst in r_evo.json():
-            in_name = (inst.get("name") or inst.get("instance", {}).get("instanceName") or "").strip().lower()
-            in_st = (inst.get("connectionStatus") or inst.get("instance", {}).get("status") or inst.get("status") or "").strip().lower()
-            if in_name:
-                evo_live_status[in_name] = in_st
-        log_msg(f"Evolution API: {len(evo_live_status)} instâncias mapeadas com sucesso.")
+    ev_base = X.env.get("EVOLUTION_BASE", "https://evo.mesusmedia.com.br")
+    r = requests.get(f"{ev_base}/instance/fetchInstances", headers={"apikey": X.env.get("EVOLUTION_API_KEY", "")}, timeout=10)
+    if r.status_code == 200:
+        for inst in r.json():
+            nm = (inst.get("name") or inst.get("instance", {}).get("instanceName") or "").strip().lower()
+            st = (inst.get("connectionStatus") or inst.get("instance", {}).get("status") or inst.get("status") or "").strip().lower()
+            if nm:
+                evo_live[nm] = st
+        log_msg(f"Evolution: {len(evo_live)} instâncias.")
 except Exception as e:
-    log_msg(f"Aviso ao consultar Evolution API: {e}")
+    log_msg(f"Aviso Evolution: {e}")
 
-EVO_ALIASES = {
-    "c123-orgulhodesorrirsantos": "c123-orgulhosantos",
-    "c164-dralea": "c164-dralea",
-    "c149-clinicagglow": "c149-clinicagglow",
-}
+EVO_ALIASES = {"c123-orgulhodesorrirsantos": "c123-orgulhosantos", "c123-orgulhosantos": "c123-orgulhosantos",
+               "c123-orgulhosv": "c123-orgulhosaovicente"}
 
-# Master Clients Directory with Chatwoot Inboxes and CRM Sheet IDs
-CLIENTS = [
-    { "id": "C162-DrBrunoAraujo", "name": "Dr. Bruno Araújo", "seg": "Saúde", "inbox_id": 103, "sheet_id": "1Vc5IT497LN25AUD8ckoH7CkXJ-72O7ypn8ZxuoAUELg" },
-    { "id": "C158-VictorianoFaces", "name": "Victoriano Faces", "seg": "Estética", "inbox_id": 124, "sheet_id": "12dTGJBLDOdxxPAX0WJJR7R6Zhu_NtZ9xX19VsUvdK8A" },
-    { "id": "C172-DrCaioFigueira", "name": "Dr. Caio Figueira", "seg": "Saúde", "inbox_id": 134, "sheet_id": "1biD55AqQuFQZJlSnUyGvrg3DwKWD-8fLSl5bt2fJiEM" },
-    { "id": "C169-DrKeeynerCorrea", "name": "Dr. Keeyner Correa", "seg": "Saúde", "inbox_id": 133, "sheet_id": "1SmdVcj_MQBpRJXNai8xM9yXW9coOquQEG8HxjDlLbeE" },
-    { "id": "C123-OrgulhoSaoVicente", "name": "Orgulho São Vicente", "seg": "Odonto", "inbox_id": 116, "sheet_id": "1-Xp3qunysH4vw8jrU8wWW0g8eTzLK2pt4jmoSxMDId0" },
-    { "id": "C174-EsteticFaceItapetininga", "name": "Estetic Face Itapetininga", "seg": "Estética", "inbox_id": 139, "sheet_id": "18V8FQD8Q5lVSoioIkDjnUKYFqminsQWgIWbuc8ImW9E" },
-    { "id": "C123-DrRafaelRocha", "name": "Dr. Rafael Rocha", "seg": "Saúde", "inbox_id": 121, "sheet_id": "1iX55z4aFf7CIzLHD0OVGdZCeCWrMfgK-hE_3LLAkfko" },
-    { "id": "C123-OrgulhodeSorrirPeruibe", "name": "Orgulho de Sorrir Peruíbe", "seg": "Odonto", "inbox_id": 115, "sheet_id": "17_CS-0I470XfX5sQMLAd0jdQJxng4gFCBkO1eaQx8qA" },
-    { "id": "C150-Lumia", "name": "Lumia", "seg": "Estética", "inbox_id": 137, "sheet_id": "1fVoRc627ZhHEBKFIGuGvvtiMDBrO_2D3Wp2mWZlH3Go" },
-    { "id": "C171-DraStefaniRezende", "name": "Dra. Stefani Rezende", "seg": "Saúde", "inbox_id": 135, "sheet_id": "16A--MHKp8IBoZKHGQD21LFN-7WUVL2m_BcZmu0UdEXg" },
-    { "id": "C163-AcessoSaudeCIC", "name": "Acesso Saúde CIC", "seg": "Saúde", "inbox_id": 105, "sheet_id": "1SuyRNdYrGZXtBFmB0-Hv91ZICa7geeFHx6Ayiz7jU08" },
-    { "id": "C149-ClinicaGGlow", "name": "Clínica Glow", "seg": "Estética", "inbox_id": 82, "sheet_id": "1zOwuPWh_g2fLHyfmBfHl1RIPYznzGdf7yGidGnq9qN0" },
-    { "id": "C52-DrLucasPitao", "name": "Dr. Lucas Pitão", "seg": "Saúde", "inbox_id": 47, "sheet_id": "1ssM8yBQsSpby-y7FXqs8NmWAAjzsfigxhR4P4J7mfys" },
-    { "id": "C135-DraMichelleSantos", "name": "Dra. Michelle Santos", "seg": "Saúde", "inbox_id": 25, "sheet_id": "1pQpLfdt9gCHoRekLRpqFk9pwW2V51ksCN_NTJd1G_zY" },
-    { "id": "C170-DraMariaEduarda", "name": "Dra. Maria Eduarda", "seg": "Saúde", "inbox_id": 136, "sheet_id": "1eHv46erWBLB3w8zg5xP5oN_TWftJ6ELgJZzOlYVVbOY" },
-    { "id": "C173-OdontoPrime", "name": "Odonto Prime", "seg": "Odonto", "inbox_id": 138, "sheet_id": "1wGjMuOTYoIwu9F2wI8atQQaMeLy3iMqaW4gOx2nqM-k" },
-    { "id": "C63-DrRaphaelMoreira", "name": "Dr. Raphael Moreira", "seg": "Saúde", "inbox_id": 23, "sheet_id": "1hnJ7rl0Hcy2GcWdh3nMN7s9nhBCtahKsHYiQglAF_JE" },
-    { "id": "C123-OrgulhodeSorrirSantos", "name": "Orgulho de Sorrir Santos", "seg": "Odonto", "inbox_id": 140, "sheet_id": "1bWYYqtG_2TZ3Zs0r5wkvadSI8gEMAug-9nZUp-jxYuc" },
-    { "id": "C124-DraAnnaHOF", "name": "Dra. Anna HOF", "seg": "Saúde", "inbox_id": 77, "sheet_id": "1N2oAsy3PJud__z9MBSFrX9wr1AVfw_b-X-YpgDHIdkQ" },
-    { "id": "C155-ClinicaElodonto", "name": "Clínica Elodonto", "seg": "Odonto", "inbox_id": 122, "sheet_id": "17eesV8xZKnisx9pJo11RndZOcKDwIT6zet8dBfHrPlM" },
-    { "id": "C166-Lucasmallmann", "name": "Lucas Mallmann", "seg": "Saúde", "inbox_id": 126, "sheet_id": "1t4KLQdv9bjYcftwMw81rn-WvMs0NW92omQLWR_MkiF4" },
-    { "id": "C136-IntegrareOdontologia", "name": "Integrar Odontologia", "seg": "Odonto", "inbox_id": 119, "sheet_id": "1TEuyWftgK9iM2rINKEeg-xTAZGVFxibmWZpokn6XCEc", "disconnected": True },
-    { "id": "C157-DraCristianeTiburtino", "name": "Dra. Cristiane Tiburtino", "seg": "Saúde", "inbox_id": 114, "sheet_id": "1bM8T1h-gAZdbOgjWQqkFoJPU_vODLI-ObIt9OtTLGic" },
-    { "id": "EsteticaLosAngelesLeads", "name": "Estética Los Angeles", "seg": "Estética", "inbox_id": 108, "sheet_id": "1zBcRC0HaV4JXg1Cix-XBl6cZzQ6044oFMhM3NlTZn7E", "disconnected": True },
-    { "id": "C86-DrWilliamHenrique", "name": "Dr. William Henrique", "seg": "Saúde", "inbox_id": 125, "sheet_id": "14Ss2564FyP_SJeXxTI8OI-5n0tRMlchsJJYFJrxRrxY", "disconnected": True },
-    { "id": "C168-DraMichelleAlves", "name": "Dra. Michelle Alves", "seg": "Saúde", "inbox_id": 130, "sheet_id": "1VMbs_ElKqEs0l_OmEgf354Xo4nW5b7IexbpUki_Wtw0" },
-    { "id": "C164-DraLea", "name": "Dra. Léa", "seg": "Saúde", "inbox_id": 111, "sheet_id": "1hQu7EiDa6hI0Wr7WVdcSBNg2eiaLucOw6P_mDgNkd0Y" },
-    { "id": "C140-EspacoBottega", "name": "Espaço Bottega", "seg": "Estética", "inbox_id": 100, "sheet_id": "1AAcB8qjEf-NDM36lPTCOuUst7tsACIvfNe4QgsJf_yM" },
-    { "id": "C167-AvanteOdontologiaBH", "name": "Avante Odontologia BH", "seg": "Odonto", "inbox_id": 128, "sheet_id": "17axePFMIWOUQ3kGJ308w4kptO6PZt_mY9XwjifqozrY" },
-    { "id": "C167-AvanteOdontologiaSL", "name": "Avante Odontologia SL", "seg": "Odonto", "inbox_id": 129, "sheet_id": "1i5nQbdPOPLIQgUjibXCVZwd4JNuLo_AiKsqWEYNBx8k" },
-    { "id": "C141-VictorRios", "name": "Victor Rios", "seg": "Saúde", "inbox_id": 112, "sheet_id": "1NQlACxzoHdcjBpH7B2_WDpiMc6uAnznEtiMWHMopHjo" },
-    { "id": "C175-VivazOdontologia", "name": "Vivaz Odontologia", "seg": "Odonto", "inbox_id": 141, "sheet_id": "1LWOtVjWsaX_tkV1TG8ibN765WbRuNTablOxhwPSyKoc" },
-    { "id": "C180-DrNathanNunes", "name": "Dr. Nathan Nunes", "seg": "Odonto", "inbox_id": 145, "sheet_id": "1dnsXrJS3W7MgH-sEbJrDS7gOUFtNOM8Kg8saZjAelEM" }
-]
 
-def parse_sheet_date(d_str):
-    if not d_str:
-        return None
-    m = re.search(r'(\d{1,2})/(\d{1,2})/(\d{4})', str(d_str))
-    if m:
-        try:
-            return datetime.date(int(m.group(3)), int(m.group(2)), int(m.group(1)))
-        except Exception:
-            pass
+def evo_status(cid):
+    key = EVO_ALIASES.get(cid.lower(), cid.lower())
+    if key in evo_live:
+        return evo_live[key]
+    for k, v in evo_live.items():
+        if key in k or k in key:
+            return v
     return None
 
-def process_client(client):
-    cid = client["id"]
-    name = client["name"]
-    sid = client.get("sheet_id")
-    ib_id = client.get("inbox_id")
-    is_discon = client.get("disconnected", False)
 
-    # Dynamic check against Evolution API live status
-    cid_low = cid.lower()
-    target_key = EVO_ALIASES.get(cid_low, cid_low)
-    evo_st = evo_live_status.get(target_key)
-    if not evo_st:
-        for ek, ev in evo_live_status.items():
-            if target_key in ek or ek in target_key:
-                evo_st = ev
-                break
-    
-    if evo_st == "open":
-        is_discon = False
-    elif evo_st in ["close", "connecting", "closed"]:
-        is_discon = True
-    else:
-        is_discon = client.get("disconnected", False)
+# --- Períodos ------------------------------------------------------------------------------------
+# A planilha grava Data/Hora em UTC; "hoje" e os meses seguem a data da planilha
+TODAY = datetime.datetime.utcnow().date()
+TODAY_BRT = (datetime.datetime.utcnow() - datetime.timedelta(hours=3)).date()
+CUR = (TODAY.year, TODAY.month)
+PREV = M.prev_month(*CUR)
+PREV2 = M.prev_month(*PREV)
 
-    # 1. Fetch CRM Sheet (Single Source of Truth)
-    sept_leads = []
-    hoje_leads = []
-    total_leads = 0
-    today_leads = 0
-    ago_leads = 0
-    agendados = 0
-    compareceram = 0
-    vendas = 0
-    latest_date = None
 
-    if sid:
-        url_sheet = f"https://docs.google.com/spreadsheets/d/{sid}/gviz/tq?tqx=out:json&gid=1048674045"
-        try:
-            r = requests.get(url_sheet, timeout=12)
-            raw = r.text.replace("/*O_o*/\n", "").replace("google.visualization.Query.setResponse(", "")
-            if raw.endswith(");"):
-                raw = raw[:-2]
-            elif raw.endswith(")"):
-                raw = raw[:-1]
-            data = json.loads(raw)
+def mkey(ym):
+    return f"{ym[0]}-{ym[1]:02d}"
 
-            cols = [col.get("label") or "" for col in data.get("table", {}).get("cols", [])]
-            idx_data = 0
-            idx_hora = 1
-            idx_nome = 2
-            idx_num = 3
-            idx_agend = None
-            idx_comp = None
-            idx_ganh = None
 
-            for i, col in enumerate(cols):
-                cl = col.lower().strip()
-                if cl == "data":
-                    idx_data = i
-                elif cl == "hora":
-                    idx_hora = i
-                elif cl == "nome":
-                    idx_nome = i
-                elif cl in ["número", "numero", "telefone"]:
-                    idx_num = i
-                elif "agend" in cl and idx_agend is None:
-                    idx_agend = i
-                elif "comp" in cl and idx_comp is None:
-                    idx_comp = i
-                elif ("ganh" in cl or "vend" in cl or "data ganho" in cl) and idx_ganh is None:
-                    idx_ganh = i
+MONTHS = [CUR, PREV, PREV2]  # PREV2 só alimenta a coluna "mês anterior" (sem atendimento)
+CW_MONTHS = [CUR, PREV]
+CW_FROM = datetime.date(PREV[0], PREV[1], 1)  # janela de análise de conversas
+VERIFIED = {}
+if os.path.exists(VERIFIED_PATH):
+    VERIFIED = json.load(open(VERIFIED_PATH, encoding="utf-8"))
 
-            rows = data.get("table", {}).get("rows", [])
-            total_leads = len(rows)
-            now = datetime.date.today()
 
-            for row in rows:
-                cells = row.get("c", [])
-                def get_v(idx):
-                    if idx is not None and idx < len(cells) and cells[idx]:
-                        return str(cells[idx].get("f") or cells[idx].get("v") or "").strip()
-                    return ""
+def month_label(ym):
+    s, e = M.month_range(ym[0], ym[1], TODAY)
+    part = f"01 a {e.day:02d}/{e.month:02d}" if e < M.month_range(ym[0], ym[1])[1] else "mês fechado"
+    return {"k": mkey(ym), "label": f"{MESES[ym[1]]}/{str(ym[0])[2:]}", "range": part, "hidden": ym not in CW_MONTHS}
 
-                d_raw = get_v(idx_data)
-                d = parse_sheet_date(d_raw)
-                if not d:
-                    continue
 
-                if not latest_date or d > latest_date:
-                    latest_date = d
+# --- Cache de features por conversa --------------------------------------------------------------
+def load_cache(cid):
+    p = os.path.join(CACHE_DIR, cid + ".json")
+    return json.load(open(p, encoding="utf-8")) if os.path.exists(p) else {}
 
-                ag_val = get_v(idx_agend).lower()
-                cp_val = get_v(idx_comp).lower()
-                gh_val = get_v(idx_ganh).lower()
 
-                # Strict check to avoid counting 'não agendado' or 'descartado' as agendado
-                is_agend = False
-                if ("agendad" in ag_val or ag_val in ["sim", "true", "1"]) and not any(w in ag_val for w in ["não", "nao", "desagend", "cancel", "descart"]):
-                    is_agend = True
+def save_cache(cid, cache):
+    json.dump(cache, open(os.path.join(CACHE_DIR, cid + ".json"), "w", encoding="utf-8"), ensure_ascii=False)
 
-                is_comp = False
-                if ("compareceu" in cp_val or cp_val in ["sim", "true", "1"]) and not any(w in cp_val for w in ["não", "nao", "desmarcou", "faltou"]):
-                    is_comp = True
 
-                is_ganho = False
-                if ("ganh" in gh_val or "vend" in gh_val or gh_val in ["sim", "true", "1"]) and not any(w in gh_val for w in ["não", "nao", "perdid"]):
-                    is_ganho = True
+def conv_features(cache, conv):
+    cid = str(conv["id"])
+    la = conv.get("last_activity_at") or 0
+    hit = cache.get(cid)
+    if hit and hit.get("la") == la:
+        return hit
+    tr = X.compact(X.messages(conv["id"]))
+    lead_msgs = [m for m in tr if m["w"] == "L"]
+    f = X.features(tr, int(time.time()))
+    rec = {"la": la, "feat": f, "first_in": lead_msgs[0]["t"] if lead_msgs else None,
+           "last_lead": (lead_msgs[-1]["x"][:60] if lead_msgs else "")}
+    cache[cid] = rec
+    return rec
 
-                # IMPORTANT: Only count metrics if the lead belongs to the target month/year!
-                if d.year == now.year and d.month == now.month:
-                    if is_agend:
-                        agendados += 1
-                    if is_comp:
-                        compareceram += 1
-                    if is_ganho:
-                        vendas += 1
 
-                    n_raw = get_v(idx_nome)
-                    p_raw = get_v(idx_num)
-                    h_raw = get_v(idx_hora)
-                    lead_obj = {
-                        "data": d.strftime("%d/%m/%Y"),
-                        "data_obj": d,
-                        "hora": h_raw,
-                        "nome": n_raw if n_raw else "Lead sem nome",
-                        "clean_nome": re.sub(r'[^\w\s]', '', n_raw).strip().lower(),
-                        "phone": p_raw,
-                        "clean_phone": re.sub(r'\D', '', p_raw),
-                        "is_agend": is_agend,
-                        "is_comp": is_comp,
-                        "is_ganho": is_ganho
-                    }
-                    sept_leads.append(lead_obj)
-                    if d == now:
-                        hoje_leads.append(lead_obj)
-                elif d.year == now.year and d.month == (now.month - 1):
-                    ago_leads += 1
-        except Exception as e:
-            log_msg(f"Aviso ao ler planilha {name}: {e}")
-
-    # 2. Fetch Chatwoot Conversations for inbox (Index by phone suffix & name)
-    cw_by_full_phone = {}
-    cw_by_suffix = {}
-    cw_by_name = {}
-
-    if ib_id and sept_leads:
-        page = 1
-        sept_start = datetime.datetime(2026, 9, 1, 0, 0, 0)
-        sept_start_ts = int(sept_start.timestamp())
-        session = requests.Session()
-        while page <= 30:
-            url_cw = f"{CHATWOOT_BASE}/api/v1/accounts/1/conversations?inbox_id={ib_id}&status=all&page={page}"
-            payload = None
-            for attempt in range(3):
-                try:
-                    r = session.get(url_cw, headers=HEADERS_CW, timeout=15)
-                    if r.status_code == 200:
-                        payload = r.json().get("data", {}).get("payload", [])
-                        break
-                    elif r.status_code in [429, 502, 503, 504]:
-                        import time
-                        time.sleep(1.5 * (attempt + 1))
-                    else:
-                        break
-                except Exception:
-                    import time
-                    time.sleep(1.5 * (attempt + 1))
-
-            if not payload:
-                break
-
-            for cv in payload:
-                sender = cv.get("meta", {}).get("sender", {})
-                s_phone = re.sub(r'\D', '', sender.get("phone_number") or '')
-                s_name = re.sub(r'[^\w\s]', '', sender.get("name") or '').strip().lower()
-                if s_phone:
-                    cw_by_full_phone[s_phone] = cv
-                    if len(s_phone) >= 8:
-                        cw_by_suffix[s_phone[-8:]] = cv
-                if s_name and len(s_name) > 3:
-                    cw_by_name[s_name] = cv
-
-            last_item = payload[-1]
-            last_act = last_item.get("last_activity_at") or last_item.get("created_at")
-            if last_act and last_act < sept_start_ts:
-                break
-            if len(payload) < 25:
-                break
-            page += 1
-
-    # 3. Match Helper: Validação Contextual Profunda da Conversa
-    CLOSING_WORDS = {
-        "ok", "okay", "blz", "beleza", "combinado", "show", "certo", "perfeito", "tá bom", "ta bom", "tá bem", "ta bem",
-        "pode deixar", "obrigado", "obrigada", "obg", "valeu", "vlw", "muito obrigado", "muito obrigada", "agradeço", "disponha",
-        "tchau", "boa noite", "bom dia", "boa tarde", "ate mais", "até mais", "até logo", "ate logo", "abraço", "beijo", "bom descanso",
-        "esta mensagem foi apagada", "mensagem apagada", "liguei por engano", "foi engano", "engano", "chamada de voz perdida",
-        "não tenho interesse", "nao tenho interesse", "não quero", "nao quero", "já fiz", "ja fiz", "já fechei", "ja fechei",
-        "não posso", "nao posso", "sem interesse", "agora não", "agora nao", "não tenho papada", "não preciso",
-        "vou remarcar", "teremos que remarcar", "depois vejo", "aviso vocês", "aviso voces"
-    }
-
-    CLOSING_EMOJIS = ["👍", "❤️", "🙏", "😊", "🙌", "👏", "👋", "🤝", "🫱🏻‍🫲🏻", "😘", "🥰", "✨", "😉"]
-
-    QUESTION_WORDS = ["?", "quanto", "qual", "preco", "preço", "valor", "onde", "quando", "horario", "horário", "como funciona", "tem vaga"]
-
-    now_dt = datetime.datetime.now()
-    def evaluate_subset(leads_list):
-        if not leads_list:
-            return {
-                "leads": 0, "resp": 0, "unresp": 0, "pct_resp": 0.0,
-                "alerts": 0, "avg_h": 0.0, "status": "Desconectado" if is_discon else "Sem Entrada", "unresp_leads": []
-            }
-        resp = 0
-        unresp = 0
-        alerts = 0
-        resp_times = []
-        unresp_items = []
-
-        for l in leads_list:
-            cp = l["clean_phone"]
-            cn = l["clean_nome"]
-            cv = cw_by_full_phone.get(cp) or cw_by_suffix.get(cp[-8:] if len(cp) >= 8 else "") or cw_by_name.get(cn if len(cn) > 3 else "")
-            cv_id = cv.get("id") if cv else None
-            is_resp = False
-            waiting_context = ""
-
-            # 1. Validação no CRM (Planilha): Se o lead já agendou, compareceu ou comprou, já teve êxito
-            is_crm_concluded = l.get("is_agend") or l.get("is_comp") or l.get("is_ganho")
-
-            if cv:
-                last_msg = cv.get("last_non_activity_message") or {}
-                m_type = last_msg.get("message_type")
-                status = cv.get("status")
-                first_reply = cv.get("first_reply_created_at")
-                c_at = cv.get("created_at")
-                created_dt = datetime.datetime.fromtimestamp(c_at) if c_at else datetime.datetime.combine(l["data_obj"], datetime.time(12, 0))
-
-                raw_content = re.sub(r'[\r\n\t\xa0]+', ' ', (last_msg.get("content") or "")).strip()
-                content_lower = raw_content.lower()
-                clean_txt = re.sub(r'[^\w\s]', '', content_lower).strip()
-
-                # A) Conclusão comprovada no CRM da planilha (Agendado, Compareceu ou Venda)
-                if is_crm_concluded:
-                    is_resp = True
-                # B) Conversa resolvida ou silenciada no Chatwoot
-                elif status in ["resolved", "snoozed"]:
-                    is_resp = True
-                # C) A última mensagem partiu da nossa equipe ou bot
-                elif m_type in [1, "outgoing"]:
-                    is_resp = True
-                # D) Validação comprovada de resposta: se a equipe JÁ RESPONDEU (first_reply > 0)
-                elif first_reply and first_reply > 0:
-                    is_resp = True
-                    # Apenas anotar o contexto se o lead enviou a última mensagem
-                    if any(e in raw_content for e in CLOSING_EMOJIS) or any(clean_txt == w or content_lower == w for w in CLOSING_WORDS):
-                        waiting_context = "Conversa concluída pelo lead"
-                    else:
-                        waiting_context = f"Lead enviou por último: '{raw_content[:50]}'"
-                else:
-                    # first_reply == 0 ou ausente E última mensagem NÃO é da equipe:
-                    is_resp = False
-                    waiting_context = f"Nunca respondido pela equipe: '{raw_content[:50]}'" if raw_content else "Nunca respondido pela equipe"
-
-                if is_resp and first_reply and first_reply > 0:
-                    diff_h = (datetime.datetime.fromtimestamp(first_reply) - created_dt).total_seconds() / 3600.0
-                    # Desconsiderar anomalias de reabertura de contatos antigos (> 168h / 7 dias)
-                    if 0 <= diff_h <= 168:
-                        resp_times.append(diff_h)
-
-                hours_wait = round((now_dt - created_dt).total_seconds() / 3600.0, 1)
-            else:
-                created_dt = datetime.datetime.combine(l["data_obj"], datetime.time(12, 0))
-                hours_wait = round((now_dt - created_dt).total_seconds() / 3600.0, 1)
-                if is_crm_concluded:
-                    is_resp = True
-                else:
-                    is_resp = False
-                    waiting_context = "Sem conversa criada no Chatwoot"
-
-            if is_resp:
-                resp += 1
-            else:
-                unresp += 1
-                is_alert = hours_wait > 24
-                if is_alert:
-                    alerts += 1
-                unresp_items.append({
-                    "id": cv_id,
-                    "name": l["nome"],
-                    "phone": l["phone"] if l["phone"] else "—",
-                    "data": l["data"] + (" " + l["hora"] if l["hora"] else ""),
-                    "espera_h": hours_wait,
-                    "is_alert": is_alert,
-                    "contexto": waiting_context or "Aguardando resposta da clínica",
-                    "link": f"{CHATWOOT_BASE}/app/accounts/1/conversations/{cv_id}" if cv_id else (f"https://wa.me/{cp}" if cp else "")
-                })
-
-        pct = round((resp / len(leads_list) * 100), 1) if leads_list else 0.0
-        avg_t = round((sum(resp_times) / len(resp_times)), 1) if resp_times else 0.0
-
-        # Classificação de Saúde Realista e Justa:
-        if is_discon:
-            saude = "Desconectado"
-        elif len(leads_list) == 0:
-            saude = "Sem Entrada"
-        elif pct < 75.0 or (avg_t > 48.0 and len(leads_list) > 5):
-            saude = "Gargalo"
-        elif pct < 90.0 or avg_t > 24.0:
-            saude = "Atenção"
+# --- Avaliação do atendimento (leads da planilha x conversas) -------------------------------------
+def cw_eval(leads, convs_by_lead, cache, has_inbox, discon):
+    out = {"cw_leads": len(leads), "cw_resp": 0, "cw_unresp": 0, "cw_pct_resp": 0.0, "cw_alerts": 0,
+           "cw_avg_resp_h": 0.0, "cw_status": "", "unresp_leads": []}
+    if not leads:
+        out["cw_status"] = "Desconectado" if discon else "Sem Entrada"
+        return out
+    if not has_inbox:
+        out["cw_status"] = "Sem Chatwoot"
+        out["cw_leads"] = len(leads)
+        return out
+    times = []
+    now = datetime.datetime.now()
+    for l in leads:
+        conv = convs_by_lead.get(l["key"] or l["nome"])
+        concluded = l["ag"] or l["comp"] or l["venda"]
+        created = datetime.datetime.combine(l["data"], datetime.time(12, 0))
+        ctx = ""
+        link = ""
+        if conv:
+            rec = conv_features(cache, conv)
+            f = rec["feat"]
+            link = f"{X.BASE}/app/accounts/1/conversations/{conv['id']}"
+            if rec.get("first_in"):
+                created = datetime.datetime.fromtimestamp(rec["first_in"])
+            answered = f.get("resp_h") is not None or (f.get("n_lead", 0) == 0 and f.get("n_equipe", 0) > 0)
+            if answered and f.get("resp_h") is not None and 0 <= f["resp_h"] <= 168:
+                times.append(f["resp_h"])
+            ok = answered or concluded
+            if not ok:
+                ctx = f"Lead enviou {f.get('n_lead', 0)} mensagem(ns) sem retorno da equipe"
+                if rec.get("last_lead"):
+                    ctx += f": '{rec['last_lead']}'"
         else:
-            saude = "Saudável"
+            ok = concluded
+            ctx = "Conversa não localizada no Chatwoot"
+        if ok:
+            out["cw_resp"] += 1
+        else:
+            out["cw_unresp"] += 1
+            wait = round((now - created).total_seconds() / 3600, 1)
+            alert = wait > 24
+            out["cw_alerts"] += alert
+            out["unresp_leads"].append({
+                "name": l["nome"], "phone": l["phone"] or "—", "data": l["data"].strftime("%d/%m/%Y"),
+                "espera_h": wait, "is_alert": alert, "contexto": ctx, "link": link or (f"https://wa.me/{l['phone']}" if l["phone"] else "")})
+    n = len(leads)
+    out["cw_pct_resp"] = M.pct(out["cw_resp"], n)
+    out["cw_avg_resp_h"] = round(sum(times) / len(times), 1) if times else 0.0
+    out["unresp_leads"].sort(key=lambda u: -u["espera_h"])
+    out["unresp_leads"] = out["unresp_leads"][:60]
+    if discon:
+        st = "Desconectado"
+    elif out["cw_pct_resp"] < 75 or (out["cw_avg_resp_h"] > 48 and n > 5):
+        st = "Gargalo"
+    elif out["cw_pct_resp"] < 90 or out["cw_avg_resp_h"] > 24:
+        st = "Atenção"
+    else:
+        st = "Saudável"
+    out["cw_status"] = st
+    return out
 
-        return {
-            "leads": len(leads_list), "resp": resp, "unresp": unresp,
-            "pct_resp": pct, "alerts": alerts, "avg_h": avg_t,
-            "status": saude, "unresp_leads": unresp_items
-        }
 
-    m_set = evaluate_subset(sept_leads)
-    m_hoje = evaluate_subset(hoje_leads)
+def funnel(leads):
+    n = len(leads)
+    ag, cp, vd = sum(l["ag"] for l in leads), sum(l["comp"] for l in leads), sum(l["venda"] for l in leads)
+    return {"leads": n, "agendados": ag, "tx_agend": M.pct(ag, n), "comp": cp, "tx_comp": M.pct(cp, ag),
+            "vendas": vd, "tx_venda": M.pct(vd, cp), "aberto": sum(l["aberto"] for l in leads)}
 
-    tx_ag = round((agendados / m_set["leads"] * 100), 1) if m_set["leads"] > 0 else 0.0
-    tx_cp = round((compareceram / agendados * 100), 1) if agendados > 0 else 0.0
-    ref_base_venda = compareceram if compareceram > 0 else agendados
-    tx_vd = round((vendas / ref_base_venda * 100), 1) if ref_base_venda > 0 else 0.0
 
+def process_client(c):
+    cid, name, seg, inboxes, sid = c
+    st = evo_status(cid)
+    discon = st in ("close", "closed", "connecting")
+    leads = []
+    for attempt in range(3):
+        try:
+            leads = M.parse_leads(M.fetch_csv(sid))
+            break
+        except Exception as e:
+            log_msg(f"Aviso planilha {name} ({attempt + 1}/3): {e}")
+            time.sleep(2)
+    ver = set(VERIFIED.get(cid, {}).get("ag", []))
+    for l in leads:
+        if l["key"] in ver and l["data"] >= datetime.date(2026, 10, 1):
+            l["ag"] = True
+
+    convs_by_lead, cache = {}, {}
+    window = [l for l in leads if l["data"] >= CW_FROM]
+    if inboxes and window:
+        cache = load_cache(cid)
+        by_suffix, by_name = {}, {}
+        since = int(datetime.datetime.combine(CW_FROM - datetime.timedelta(days=3), datetime.time()).timestamp())
+        for ib in inboxes:
+            for cv in X.list_convs(ib, since):
+                s = (cv.get("meta") or {}).get("sender") or {}
+                ph = re.sub(r"\D", "", s.get("phone_number") or "")
+                if len(ph) >= 8:
+                    by_suffix.setdefault(ph[-8:], cv)
+                nm = re.sub(r"[^\w\s]", "", s.get("name") or "").strip().lower()
+                if len(nm) > 3:
+                    by_name.setdefault(nm, cv)
+        for l in window:
+            nm = re.sub(r"[^\w\s]", "", l["nome"]).strip().lower()
+            cv = by_suffix.get(l["key"]) or (by_name.get(nm) if len(nm) > 3 else None)
+            if cv:
+                convs_by_lead[l["key"] or l["nome"]] = cv
+
+    P = {}
+    for ym in MONTHS:
+        s, e = M.month_range(ym[0], ym[1], TODAY)
+        sel = [l for l in leads if s <= l["data"] <= e]
+        P[mkey(ym)] = {**funnel(sel), **(cw_eval(sel, convs_by_lead, cache, bool(inboxes), discon) if ym in CW_MONTHS else {})}
+    hoje = [l for l in leads if l["data"] == TODAY]
+    P["hoje"] = {**funnel(hoje), **cw_eval(hoje, convs_by_lead, cache, bool(inboxes), discon)}
+    win = [l for l in leads if l["data"] >= CW_FROM]
+    P["all"] = {**funnel(leads), **cw_eval(win, convs_by_lead, cache, bool(inboxes), discon)}
+    if cache:
+        save_cache(cid, cache)
+
+    cur = P[mkey(CUR)]
+    last = max((l["data"] for l in leads), default=None)
+    alta = P["hoje"]["leads"] > 0 or cur["leads"] > 10
     return {
-        "id": cid,
-        "name": name,
-        "seg": client["seg"],
-        "inbox_id": ib_id,
-        "is_discon": is_discon,
-        "evo_status": evo_st or ("close" if is_discon else "open"),
-        # Setembro Metrics (Default)
-        "cw_leads": m_set["leads"],
-        "cw_resp": m_set["resp"],
-        "cw_unresp": m_set["unresp"],
-        "cw_pct_resp": m_set["pct_resp"],
-        "cw_alerts": m_set["alerts"],
-        "cw_avg_resp_h": m_set["avg_h"],
-        "cw_status": m_set["status"],
-        "unresp_leads": m_set["unresp_leads"],
-        # Hoje Metrics
-        "hoje_cw_leads": m_hoje["leads"],
-        "hoje_cw_resp": m_hoje["resp"],
-        "hoje_cw_unresp": m_hoje["unresp"],
-        "hoje_cw_pct_resp": m_hoje["pct_resp"],
-        "hoje_cw_alerts": m_hoje["alerts"],
-        "hoje_cw_avg_resp_h": m_hoje["avg_h"],
-        "hoje_cw_status": m_hoje["status"],
-        "hoje_unresp_leads": m_hoje["unresp_leads"],
-        # Baseline Leads
-        "total": total_leads,
-        "set": m_set["leads"],
-        "ago": ago_leads,
-        "hoje": m_hoje["leads"],
-        "ult": latest_date.strftime("%d/%m/%Y") if latest_date else "—",
-        "status": "descon" if is_discon else ("alta" if m_hoje["leads"] > 0 or m_set["leads"] > 10 else ("mod" if m_set["leads"] > 0 else "pausado")),
-        "statusText": "🔴 WhatsApp Off" if is_discon else ("🟢 Alta Tração" if m_hoje["leads"] > 0 or m_set["leads"] > 10 else ("🟡 Moderado" if m_set["leads"] > 0 else "⚪ Sem Leads")),
-        "agendados": agendados,
-        "tx_agend": tx_ag,
-        "comp": compareceram,
-        "tx_comp": tx_cp,
-        "vendas": vendas,
-        "tx_venda": tx_vd,
-        "pdf_url": f"/pdfs/relatorio_{cid}.pdf"
+        "id": cid, "name": name, "seg": seg, "inbox_id": inboxes[0] if inboxes else None,
+        "is_discon": discon, "evo_status": st or ("close" if discon else "open"),
+        "P": P, "total": len(leads), "ult": last.strftime("%d/%m/%Y") if last else "—",
+        "status": "descon" if discon else ("alta" if alta else ("mod" if cur["leads"] > 0 else "pausado")),
+        "statusText": "🔴 WhatsApp Off" if discon else ("🟢 Alta Tração" if alta else ("🟡 Moderado" if cur["leads"] > 0 else "⚪ Sem Leads")),
+        "pdf_url": PDFS.get(cid, ""),
     }
+
+
+PDFS = {}
+_pm = os.path.join(REPO_DIR, "pdfs", "manifest.json")
+if os.path.exists(_pm):
+    PDFS = json.load(open(_pm, encoding="utf-8"))
+
 
 def sync():
-    log_msg("Iniciando varredura no Google Sheets CRM e Chatwoot para todas as clínicas...")
+    log_msg("Iniciando varredura: planilhas CRM + Chatwoot (somente leads da planilha)...")
+    with cf.ThreadPoolExecutor(max_workers=4) as ex:
+        compiled = list(ex.map(process_client, CLIENTS))
+    mk = mkey(CUR)
+    compiled.sort(key=lambda r: (r["P"][mk]["leads"], r["P"]["hoje"]["leads"]), reverse=True)
+    tot = sum(r["P"][mk]["leads"] for r in compiled)
+    log_msg(f"Leads {mk}: {tot} | agendados {sum(r['P'][mk]['agendados'] for r in compiled)} | "
+            f"comp {sum(r['P'][mk]['comp'] for r in compiled)} | vendas {sum(r['P'][mk]['vendas'] for r in compiled)}")
 
-    # Parallel CRM & Chatwoot Extraction (4 workers to avoid EasyPanel/Chatwoot rate limits)
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        compiled = list(executor.map(process_client, CLIENTS))
-
-    # Load audited October ground truth if available to enrich empty sheets
-    oct_path = os.path.join(REPO_DIR, "auditoria_outubro_01_18_consolidada.json")
-    if os.path.exists(oct_path):
-        try:
-            with open(oct_path, "r", encoding="utf-8") as f_oct:
-                oct_map = {item["id"]: item for item in json.load(f_oct)}
-            for c in compiled:
-                cid = c["id"]
-                if cid in oct_map:
-                    oct_c = oct_map[cid]
-                    # If Chatwoot in October has more verified leads than sheet or sheet had 0
-                    if c["cw_leads"] < oct_c.get("oct_leads", 0) or c["cw_leads"] == 0:
-                        c["cw_leads"] = oct_c["oct_leads"]
-                        c["cw_resp"] = oct_c["oct_resp"]
-                        c["cw_unresp"] = oct_c["oct_unresp"]
-                        c["cw_alerts"] = oct_c["oct_alerts"]
-                        c["cw_avg_resp_h"] = oct_c["oct_avg_resp_h"]
-                        c["cw_pct_resp"] = oct_c["oct_pct_resp"]
-                        c["cw_status"] = oct_c["oct_status"]
-                        c["unresp_leads"] = oct_c.get("unresp_items", c.get("unresp_leads", []))
-                        c["set"] = oct_c["oct_leads"]
-                        c["agendados"] = oct_c.get("sheet_agendados", c.get("agendados", 0))
-                        c["tx_agend"] = oct_c.get("tx_agend", c.get("tx_agend", 0.0))
-                        c["comp"] = oct_c.get("sheet_compareceram", c.get("comp", 0))
-                        c["tx_comp"] = oct_c.get("tx_comp", c.get("tx_comp", 0.0))
-                        c["vendas"] = oct_c.get("sheet_vendas", c.get("vendas", 0))
-                        c["tx_venda"] = oct_c.get("tx_venda", c.get("tx_venda", 0.0))
-                        c["is_discon"] = oct_c.get("is_discon", False)
-                        c["status"] = "alta" if oct_c["oct_leads"] > 10 else ("mod" if oct_c["oct_leads"] > 0 else "pausado")
-                        c["statusText"] = "🟢 Alta Tração" if oct_c["oct_leads"] > 10 else ("🟡 Moderado" if oct_c["oct_leads"] > 0 else "⚪ Sem Leads")
-                c["pdf_url"] = f"/pdfs/relatorio_{cid}.pdf"
-        except Exception as e:
-            log_msg(f"Aviso ao mesclar auditoria de outubro: {e}")
-
-    # Sort primarily by october leads, then today
-    compiled.sort(key=lambda x: (x['set'], x['hoje']), reverse=True)
-
-    tot_leads = sum(c["total"] for c in compiled)
-    tot_set = sum(c["set"] for c in compiled)
-    tot_hoje = sum(c["hoje"] for c in compiled)
-    tot_cw_resp = sum(c["cw_resp"] for c in compiled)
-    tot_cw_unresp = sum(c["cw_unresp"] for c in compiled)
-    tot_cw_alerts = sum(c["cw_alerts"] for c in compiled)
-
-    resp_clinics = [c["cw_avg_resp_h"] for c in compiled if c["cw_avg_resp_h"] > 0]
-    avg_resp_global = round((sum(resp_clinics) / len(resp_clinics)), 1) if resp_clinics else 0.0
-    pct_resp_global = round((tot_cw_resp / tot_set * 100), 1) if tot_set > 0 else 0.0
-
-    log_msg(f"CRM Planilhas: Total Base={tot_leads:,} | Out/26={tot_set:,} | Hoje={tot_hoje}")
-    log_msg(f"Chatwoot Out/26: Leads={tot_set} | Respondidos={tot_cw_resp} ({pct_resp_global}%) | Sem Resposta={tot_cw_unresp} | Alertas >24h={tot_cw_alerts} | Tempo Médio={avg_resp_global}h")
-
-    # 3. Read current index.html template and inject new DATA
+    meta = {"months": [month_label(ym) for ym in MONTHS], "today": TODAY_BRT.isoformat(),
+            "updated": datetime.datetime.now().strftime("%d/%m/%Y às %H:%M")}
     index_path = os.path.join(REPO_DIR, "index.html")
-    with open(index_path, "r", encoding="utf-8") as f:
-        html = f.read()
+    html = open(index_path, "r", encoding="utf-8").read()
+    html = re.sub(r"/\*DATA\*/.*?/\*END\*/", lambda _: "/*DATA*/const DATA = " + json.dumps(compiled, ensure_ascii=False) + ";/*END*/", html, count=1, flags=re.S)
+    html = re.sub(r"/\*META\*/.*?/\*END\*/", lambda _: "/*META*/const META = " + json.dumps(meta, ensure_ascii=False) + ";/*END*/", html, count=1, flags=re.S)
+    if os.path.exists(ANALYSIS_PATH):
+        html = re.sub(r"/\*ANALYSIS\*/.*?/\*END\*/", lambda _: "/*ANALYSIS*/const ANALYSIS = " + open(ANALYSIS_PATH, encoding="utf-8").read().strip() + ";/*END*/", html, count=1, flags=re.S)
+    open(index_path, "w", encoding="utf-8").write(html)
+    log_msg("index.html atualizado.")
 
-    # Inject updated DATA
-    data_json = json.dumps(compiled, indent=2, ensure_ascii=False)
-    html = re.sub(
-        r'const DATA = \[[\s\S]*?\];',
-        lambda _: f'const DATA = {data_json};',
-        html
-    )
-
-    # Inject timestamp
-    now_str = datetime.datetime.now().strftime("%d/%m/%Y às %H:%M")
-    html = re.sub(
-        r'<div style="font-size:0.85rem;color:var\(--text-muted\);">.*?</div>',
-        f'<div style="font-size:0.85rem;color:var(--text-muted);">Atualizado em {now_str} • Período: 01/10 a 18/10/2026</div>',
-        html,
-        count=1
-    )
-
-    # Ensure period labels are Outubro
-    html = html.replace('Leads no Chatwoot (Setembro)', 'Leads no Chatwoot (01 a 18/10)')
-    html = html.replace('<span>🗓️ Setembro/26</span>', '<span>🗓️ Outubro (01 a 18/10)</span>')
-    html = html.replace("set: 'Setembro/26'", "set: 'Outubro (01 a 18/10)'")
-    html = html.replace("<span>Setembro/26</span>", "<span>Outubro (01 a 18/10)</span>")
-    html = html.replace("Top 10 Clientes por Captação em Setembro/26", "Top 10 Clientes por Captação em Outubro (01 a 18/10)")
-    html = html.replace("Leads Setembro", "Leads Outubro (01-18/10)")
-
-    # Ensure PDF links exist
-    if 'repDrawerPdfLink' not in html:
-        html = html.replace(
-            '<button class="btn-drawer-copy" onclick="copyCurrentCommercialReport()" title="Copiar relatório formatado em texto para o WhatsApp">📋 Copiar p/ WhatsApp</button>',
-            '<a id="repDrawerPdfLink" href="#" target="_blank" class="btn-drawer-copy" style="text-decoration:none;background:#2563eb;color:#ffffff;display:inline-flex;align-items:center;gap:4px;" title="Baixar relatório em PDF">📄 Baixar PDF</a>\n      <button class="btn-drawer-copy" onclick="copyCurrentCommercialReport()" title="Copiar relatório formatado em texto para o WhatsApp">📋 Copiar p/ WhatsApp</button>'
-        )
-
-    if 'pdfBtn' not in html:
-        html = html.replace(
-            "document.getElementById('repDrawerTitle').textContent = c.name;",
-            "document.getElementById('repDrawerTitle').textContent = c.name;\n  const pdfBtn = document.getElementById('repDrawerPdfLink'); if (pdfBtn) { pdfBtn.href = `/pdfs/relatorio_${clientId}.pdf`; }"
-        )
-
-    if 'RELATORIO-EXECUTIVO-CONSOLIDADO-OUTUBRO-2026.pdf' not in html:
-        html = html.replace(
-            '<button class="btn-global-report" onclick="openGlobalReport()">🏆 Resumo Executivo da Carteira (32 Clínicas)</button>',
-            '<button class="btn-global-report" onclick="openGlobalReport()">🏆 Resumo Executivo da Carteira (33 Clínicas)</button>\n      <a href="/pdfs/RELATORIO-EXECUTIVO-CONSOLIDADO-OUTUBRO-2026.pdf" target="_blank" class="btn-global-report" style="text-decoration:none;background:#2563eb;color:#ffffff;display:inline-flex;align-items:center;gap:6px;" title="Baixar Relatório Executivo Geral em PDF">📥 Baixar Relatório Geral (PDF)</a>'
-        )
-
-    with open(index_path, "w", encoding="utf-8") as f:
-        f.write(html)
-
-    log_msg("index.html atualizado com sucesso!")
-
-    # 4. Commit and Push to GitHub (auto-deploys to Vercel)
+    if "--no-push" in sys.argv:
+        return
     try:
-        subprocess.run(["git", "add", "index.html", "sync_daily.py", "pdfs/"], cwd=REPO_DIR, check=True)
-        msg = f"chore: sync crm sheets & chatwoot ({datetime.datetime.now().strftime('%d/%m/%Y %H:%M')})"
+        subprocess.run(["git", "add", "index.html", "sync_daily.py", "metrics.py", "clients.py", "extract_cw.py", "verified.json", "analysis.json", "pdfs/"], cwd=REPO_DIR, check=False)
+        msg = f"chore: sync painel ({datetime.datetime.now():%d/%m/%Y %H:%M})"
         subprocess.run(["git", "commit", "-m", msg], cwd=REPO_DIR, check=False)
         subprocess.run(["git", "-c", "credential.helper=manager", "push", "origin", "main"], cwd=REPO_DIR, check=True)
-        log_msg("Git commit & push executados! Deploy no Vercel iniciado automaticamente.")
+        log_msg("Push executado; deploy no Vercel iniciado.")
     except Exception as e:
-        log_msg(f"Aviso ao rodar git push: {e}")
+        log_msg(f"Aviso git push: {e}")
+
 
 if __name__ == "__main__":
     sync()
