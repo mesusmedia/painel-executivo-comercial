@@ -1,0 +1,38 @@
+"""Carteira ativa do painel: id da planilha Gerencial (aba CRM) e caixas do Chatwoot (conta 1)."""
+
+# (id, nome, segmento, [inbox_ids], sheet_id)
+# Renata: caixa do Chatwoot foi apagada (sem inbox). Avante BH/SL: leads rastreados pelo Kommo (integração futura).
+CLIENTS = [
+    ("C124-DraAnnaHOF", "Dra. Anna HOF", "Saúde", [77], "1N2oAsy3PJud__z9MBSFrX9wr1AVfw_b-X-YpgDHIdkQ"),
+    ("C123-DrRafaelRocha", "Dr. Rafael Rocha", "Saúde", [121], "1iX55z4aFf7CIzLHD0OVGdZCeCWrMfgK-hE_3LLAkfko"),
+    ("C52-DrLucasPitao", "Dr. Lucas Pitão", "Saúde", [47], "1ssM8yBQsSpby-y7FXqs8NmWAAjzsfigxhR4P4J7mfys"),
+    ("C63-DrRaphaelMoreira", "Dr. Raphael Moreira", "Saúde", [23], "1hnJ7rl0Hcy2GcWdh3nMN7s9nhBCtahKsHYiQglAF_JE"),
+    ("C123-OrgulhoSV", "Orgulho São Vicente", "Odonto", [116, 147], "1-Xp3qunysH4vw8jrU8wWW0g8eTzLK2pt4jmoSxMDId0"),
+    ("C123-OrgulhoSantos", "Orgulho de Sorrir Santos", "Odonto", [140], "1bWYYqtG_2TZ3Zs0r5wkvadSI8gEMAug-9nZUp-jxYuc"),
+    ("C123-OrgulhodeSorrirPeruibe", "Orgulho de Sorrir Peruíbe", "Odonto", [115], "17_CS-0I470XfX5sQMLAd0jdQJxng4gFCBkO1eaQx8qA"),
+    ("C86-DrWilliamHenrique", "Dr. William Henrique", "Saúde", [125], "14Ss2564FyP_SJeXxTI8OI-5n0tRMlchsJJYFJrxRrxY"),
+    ("C135-DraMichelleSantos", "Dra. Michelle Santos", "Saúde", [25], "1pQpLfdt9gCHoRekLRpqFk9pwW2V51ksCN_NTJd1G_zY"),
+    ("C136-IntegrareOdontologia", "Integrare Odontologia", "Odonto", [119], "1TEuyWftgK9iM2rINKEeg-xTAZGVFxibmWZpokn6XCEc"),
+    ("C140-EspacoBottega", "Espaço Bottega", "Estética", [100], "1AAcB8qjEf-NDM36lPTCOuUst7tsACIvfNe4QgsJf_yM"),
+    ("C141-VictorRios", "Victor Rios", "Saúde", [112], "1NQlACxzoHdcjBpH7B2_WDpiMc6uAnznEtiMWHMopHjo"),
+    ("C149-ClinicaGGlow", "Clínica G Glow", "Estética", [82], "1zOwuPWh_g2fLHyfmBfHl1RIPYznzGdf7yGidGnq9qN0"),
+    ("EsteticaLosAngelesLeads", "Estética Los Angeles", "Estética", [108], "1zBcRC0HaV4JXg1Cix-XBl6cZzQ6044oFMhM3NlTZn7E"),
+    ("C150-Lumia", "Lumia", "Estética", [137], "1fVoRc627ZhHEBKFIGuGvvtiMDBrO_2D3Wp2mWZlH3Go"),
+    ("C155-ClinicaElodonto", "Clínica Elodonto", "Odonto", [122], "17eesV8xZKnisx9pJo11RndZOcKDwIT6zet8dBfHrPlM"),
+    ("C158-VictorianoFaces", "Victoriano Faces", "Estética", [124], "12dTGJBLDOdxxPAX0WJJR7R6Zhu_NtZ9xX19VsUvdK8A"),
+    ("C157-DraCristianeTiburtino", "Dra. Cristiane Tiburtino", "Saúde", [114], "1bM8T1h-gAZdbOgjWQqkFoJPU_vODLI-ObIt9OtTLGic"),
+    ("C162-DrBrunoAraujo", "Dr. Bruno Araújo", "Saúde", [103], "1Vc5IT497LN25AUD8ckoH7CkXJ-72O7ypn8ZxuoAUELg"),
+    ("C163-AcessoSaudeCIC", "Acesso Saúde CIC", "Saúde", [105], "1SuyRNdYrGZXtBFmB0-Hv91ZICa7geeFHx6Ayiz7jU08"),
+    ("C167-AvanteOdontologiaBH", "Avante Odontologia BH", "Odonto", [128], "17axePFMIWOUQ3kGJ308w4kptO6PZt_mY9XwjifqozrY"),
+    ("C167-AvanteOdontologiaSL", "Avante Odontologia SL", "Odonto", [129], "1i5nQbdPOPLIQgUjibXCVZwd4JNuLo_AiKsqWEYNBx8k"),
+    ("C169-DrKeeynerCorrea", "Dr. Keeyner Correa", "Saúde", [133], "1SmdVcj_MQBpRJXNai8xM9yXW9coOquQEG8HxjDlLbeE"),
+    ("C172-DrCaioFigueira", "Dr. Caio Figueira", "Saúde", [134], "1biD55AqQuFQZJlSnUyGvrg3DwKWD-8fLSl5bt2fJiEM"),
+    ("C171-DraStefaniRezende", "Dra. Stefani Rezende", "Saúde", [135], "16A--MHKp8IBoZKHGQD21LFN-7WUVL2m_BcZmu0UdEXg"),
+    ("C174-EsteticFaceItapetininga", "Estetic Face Itapetininga", "Estética", [139], "18V8FQD8Q5lVSoioIkDjnUKYFqminsQWgIWbuc8ImW9E"),
+    ("C175-VivazOdontologia", "Vivaz Odontologia", "Odonto", [141], "1LWOtVjWsaX_tkV1TG8ibN765WbRuNTablOxhwPSyKoc"),
+    ("C179-DraRenataCastro", "Dra. Renata Castro", "Saúde", [], "1T2C6_fbItE8aennC_AtIUsFpsNPdv4cJ11skQGv-woQ"),
+    ("C177-DrLucasBertini", "Dr. Lucas Bertini", "Saúde", [143], "11Hz0kF_Cy8xtDc8l5Yc8kOW_0Hidq8k5mKf1JHKrnGE"),
+    ("C176-DraCamilaFugii", "Dra. Camila Fugii", "Saúde", [144], "11CLtmylBG_cuo4EI36N0HyvnY39PwOnEDORiXqg7S-o"),
+    ("C180-DrNathanNunes", "Dr. Nathan Nunes", "Odonto", [145], "1dnsXrJS3W7MgH-sEbJrDS7gOUFtNOM8Kg8saZjAelEM"),
+    ("C182-DraJordanaKardek", "Dra. Jordana Kardek", "Saúde", [146], "1tl6svgz2tSM3lNPk4gVDJJ0Ab9cpCSN5e78gqTIvtMo"),
+]
