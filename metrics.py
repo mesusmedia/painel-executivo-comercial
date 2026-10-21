@@ -59,6 +59,10 @@ def parse_leads(csv_text):
     i_hora = col("hora")
     i_nome = col("nome")
     i_num = col("número", "numero", "telefone")
+    if i_num is not None:
+        amostra = [re.sub(r"\D", "", r[i_num]) for r in rows[1:21] if i_num < len(r)]
+        if sum(1 for s in amostra if len(s) >= 8) < len(amostra) * 0.3:
+            i_num = None  # coluna "número" existe mas não guarda telefone (ex.: nome da conta de anúncio)
     if i_num is None:
         i_num = 3  # Peruíbe: cabeçalho da coluna de telefone corrompido
     i_ag = col("agendou?")
