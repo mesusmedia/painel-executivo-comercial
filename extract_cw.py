@@ -16,7 +16,8 @@ import requests
 import metrics as M
 from clients import CLIENTS
 
-sys.stdout.reconfigure(encoding="utf-8")
+if sys.stdout is not None and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 REPO = os.path.dirname(os.path.abspath(__file__))
 env = {}
 for line in open(os.path.join(REPO, ".env"), encoding="utf-8"):

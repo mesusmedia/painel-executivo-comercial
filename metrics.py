@@ -129,6 +129,8 @@ def parse_leads(csv_text):
             l["comp"] = True
         if l["comp"]:
             l["ag"] = True
+        if not l["ag"]:  # orçamento em aberto só existe pra quem passou por agendado
+            l["aberto"] = False
         if l["venda"]:  # orcamento em aberto = compareceu e ainda nao fechou
             l["aberto"] = False
     return out
