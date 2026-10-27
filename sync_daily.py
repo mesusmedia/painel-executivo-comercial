@@ -215,10 +215,18 @@ def process_client(c):
         except Exception as e:
             log_msg(f"Aviso planilha {name} ({attempt + 1}/3): {e}")
             time.sleep(2)
-    ver = set(VERIFIED.get(cid, {}).get("ag", []))
+    v_entry = VERIFIED.get(cid, {})
+    ver_ag = set(v_entry.get("ag", []))
+    ver_comp = set(v_entry.get("comp", []))
+    ver_venda = set(v_entry.get("vendas", []))
     for l in leads:
-        if l["key"] in ver and l["data"] >= datetime.date(2026, 10, 1):
-            l["ag"] = True
+        if l["data"] >= datetime.date(2026, 10, 1):
+            if l["key"] in ver_ag:
+                l["ag"] = True
+            if l["key"] in ver_comp:
+                l["comp"] = True
+            if l["key"] in ver_venda:
+                l["venda"] = True
 
     convs_by_lead, cache = {}, {}
     window = [l for l in leads if l["data"] >= CW_FROM]
@@ -269,6 +277,12 @@ def process_client(c):
 
 
 def sync():
+    global PDFS, VERIFIED
+    _pm = os.path.join(REPO_DIR, "pdfs", "manifest.json")
+    if os.path.exists(_pm):
+        PDFS = json.load(open(_pm, encoding="utf-8"))
+    if os.path.exists(VERIFIED_PATH):
+        VERIFIED = json.load(open(VERIFIED_PATH, encoding="utf-8"))
     log_msg("Iniciando varredura: planilhas CRM + Chatwoot (somente leads da planilha)...")
     with cf.ThreadPoolExecutor(max_workers=4) as ex:
         compiled = list(ex.map(process_client, CLIENTS))
