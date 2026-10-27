@@ -197,6 +197,12 @@ def funnel(leads):
             "vendas": vd, "tx_venda": M.pct(vd, cp), "aberto": sum(l["aberto"] for l in leads)}
 
 
+PDFS = {}
+_pm = os.path.join(REPO_DIR, "pdfs", "manifest.json")
+if os.path.exists(_pm):
+    PDFS = json.load(open(_pm, encoding="utf-8"))
+
+
 def process_client(c):
     cid, name, seg, inboxes, sid = c
     st = evo_status(cid)
@@ -260,10 +266,6 @@ def process_client(c):
     }
 
 
-PDFS = {}
-_pm = os.path.join(REPO_DIR, "pdfs", "manifest.json")
-if os.path.exists(_pm):
-    PDFS = json.load(open(_pm, encoding="utf-8"))
 
 
 def sync():
