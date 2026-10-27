@@ -508,24 +508,26 @@
   "C174-EsteticFaceItapetininga": {
     "disponivel": true,
     "mes": "2026-10",
-    "periodo": "01/10 a 26/10/2026",
-    "posicao": "26/10/2026 as 20:10",
+    "periodo": "01/10 a 27/10/2026",
+    "posicao": "27/10/2026",
     "obs": [
-      "Entraram 3413 leads novos de 01/10 a 26/10, a maior parte vinda da campanha [OG] Meta Ads Geral | Estetic Face Itape.",
-      "138 pacientes agendaram (4,0% dos leads) e 16 compareceram, o que dá 11,6% de comparecimento entre os agendados. 7 pacientes faltaram.",
-      "4 pacientes fecharam tratamento (25,0% de quem compareceu).",
-      "O principal motivo de não fechamento ou perda registrado foi 'Desqualificado' (3 ocorrências)."
+      "Entraram 1.087 leads no Kommo CRM de 01/10 a 27/10/2026, com forte tração a partir de 14/10 e pico no dia 22/10 com 591 leads em ação de disparo e anúncios ativos.",
+      "32 pacientes agendaram na planilha/CRM (2,9% dos leads) e 14 compareceram, o que representa 43,8% de comparecimento entre os agendados. 6 pacientes faltaram.",
+      "4 pacientes fecharam tratamento (28,6% de quem compareceu) e 9 pacientes seguem com orçamento em aberto na clínica.",
+      "No Kommo CRM operacional ([FV] Funil de Vendas), há 354 leads em follow-up e 95 em atendimento imediato aguardando avanço comercial.",
+      "Os principais motivos mapeados de perda foram: Desqualificado (3), Distância (2) e Preço (2)."
     ],
     "plano": [
-      "Trabalhar contorno específico para o motivo 'Desqualificado' na abordagem comercial da recepção.",
-      "Confirmar o comparecimento dos pacientes agendados no dia anterior e aplicar recuperação imediata para faltosos.",
-      "Reforçar o follow-up ativo com os leads em atendimento que não responderam nas últimas 24 a 48 horas.",
-      "Manter o registro diário atualizado de comparecimento e fechamento no CRM para calibragem do tráfego."
+      "Executar rotina intensiva de follow-up nos 354 leads em follow-up e 95 em atendimento ativo no Kommo para destravar novos agendamentos.",
+      "Confirmar o comparecimento dos pacientes agendados no dia anterior via WhatsApp com confirmação humanizada para elevar taxa de presença.",
+      "Fazer resgate focado dos 9 pacientes com orçamento em aberto oferecendo condições de fechamento facilitadas.",
+      "Aplicar contorno de preço (parcelamento/vantagem clínica) e distância conforme roteiros comerciais padrão Mesus.",
+      "Manter o registro diário atualizado de comparecimento e receita no CRM/Planilha para calibragem de tráfego."
     ],
     "snap": {
-      "leads": 3413,
-      "ag": 138,
-      "comp": 16,
+      "leads": 1087,
+      "ag": 32,
+      "comp": 14,
       "vendas": 4
     }
   },
