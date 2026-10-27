@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Apresentação Comercial Executiva - Padrão Mesus Dark</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
+
+  :root {
+    --bg-dark: #0A0D14;
+    --card-bg: #121722;
+    --card-border: #1E2638;
+    --gold: #D4AF37;
+    --gold-light: #F3E5AB;
+    --gold-gradient: linear-gradient(135deg, #ECC86B 0%, #B8860B 100%);
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --accent-red: #EF4444;
+    --accent-green: #10B981;
+    --accent-blue: #38BDF8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    line-height: 1.6;
+    padding: 40px 20px;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* Header Branding */
+  .header {
+    text-align: center;
+    padding: 60px 20px 40px;
+    border-bottom: 1px solid var(--card-border);
+    margin-bottom: 50px;
+    position: relative;
+  }
+
+  .badge-mesus {
+    display: inline-block;
+    padding: 6px 16px;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 50px;
+    color: var(--gold-light);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    background: linear-gradient(180deg, #FFFFFF 0%, #94A3B8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 15px;
+  }
+
+  .subtitle {
+    font-size: 18px;
+    color: var(--text-secondary);
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* Grid & Cards */
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    color: var(--gold-light);
+    margin: 50px 0 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-left: 4px solid var(--gold);
+    padding-left: 15px;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: var(--gold-gradient);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+
+  .client-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+
+  .client-tag {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: rgba(56, 189, 248, 0.1);
+    color: var(--accent-blue);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+  }
+
+  /* Metrics Row */
+  .metrics-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    background: rgba(10, 13, 20, 0.6);
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .metric-item {
+    flex: 1;
+    text-align: center;
+  }
+
+  .metric-val {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--gold);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .metric-lab {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Diagnostic Box */
+  .diagnostic-box {
+    margin-bottom: 20px;
+  }
+
+  .diag-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent-red);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .diag-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* Script Box */
+  .script-box {
+    background: rgba(212, 175, 55, 0.03);
+    border: 1px dashed rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 15px;
+  }
+
+  .script-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gold-light);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .script-text {
+    font-size: 13.5px;
+    color: #E2E8F0;
+    font-style: italic;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 14px;
+    border-radius: 8px;
+    border-left: 3px solid var(--gold);
+    line-height: 1.5;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 50px 20px 20px;
+    color: var(--text-muted);
+    font-size: 13px;
+    border-top: 1px solid var(--card-border);
+    margin-top: 60px;
+  }
+
+  .footer b {
+    color: var(--gold);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge-mesus">Mesus Media • Inteligência Comercial</div>
+    <h1>Auditoria Executiva de Conversas & Playbook de Atendimento</h1>
+    <p class="subtitle">Análise aprofundada dos atendimentos no Chatwoot, diagnósticos de conversão e scripts personalizados de alta conversão por clínica.</p>
+  </div>
+
+  <!-- Framework Geral Mesus -->
+  <h2 class="section-title">📐 Framework Oficial de Atendimento Mesus</h2>
+  <div class="cards-grid">
+    <div class="card">
+      <div class="client-name" style="font-size: 18px; color: var(--gold-light); margin-bottom: 10px;">1. Regra de Ouro: Pergunta Final Obrigatória</div>
+      <p class="diag-text">Nunca devolva uma mensagem com ponto final ou emoji solto. Toda resposta da equipe comercial <b>deve terminar obrigatoriamente com uma pergunta aberta direcionando para o fechamento</b>. Deixar sem pergunta gera o vácuo imediato do lead.</p>
+    </div>
+    <div class="card">
+      <div class="client-name" style="font-size: 18px; color: var(--gold-light); margin-bottom: 10px;">2. Ancoragem Antes do Preço</div>
+      <p class="diag-text">Quando o lead pergunta preço logo de cara, passar o valor seco mata a venda ("Atendente Balconista"). A CRC deve acolher, qualificar a queixa e ancorar a autoridade do profissional antes de apresentar facilidades de pagamento.</p>
+    </div>
+    <div class="card">
+      <div class="client-name" style="font-size: 18px; color: var(--gold-light); margin-bottom: 10px;">3. Fechamento por Opção Dupla</div>
+      <p class="diag-text">Nunca pergunte <i>"quando você pode vir?"</i>. Isso gera paralisia de decisão. Apresente duas opções fixas da agenda: <i>"Tenho quinta-feira às 15:30 ou sexta às 10:00, qual fica mais prático para você?"</i>.</p>
+    </div>
+  </div>
+
+  <!-- Análises Individuais por Cliente -->
+  <h2 class="section-title">🏥 Diagnósticos & Scripts Personalizados por Cliente</h2>
+  <div class="cards-grid">
+
+    <!-- Dr Nathan Nunes -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="client-name">Dr. Nathan Nunes</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Nicho: Lentes em Resina Composta</div>
+        </div>
+        <span class="client-tag">Odontologia Estética</span>
+      </div>
+      <div class="metrics-row">
+        <div class="metric-item">
+          <div class="metric-val">152</div>
+          <div class="metric-lab">Leads Mês</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-val">2</div>
+          <div class="metric-lab">Agendados CRM</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-val">Nat (IA/Humano)</div>
+          <div class="metric-lab">Atendimento</div>
+        </div>
+      </div>
+      <div class="diagnostic-box">
+        <div class="diag-title">🚨 Diagnóstico do Atendimento</div>
+        <div class="diag-text">
+          A triagem da "Nat" qualifica rápido perguntando se o incômodo é cor, alinhamento ou formato. Porém, quando o paciente pede fotos ou pergunta de durabilidade (ex: Felipe Tattoo, Kaique), a conversa trava e a secretária passa valores soltos de tabela ou não faz o convite firme para a avaliação presencial com escâner/simulação.
+        </div>
+      </div>
+      <div class="script-box">
+        <div class="script-title">✨ Script Recomendado de Fechamento</div>
+        <div class="script-text">
+          "Que ótimo, [Nome]! Para o seu caso de lentes em resina, o Dr. Nathan faz um planejamento totalmente personalizado para harmonizar com o seu rosto sem desgaste agressivo. O primeiro passo é uma avaliação clínica para analisarmos a anatomia do seu sorriso. Temos uma condição especial para os pacientes modelo desta semana: consigo te encaixar nesta quinta-feira às 16:30 ou na sexta às 11:00. Qual desses dois horários fica melhor para você garantir a sua vaga?"
+        </div>
+      </div>
+    </div>
+
+    <!-- Dra Camila Fugii -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="client-name">Dra. Camila Fugii</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Nicho: Próteses & Reabilitação Oral</div>
+        </div>
+        <span class="client-tag">Reabilitação</span>
+      </div>
+      <div class="metrics-row">
+        <div class="metric-item">
+          <div class="metric-val">253</div>
+          <div class="metric-lab">Leads Mês</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-val">4</div>
+          <div class="metric-lab">Agendados CW</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-val">0</div>
+          <div class="metric-lab">Registrados CRM</div>
+        </div>
+      </div>
+      <div class="diagnostic-box">
+        <div class="diag-title">🚨 Diagnóstico do Atendimento</div>
+        <div class="diag-text">
+          Volume alto de pacientes com dores funcionais (mastigação, próteses soltas, ausência dentária). A secretária passa o valor de tabela da prótese/implante direto pelo WhatsApp sem acolher a dor do paciente. Como o ticket de reabilitação é mais elevado, o paciente assusta e para de responder.
+        </div>
+      </div>
+      <div class="script-box">
+        <div class="script-title">✨ Script Recomendado de Fechamento</div>
+        <div class="script-text">
+          "Olá, [Nome]! Seja muito bem-vindo(a)! Compreendo perfeitamente o quanto a segurança ao mastigar e sorrir faz falta no dia a dia. A Dra. Camila é especialista em devolver essa firmeza com próteses e implantes modernos que não machucam. Como cada estrutura óssea é única, a Dra. avalia o caso pessoalmente antes de passar o plano exato. Temos facilidades especiais de parcelamento direto. Você prefere uma consulta na quarta pela manhã ou na quinta à tarde?"
+        </div>
+      </div>
+    </div>
+
+    <!-- Dr Lucas Bertini -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="client-name">Dr. Lucas Bertini</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Nicho: Lentes & Estética Dental</div>
+        </div>
+        <span class="client-tag">Odontologia</span>
+      </div>
+      <div class="metrics-row">
+        <div class="metric-item">
+          <div class="metric-val">106</div>
+          <div class="metric-lab">Leads Mês</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-val">2</div>
+          <div class="metric-lab">Agendados CW</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-val">0</div>
+          <div class="metric-lab">Registrados CRM</div>
+        </div>
+      </div>
+      <div class="diagnostic-box">
+        <div class="diag-title">🚨 Diagnóstico do Atendimento</div>
+        <div class="diag-text">
+          Observado nas conversas (ex: Rosilange e Giovanna Araújo): a recepção responde dúvidas de valores pontualmente e finaliza com mensagens sem gancho de continuidade. O lead agradece com um "Obrigada" e o contato é abandonado sem follow-up de 24h/48h.
+        </div>
+      </div>
+      <div class="script-box">
+        <div class="script-title">✨ Script Recomendado de Fechamento</div>
+        <div class="script-text">
+          "Oi, [Nome]! O Dr. Lucas faz questão de alinhar a expectativa do sorriso antes de qualquer orçamento, mostrando na tela como ficará o resultado. Nós dividimos em condições bem acessíveis para você realizar esse sonho ainda este ano! Estou com 2 vagas de avaliação abertas para novos pacientes nesta semana: terça às 14:00 ou quinta às 17:30. Qual desses horários se encaixa na sua rotina?"
+        </div>
+      </div>
+    </div>
+
+    <!-- Dr Caio Figueira -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="client-name">Dr. Caio Figueira</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Nicho: Blefaroplastia & Lifting Facial</div>
+        </div>
+        <span class="client-tag">Cirurgia da Face</span>
+      </div>
+      <div class="metrics-row">
+        <div class="metric-item">
+          <div class="metric-val">274</div>
+          <div class="metric-lab">Leads Mês</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-val">Larissa (CRC)</div>
+          <div class="metric-lab">Atendimento</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-val">Kommo</div>
+          <div class="metric-lab">Em Ativação</div>
+        </div>
+      </div>
+      <div class="diagnostic-box">
+        <div class="diag-title">🚨 Diagnóstico do Atendimento</div>
+        <div class="diag-text">
+          Leads de alto interesse cirúrgico chegando via campanha de Blefaro e Lifting. Pacientes perguntam sobre valores ou se é o próprio médico falando. A atendente Larissa responde bem no acolhimento (ex: Cristina, Conv. 51003 agendada para quinta à tarde), mas precisa reforçar a autoridade do Dr. Caio e não negociar valores cirúrgicos por texto antes da consulta presencial.
+        </div>
+      </div>
+      <div class="script-box">
+        <div class="script-title">✨ Script Recomendado de Fechamento</div>
+        <div class="script-text">
+          "Olá, [Nome]! Seja muito bem-vinda ao consultório do Dr. Caio Figueira! Me chamo Larissa. 😊 O Dr. Caio é cirurgião especialista em rejuvenescimento facial natural, focado no olhar descansado e sem estigmas. Por ética médica e segurança cirúrgica, os valores exatos e indicação (se blefaro superior, inferior ou lifting) são definidos na consulta de avaliação personalizada. Nossas consultas acontecem no Ws Trade Center (Torre 2). Tenho disponibilidade nesta quinta às 15:00 ou na próxima terça às 10:00. Qual horário prefere reservar?"
+        </div>
+      </div>
+    </div>
+
+    <!-- Vivaz Odontologia -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="client-name">Vivaz Odontologia</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Nicho: Implantes & Reabilitação</div>
+        </div>
+        <span class="client-tag">Implantes Dentários</span>
+      </div>
+      <div class="metrics-row">
+        <div class="metric-item">
+          <div class="metric-val">70</div>
+          <div class="metric-lab">Leads Mês</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-val">5</div>
+          <div class="metric-lab">Agendados CRM</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-val">8</div>
+          <div class="metric-lab">Confirmados CW</div>
+        </div>
+      </div>
+      <div class="diagnostic-box">
+        <div class="diag-title">🚨 Diagnóstico do Atendimento</div>
+        <div class="diag-text">
+          Atendimento ativo com boa taxa de resposta e confirmação formal no dia anterior (ótima conduta da secretária). Pacientes frequentemente pedem parcelamento no boleto (ex: Vih e Adailton). A recepção precisa ancorar que a facilidade de crédito/boleto é aprovada na própria clínica durante a avaliação.
+        </div>
+      </div>
+      <div class="script-box">
+        <div class="script-title">✨ Script Recomendado de Fechamento</div>
+        <div class="script-text">
+          "Olá, [Nome]! Tudo bem? Com certeza nós podemos te ajudar a realizar seu tratamento com total tranquilidade! Sim, nós facilitamos as condições no boleto e cartão após a avaliação com a Dra., sem complicações. Para avaliarmos exatamente o que precisa ser feito e já simularmos seu plano de pagamento, consigo te agendar hoje às 15:30 ou amanhã às 14:00. Qual fica melhor para você vir tomar um café com a gente?"
+        </div>
+      </div>
+    </div>
+
+    <!-- Dra Michelle Santos -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="client-name">Dra. Michelle Santos</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Nicho: Botox & Harmonização Facial</div>
+        </div>
+        <span class="client-tag">Harmonização HOF</span>
+      </div>
+      <div class="metrics-row">
+        <div class="metric-item">
+          <div class="metric-val">139</div>
+          <div class="metric-lab">Leads Mês</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-val">0</div>
+          <div class="metric-lab">Agendados CRM</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-val">Gargalo</div>
+          <div class="metric-lab">SLA / Vácuo</div>
+        </div>
+      </div>
+      <div class="diagnostic-box">
+        <div class="diag-title">🚨 Diagnóstico do Atendimento</div>
+        <div class="diag-text">
+          Ponto mais crítico da carteira: 7 das 15 últimas conversas auditadas ficaram no vácuo total (leads que chamaram interessados na oferta de Botox e nunca tiveram retorno da secretária). Leads de HOF têm alta velocidade de decisão; cada hora de espera derruba a chance de fechamento em 80%.
+        </div>
+      </div>
+      <div class="script-box">
+        <div class="script-title">✨ Script Recomendado de Resgate & SLA</div>
+        <div class="script-text">
+          "[Nome], mil desculpas pela demora, estávamos em atendimento clínico com a Dra. Michelle! Vi que você se interessou pela nossa condição especial de Harmonização/Botox deste mês. Ainda temos 3 vagas com esse benefício exclusivo garantido para você! Você prefere um horário nesta sexta à tarde ou no sábado pela manhã para fazer sua avaliação com a Dra.?"
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Metodologia & Estrutura Comercial: <b>Mesus Media</b> por <b>Lucas Medeiros</b> • Documento Confidencial de Gestão Comercial • Outubro 2026
+  </div>
+
+</div>
+
+</body>
+</html>
