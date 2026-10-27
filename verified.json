@@ -1,1 +1,77 @@
-{"C123-DrRafaelRocha": {"ag": []}, "C52-DrLucasPitao": {"ag": []}, "C63-DrRaphaelMoreira": {"ag": []}, "C123-OrgulhoSV": {"ag": []}, "C123-OrgulhoSantos": {"ag": []}, "C123-OrgulhodeSorrirPeruibe": {"ag": []}, "C135-DraMichelleSantos": {"ag": []}, "C140-EspacoBottega": {"ag": []}, "C149-ClinicaGGlow": {"ag": []}, "C158-VictorianoFaces": {"ag": []}, "C157-DraCristianeTiburtino": {"ag": []}, "C163-AcessoSaudeCIC": {"ag": []}, "C169-DrKeeynerCorrea": {"ag": []}, "C172-DrCaioFigueira": {"ag": []}, "C171-DraStefaniRezende": {"ag": []}, "C174-EsteticFaceItapetininga": {"ag": []}, "C175-VivazOdontologia": {"ag": []}, "C177-DrLucasBertini": {"ag": []}, "C176-DraCamilaFugii": {"ag": []}, "C180-DrNathanNunes": {"ag": ["84552660"]}, "C182-DraJordanaKardek": {"ag": []}}
+{
+  "C123-DrRafaelRocha": {
+    "ag": []
+  },
+  "C52-DrLucasPitao": {
+    "ag": []
+  },
+  "C63-DrRaphaelMoreira": {
+    "ag": []
+  },
+  "C123-OrgulhoSV": {
+    "ag": []
+  },
+  "C123-OrgulhoSantos": {
+    "ag": []
+  },
+  "C123-OrgulhodeSorrirPeruibe": {
+    "ag": []
+  },
+  "C135-DraMichelleSantos": {
+    "ag": []
+  },
+  "C140-EspacoBottega": {
+    "ag": []
+  },
+  "C149-ClinicaGGlow": {
+    "ag": []
+  },
+  "C158-VictorianoFaces": {
+    "ag": []
+  },
+  "C157-DraCristianeTiburtino": {
+    "ag": []
+  },
+  "C163-AcessoSaudeCIC": {
+    "ag": []
+  },
+  "C169-DrKeeynerCorrea": {
+    "ag": []
+  },
+  "C172-DrCaioFigueira": {
+    "ag": [
+      "99862265",
+      "97343087",
+      "92350137",
+      "88591050",
+      "86800814",
+      "91668388",
+      "94109977",
+      "99848425",
+      "98771946"
+    ]
+  },
+  "C171-DraStefaniRezende": {
+    "ag": []
+  },
+  "C174-EsteticFaceItapetininga": {
+    "ag": []
+  },
+  "C175-VivazOdontologia": {
+    "ag": []
+  },
+  "C177-DrLucasBertini": {
+    "ag": []
+  },
+  "C176-DraCamilaFugii": {
+    "ag": []
+  },
+  "C180-DrNathanNunes": {
+    "ag": [
+      "84552660"
+    ]
+  },
+  "C182-DraJordanaKardek": {
+    "ag": []
+  }
+}
