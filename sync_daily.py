@@ -306,10 +306,11 @@ def sync():
     if "--no-push" in sys.argv:
         return
     try:
-        subprocess.run(["git", "add", "index.html", "sync_daily.py", "metrics.py", "clients.py", "extract_cw.py", "verified.json", "analysis.json", "pdfs/"], cwd=REPO_DIR, check=False)
+        no_window = getattr(subprocess, "CREATE_NO_WINDOW", 0)  # sem isso o pythonw pisca tela preta
+        subprocess.run(["git", "add", "index.html", "sync_daily.py", "metrics.py", "clients.py", "extract_cw.py", "verified.json", "analysis.json", "pdfs/"], cwd=REPO_DIR, check=False, creationflags=no_window)
         msg = f"chore: sync painel ({datetime.datetime.now():%d/%m/%Y %H:%M})"
-        subprocess.run(["git", "commit", "-m", msg], cwd=REPO_DIR, check=False)
-        subprocess.run(["git", "-c", "credential.helper=manager", "push", "origin", "main"], cwd=REPO_DIR, check=True)
+        subprocess.run(["git", "commit", "-m", msg], cwd=REPO_DIR, check=False, creationflags=no_window)
+        subprocess.run(["git", "-c", "credential.helper=manager", "push", "origin", "main"], cwd=REPO_DIR, check=True, creationflags=no_window)
         log_msg("Push executado; deploy no Vercel iniciado.")
     except Exception as e:
         log_msg(f"Aviso git push: {e}")
